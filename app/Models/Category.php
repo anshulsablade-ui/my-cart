@@ -2,9 +2,28 @@
 
 namespace App\Models;
 
+use App\Traits\SlugGenerator;
 use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    //
+    use SlugGenerator;
+    protected $table = 'categories';
+    protected $fillable = ['parent_id', 'name', 'slug', 'status'];
+
+    protected $slugSourceField = 'name';
+
+    public function parent()
+    {
+        return $this->belongsTo(Category::class, 'parent_id');
+    }
+    public function children()
+    {
+        return $this->hasMany(Category::class, 'parent_id');
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }

@@ -4,17 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ProductImage extends Model
+class Wishlist extends Model
 {
-    protected $table = 'product_images';
+    protected $table = 'wishlists';
     protected $fillable = [
-        'product_id', 
-        'image', 
-        'is_primary'
+        'user_id',
+        'product_id',
     ];
 
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }
