@@ -17,21 +17,17 @@ class BrandController extends Controller
             return DataTables::of($brands)
                 ->addIndexColumn()
                 ->addColumn('logo', function ($brand) {
-                    return $brand->logo ? '<img src="' . asset('images/brands/' . $brand->logo) . '" alt="' . $brand->name . '" width="40">' : 'No Image';
+                    return $brand->logo ? asset('images/brands/' . $brand->logo) : '';
                 })
                 ->addColumn('total_product', function ($brand) {
                     return $brand->products->count();
                 })
-                ->addColumn('status', function ($brand) {
-                    return $brand->status == 'active' ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>';
-                })
                 ->addColumn('actions', function ($brand) {
                     $editUrl = route('admin.brands.edit', $brand->id);
                     $deleteUrl = route('admin.brands.destroy', $brand->id);
-                    return '<a href="' . $editUrl . '" class="btn btn-sm btn-primary edit">Edit</a>
-                            <a href="' . $deleteUrl . '" class="btn btn-sm btn-danger delete">Delete</a>';
+                    return compact('editUrl', 'deleteUrl');
                 })
-                ->rawColumns(['logo', 'total_product', 'status', 'actions'])
+                ->rawColumns(['logo', 'total_product', 'actions'])
                 ->make(true);
         }
         return view('admin.brands.index');

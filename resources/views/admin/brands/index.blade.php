@@ -16,34 +16,31 @@
           <div>
             <button class="btn btn-falcon-default btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
                 <span class="fas fa-plus" data-fa-transform="shrink-3 down-2"></span>
-                <span class="d-none d-sm-inline-block ms-1">New</span>
+                <span>Add New Brand</span>
             </button>
           </div>
         </div>
       </div>
     </div>
     <div class="card-body px-0">
-      <div id="tableExample" data-list='{"valueNames":["name","status","actions"],"page":10,"pagination":true}'>
-        <!-- data table -->
-        {{-- <table class="table mb-0 data-table fs-10" data-datatables="data-datatables"> --}}
-        <table class="table mb-0 data-table fs-10">
+      <!-- data table -->
+        <table class="table mb-0 data-table fs-10" id="brandsTable">
           <thead class="bg-200">
             <tr>
-              <th class="text-900 sort text-nowrap"></th>
-              <th class="text-900 sort text-nowrap">Name</th>
-              <th class="text-900 sort text-nowrap">Total Products</th>
-              <th class="text-900 sort text-nowrap">Status</th>
-              <th class="text-900 sort text-nowrap">Actions</th>
+              {{-- <th class="text-900 text-nowrap py-1"></th> --}}
+              <th class="text-900 text-nowrap py-1">Name</th>
+              <th class="text-900 text-nowrap py-1">Total Products</th>
+              <th class="text-900 text-nowrap py-1">Status</th>
+              <th class="text-900 text-nowrap py-1">Actions</th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
         <!-- end data table -->
-      </div>
     </div>
   </div>
 
-    <!-- model -->
+  <!-- model -->
   <div class="offcanvas offcanvas-end" id="offcanvasRight" tabindex="-1" aria-labelledby="offcanvasRightLabel">
     <div class="offcanvas-header">
       <h5 id="offcanvasRightLabel">New Brand</h5><button class="btn-close text-reset" type="button" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -83,21 +80,64 @@
 @section('script')
 <script src="{{ asset('vendors/datatables.net/dataTables.min.js') }}"></script>
 <script src="{{ asset('vendors/datatables.net-bs5/dataTables.bootstrap5.min.js') }}"></script>
-<script src="{{ asset('vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     $(document).ready(function() {
 
-        let table = $('.data-table').DataTable({
+        // brand datatable
+        let table = $('#brandsTable').DataTable({
             processing: true,
             serverSide: true,
             ajax: "{{ route('admin.brands.index') }}",
+            dom: "<'row mx-0'<'col-md-6'l><'col-md-6'f>>" + "<'table-responsive scrollbar'tr>" + "<'row g-0 align-items-center justify-content-center justify-content-sm-between'<'col-auto mb-2 mb-sm-0 px-3'i><'col-auto px-3'p>>",
+            "createdRow": function (row, data, dataIndex) {
+              $(row).addClass('btn-reveal-trigger');
+            },
+            language: {
+                lengthMenu:     "_MENU_ Show entries",
+                zeroRecords:    "No brands found",
+                info:           "Showing _START_ to _END_ of _TOTAL_ brands",
+                infoEmpty:      "No brands available",
+                infoFiltered:   "(filtered from _MAX_ total brands)",
+                search:         "Search:",
+            },
             columns: [
-                { data: 'logo' },
-                { data: 'name' },
+                { data: 'name',
+                  render: function(data, type, row) {
+                    if (type !== 'display') return data;
+
+                    let logoUrl = row.logo ? `<img src="${row.logo}" alt="${data}" width="40">` : 'No Image';
+                    return `<div class="d-flex align-items-center"><div class="me-2">${logoUrl}</div><div>${data}</div></div>`;
+                  }
+                 },
                 { data: 'total_product' },
-                { data: 'status' },
-                { data: 'actions',orderable: false,searchable: false }
+                { data: 'status',
+                  render: function(data, type, row) {
+                     if (type !== 'display') return data;
+
+                     return data === 'active' ?
+                         '<span class="badge bg-success add">Active</span>' :
+                         '<span class="badge bg-danger">Inactive</span>';
+                  }
+                },
+                { data: 'actions', orderable: false, searchable: false,
+                  render: function(data, type, row) {
+                    if (type !== 'display') return data;
+
+                    return `<div class="dropstart font-sans-serif position-static d-inline-block">
+                              <button class="btn btn-link text-600 btn-sm dropdown-toggle btn-reveal float-end" type="button"
+                                id="dropdown-simple-pagination-table-item-${row.DT_RowIndex}" data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true"
+                                aria-expanded="false" data-bs-reference="parent">
+                                <span class="fas fa-ellipsis-h fs-10"></span>
+                              </button>
+                              <div class="dropdown-menu dropdown-menu-end border py-2" aria-labelledby="dropdown-simple-pagination-table-item-${row.DT_RowIndex}">
+                                <a class="dropdown-item edit" href="${data.editUrl}">Edit</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-danger delete" href="${data.deleteUrl}">Delete</a>
+                              </div>
+                            </div>`;
+                  }
+                }
             ]
         });
 

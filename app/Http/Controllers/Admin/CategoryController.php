@@ -19,16 +19,12 @@ class CategoryController extends Controller
                 ->addColumn('total_product', function ($category) {
                     return $category->products->count();
                 })
-                ->addColumn('status', function ($category) {
-                    return $category->status == 'active' ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>';
-                })
                 ->addColumn('actions', function ($category) {
                     $editUrl = route('admin.categories.edit', $category->id);
                     $deleteUrl = route('admin.categories.destroy', $category->id);
-                    return '<a href="' . $editUrl . '" class="btn btn-sm btn-primary edit">Edit</a>
-                            <a href="' . $deleteUrl . '" class="btn btn-sm btn-danger delete">Delete</a>';
+                    return compact('editUrl', 'deleteUrl');
                 })
-                ->rawColumns(['total_product', 'status', 'actions'])
+                ->rawColumns(['total_product', 'actions'])
                 ->make(true);
         }
         $categories = Category::whereNull('parent_id')->get();

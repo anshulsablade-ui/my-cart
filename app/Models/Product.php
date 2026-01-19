@@ -12,7 +12,6 @@ class Product extends Model
     protected $fillable = [
         'category_id',
         'brand_id',
-        'vendor_id',
         'name',
         'slug', 
         'price',
@@ -32,17 +31,13 @@ class Product extends Model
     {
         return $this->belongsTo(Brand::class);
     }
-    public function vendor()
-    {
-        return $this->belongsTo(Vendor::class);
-    }
 
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
     }
 
-    public function productImages()
+    public function images()
     {
         return $this->hasMany(ProductImage::class);
     }

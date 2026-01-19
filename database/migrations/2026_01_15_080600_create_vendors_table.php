@@ -12,6 +12,8 @@ return new class extends Migration {
     {
         Schema::create('vendors', function (Blueprint $table) {
             $table->id();
+            $table->foreign('user_id')->constrained()->restrictOnDelete();
+            $table->string('logo')->nullable();
             $table->string('name');
             $table->string('slug')->unique();
             $table->string('email')->unique();

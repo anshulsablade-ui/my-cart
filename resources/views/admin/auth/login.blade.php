@@ -33,7 +33,8 @@
         <div class="row flex-center min-vh-100 py-6">
           <div class="col-sm-10 col-md-8 col-lg-6 col-xl-5 col-xxl-4">
             <a class="d-flex flex-center mb-4" href="{{ route('admin.dashboard') }}">
-              <span class="font-sans-serif text-primary fw-bolder fs-4 d-inline-block">MyCart</span>
+              <img class="me-2" src="{{ asset('/assets/img/favicons/mycart.png') }}" alt="" width="200" />
+              {{-- <span class="font-sans-serif text-primary fw-bolder fs-4 d-inline-block">MyCart</span> --}}
             </a>
             <div class="card">
               <div class="card-body p-4 p-sm-5">
@@ -67,14 +68,11 @@
 
     <!-- ===============================================--><!--    JavaScripts--><!-- ===============================================-->
     <script src="{{ asset('/vendors/popper/popper.min.js') }}"></script>
+    <script src="{{ asset('vendors/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('/vendors/bootstrap/bootstrap.min.js') }}"></script>
     <script src="{{ asset('/vendors/anchorjs/anchor.min.js') }}"></script>
-    <script src="{{ asset('/vendors/is/is.min.js') }}"></script>
-    <script src="{{ asset('/vendors/fontawesome/all.min.js') }}"></script>
     <script src="{{ asset('/vendors/lodash/lodash.min.js') }}"></script>
-    <script src="{{ asset('/vendors/list.js/list.min.js') }}"></script>
     <script src="{{ asset('/assets/js/theme.js') }}"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="{{ asset('/ajax.js') }}"></script>
     <script>
         $(document).ready(function() {

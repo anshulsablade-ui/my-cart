@@ -3,6 +3,14 @@
 
 @section('style')
     <link href="{{ asset('vendors/datatables.net-bs5/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
+    <style>
+      .pagination {
+        --falcon-pagination-padding-x: 0.5rem;
+        --falcon-pagination-padding-y: 0.25rem;
+        --falcon-pagination-font-size: 0.875rem;
+        --falcon-pagination-border-radius: var(--falcon-border-radius-sm);
+      }
+    </style>
 @endsection
 @section('content')
 
@@ -16,29 +24,26 @@
           <div>
             <button class="btn btn-falcon-default btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
                 <span class="fas fa-plus" data-fa-transform="shrink-3 down-2"></span>
-                <span class="d-none d-sm-inline-block ms-1">New</span>
+                <span>Add New Category</span>
             </button>
           </div>
         </div>
       </div>
     </div>
     <div class="card-body px-0">
-      <div id="tableExample" data-list='{"valueNames":["name","status","actions"],"page":10,"pagination":true}'>
-        <!-- data table -->
-        {{-- <table class="table mb-0 data-table fs-10" data-datatables="data-datatables"> --}}
-        <table class="table mb-0 data-table fs-10">
-          <thead class="bg-200">
-            <tr>
-              <th class="text-900 sort text-nowrap">Name</th>
-              <th class="text-900 sort text-nowrap">Total Products</th>
-              <th class="text-900 sort text-nowrap">Status</th>
-              <th class="text-900 sort text-nowrap">Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-        <!-- end data table -->
-      </div>
+      <!-- data table -->
+      <table class="table mb-0 data-table fs-10" id="categoriesTable">
+        <thead class="bg-200">
+          <tr>
+            <th class="text-900 text-nowrap py-1">Name</th>
+            <th class="text-900 text-nowrap py-1">Total Products</th>
+            <th class="text-900 text-nowrap py-1">Status</th>
+            <th class="text-900 text-nowrap py-1">Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <!-- end data table -->
     </div>
   </div>
 
@@ -82,20 +87,55 @@
 @section('script')
 <script src="{{ asset('vendors/datatables.net/dataTables.min.js') }}"></script>
 <script src="{{ asset('vendors/datatables.net-bs5/dataTables.bootstrap5.min.js') }}"></script>
-<script src="{{ asset('vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     $(document).ready(function() {
 
-        let table = $('.data-table').DataTable({
+        let table = $('#categoriesTable').DataTable({
             processing: true,
             serverSide: true,
             ajax: "{{ route('admin.categories.index') }}",
+            dom: "<'row mx-0'<'col-md-6'l><'col-md-6'f>>" + "<'table-responsive scrollbar'tr>" + "<'row g-0 align-items-center justify-content-center justify-content-sm-between'<'col-auto mb-2 mb-sm-0 px-3'i><'col-auto px-3'p>>",
+            "createdRow": function (row, data, dataIndex) {
+              $(row).addClass('btn-reveal-trigger');
+            },
+            language: {
+                lengthMenu:     "_MENU_ Show entries",
+                zeroRecords:    "No categories found",
+                info:           "Showing _START_ to _END_ of _TOTAL_ categories",
+                infoEmpty:      "No categories available",
+                infoFiltered:   "(filtered from _MAX_ total categories)",
+                search:         "Search:",
+            },
             columns: [
                 { data: 'name' },
                 { data: 'total_product' },
-                { data: 'status' },
-                { data: 'actions',orderable: false,searchable: false }
+                { data: 'status',
+                  render: function(data, type, row) {
+                     if (type !== 'display') return data;
+
+                     return data === 'active' ?
+                         '<span class="badge bg-success add">Active</span>' :
+                         '<span class="badge bg-danger">Inactive</span>';
+                  }
+                },
+                { data: 'actions', orderable: false, searchable: false,
+                  render: function(data, type, row) {
+                    if (type !== 'display') return data;
+
+                    return `<div class="dropstart font-sans-serif position-static d-inline-block">
+                              <button class="btn btn-link text-600 btn-sm dropdown-toggle btn-reveal float-end" type="button"
+                                id="dropdown-simple-pagination-table-item-${row.DT_RowIndex}" data-bs-toggle="dropdown" data-boundary="window" aria-haspopup="true"
+                                aria-expanded="false" data-bs-reference="parent">
+                                <span class="fas fa-ellipsis-h fs-10"></span>
+                              </button>
+                              <div class="dropdown-menu dropdown-menu-end border py-2" aria-labelledby="dropdown-simple-pagination-table-item-${row.DT_RowIndex}">
+                                <a class="dropdown-item edit" href="${data.editUrl}">Edit</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-danger delete" href="${data.deleteUrl}">Delete</a>
+                              </div>
+                            </div>`;
+                  }
+                }
             ]
         });
 
