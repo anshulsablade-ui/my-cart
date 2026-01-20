@@ -13,12 +13,12 @@ class Product extends Model
         'category_id',
         'brand_id',
         'name',
-        'slug', 
+        'slug',
         'price',
         'compare_price',
         'stock',
         'sku',
-        'description',  
+        'description',
         'status'
     ];
     protected $slugSourceColumn = 'name';
@@ -41,4 +41,12 @@ class Product extends Model
     {
         return $this->hasMany(ProductImage::class);
     }
+
+    public function primaryImage()
+    {
+        return $this->hasOne(ProductImage::class)
+            ->where('is_primary', 1)
+            ->select('id', 'product_id', 'image', 'is_primary');
+    }
+
 }

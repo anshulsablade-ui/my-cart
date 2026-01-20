@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\Admin\Auth;
+namespace App\Http\Controllers\Mycart\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Hash;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller
 {
     public function showLoginForm()
     {
-        return view('admin.auth.login');
+        return view('mycart.auth.login');
     }
 
     public function login(Request $request)
@@ -28,17 +28,17 @@ class AuthController extends Controller
                 'message' => $validator->errors()
             ], 422);
         }
+        $user = User::where('email', $request->email)->first();
+        if ($user && Hash::check($request->password, $user->password)) {
 
-        if (Auth::attempt($request->only('email', 'password'))) {
-            $user = Auth::user();
-            Auth::login($user);
+            Session::put('user', $user);
 
             session()->flash('success', 'Login successful.');
             return response()->json([
                 'status' => 'success',
                 'message' => 'Login successful.'
             ]);
-        }else{
+        } else {
             return response()->json([
                 'status' => 'error',
                 'message' => ['email' => ['Invalid email or password.']]
@@ -48,15 +48,15 @@ class AuthController extends Controller
 
     public function logout()
     {
-        if (Auth::check()) {
-            Auth::logout();
-            return redirect()->route('admin.login');
+        if (Session::has('user')) {
+            Session::forget('user');
+            return redirect()->route('home');
         }
     }
 
     public function showRegisterForm()
     {
-        return view('admin.auth.register');
+        return view('mycart.auth.register');
     }
 
     public function register(Request $request)
@@ -64,7 +64,7 @@ class AuthController extends Controller
         $validator = validator(request()->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8|confirmed'
+            'password' => 'required|min:8'
         ]);
 
         if ($validator->fails()) {
@@ -78,10 +78,10 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'admin'
+            'role' => 'customer'
         ]);
 
-        Auth::login($user);
+        Session::put('user', $user);
         session()->flash('success', 'Registration successful.');
         return response()->json([
             'status' => 'success',

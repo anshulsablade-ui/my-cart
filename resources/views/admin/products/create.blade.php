@@ -97,7 +97,7 @@
                     $('.is-invalid').removeClass('is-invalid');
                     $('.invalid-feedback').remove();
                     var error = JSON.parse(error.responseText);
-                    console.log(error);
+                    // console.log(error);
                     $.each(error.message, function (key, value) {
                         $(`#${key}`).addClass('is-invalid').after(` <span class="invalid-feedback">${value}</span> `);
                     });

@@ -53,7 +53,7 @@ class ProductController extends Controller
     {
         $request->validated();
 
-        $Product = Product::create([
+        $product = Product::create([
             'category_id' => $request->category,
             'brand_id' => $request->brand,
             'name' => $request->name,
@@ -65,9 +65,11 @@ class ProductController extends Controller
         ]);
 
         if ($request->hasFile('images')) {
+
+            $isPrimary = true; // first image will be primary
+
             foreach ($request->file('images') as $image) {
 
-                // Resize and save different sizes
                 $fileName = Str::uuid() . '.png';
 
                 $basePath = public_path('images/products/');
@@ -75,25 +77,33 @@ class ProductController extends Controller
                 $mediumPath = $basePath . 'medium/';
                 $largePath = $basePath . 'large/';
 
-                // create directories if not exist
                 foreach ([$thumbPath, $mediumPath, $largePath] as $path) {
                     if (!file_exists($path)) {
                         mkdir($path, 0755, true);
                     }
                 }
+
                 Image::read($image)->resize(150, 150)->toPng()->save($thumbPath . $fileName);
                 Image::read($image)->resize(300, 300)->toPng()->save($mediumPath . $fileName);
                 Image::read($image)->resize(800, 800)->toPng()->save($largePath . $fileName);
 
-                $Product->images()->create([
-                    'image' => $fileName
+                $product->images()->create([
+                    'image' => $fileName,
+                    'is_primary' => $isPrimary ? 1 : 0,
                 ]);
+
+                $isPrimary = false; // only first image
             }
         }
 
         session()->flash('success', 'Product created successfully');
-        return response()->json(['status' => 'success', 'message' => 'Product created successfully'], 201);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Product created successfully'
+        ], 201);
     }
+
 
     public function edit($id)
     {
@@ -103,7 +113,7 @@ class ProductController extends Controller
         return view('admin.products.edit', compact('product', 'categories', 'brands'));
     }
 
-    public function update(Request $request, $id)
+    public function update(ProductRequest $request, $id)
     {
         // dd($request->all(), $id);
         $product = Product::where('id', $id)->first();
@@ -140,6 +150,8 @@ class ProductController extends Controller
                 }
             }
 
+            $isPrimary = true;
+
             // insert new images
             foreach ($request->file('images') as $image) {
 
@@ -151,7 +163,6 @@ class ProductController extends Controller
                 $mediumPath = $basePath . 'medium/';
                 $largePath = $basePath . 'large/';
 
-                // create directories if not exist
                 foreach ([$thumbPath, $mediumPath, $largePath] as $path) {
                     if (!file_exists($path)) {
                         mkdir($path, 0755, true);
@@ -160,7 +171,8 @@ class ProductController extends Controller
                 Image::read($image)->resize(150, 150)->toPng()->save($thumbPath . $fileName);
                 Image::read($image)->resize(300, 300)->toPng()->save($mediumPath . $fileName);
                 Image::read($image)->resize(800, 800)->toPng()->save($largePath . $fileName);
-                $product->images()->create(['image' => $fileName]);
+                $product->images()->create(['image' => $fileName, 'is_primary' => $isPrimary ? 1 : 0]);
+                $isPrimary = false;
             }
         }
 

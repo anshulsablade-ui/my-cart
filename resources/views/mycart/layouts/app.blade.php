@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
 
     <!-- SEO Meta Tags -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') - MyCart</title>
     <meta name="description" content="Cartzilla - Multipurpose E-Commerce Bootstrap HTML Template">
     <meta name="keywords" content="online shop, e-commerce, online store, market, multipurpose, product landing, cart, checkout, ui kit, light and dark mode, bootstrap, html5, css3, javascript, gallery, slider, mobile, pwa">
@@ -14,29 +15,30 @@
     <!-- Webmanifest + Favicon / App icons -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="web/assets/app-icons/icon-32x32.png" sizes="32x32">
-    <link rel="apple-touch-icon" href="web/assets/app-icons/icon-180x180.png">
+    <link rel="icon" type="image/png" href="{{ asset('web/assets/app-icons/icon-32x32.png') }}" sizes="32x32">
+    <link rel="apple-touch-icon" href="{{ asset('web/assets/app-icons/icon-180x180.png') }}">
 
     <!-- Theme switcher (color modes) -->
-    <script src="web/assets/js/theme-switcher.js"></script>
-
+    <script src="{{ asset('web/assets/js/theme-switcher.js') }}"></script>
     <!-- Preloaded local web font (Inter) -->
-    <link rel="preload" href="web/assets/fonts/inter-variable-latin.woff2" as="font" type="font/woff2" crossorigin="">
+    <link rel="preload" href="{{ asset('web/assets/fonts/inter-variable-latin.woff2') }}" as="font" type="font/woff2" crossorigin="">
 
     <!-- Font icons -->
-    <link rel="preload" href="web/assets/icons/cartzilla-icons.woff2" as="font" type="font/woff2" crossorigin="">
-    <link rel="stylesheet" href="web/assets/icons/cartzilla-icons.min.css">
-
+    <link rel="preload" href="{{ asset('web/assets/icons/cartzilla-icons.woff2') }}" as="font" type="font/woff2" crossorigin="">
+    <link rel="stylesheet" href="{{ asset('web/assets/icons/cartzilla-icons.min.css') }}">
     <!-- Vendor styles -->
-    <link rel="stylesheet" href="web/assets/vendor/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" href="{{ asset('web/assets/vendor/swiper/swiper-bundle.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('web/assets/vendor/drift-zoom/drift-basic.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('web/assets/vendor/simplebar/simplebar.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('web/assets/vendor/choices.js/choices.min.css') }}">
 
     <!-- Bootstrap + Theme styles -->
-    <link rel="preload" href="web/assets/css/theme.min.css" as="style">
-    <link rel="preload" href="web/assets/css/theme.rtl.min.css" as="style">
-    <link rel="stylesheet" href="web/assets/css/theme.min.css" id="theme-styles">
+    <link rel="preload" href="{{ asset('web/assets/css/theme.min.css') }}" as="style">
+    <link rel="preload" href="{{ asset('web/assets/css/theme.rtl.min.css') }}" as="style">
+    <link rel="stylesheet" href="{{ asset('web/assets/css/theme.min.css') }}" id="theme-styles">
 
     <!-- Customizer -->
-    <script src="web/assets/js/customizer.min.js"></script>
+    <script src="{{ asset('web/assets/js/customizer.min.js') }}"></script>
     @yield('style')
 </head>
 
@@ -151,9 +153,9 @@
       </div>
     </div>
 
-    @include('customers.layouts.header')
+    @include('mycart.layouts.header')
     @yield('content')
-    @include('customers.layouts.footer')
+    @include('mycart.layouts.footer')
 
     <!-- Back to top button -->
     <div class="floating-buttons position-fixed top-50 end-0 z-sticky me-3 me-xl-4 pb-4">
@@ -168,10 +170,15 @@
     </div>
 
     <!-- Vendor scripts -->
-    <script src="web/assets/vendor/swiper/swiper-bundle.min.js"></script>
+    <script src="{{ asset('web/assets/vendor/swiper/swiper-bundle.min.js') }}"></script>
+    <script src="{{ asset('web/assets/vendor/drift-zoom/Drift.min.js') }}"></script>
+    <script src="{{ asset('web/assets/vendor/simplebar/simplebar.min.js') }}"></script>
+    <script src="{{ asset('web/assets/vendor/choices.js/choices.min.js') }}"></script>
+    <script src="{{ asset('vendors/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('ajax.js') }}"></script>
 
     <!-- Bootstrap + Theme scripts -->
-    <script src="web/assets/js/theme.min.js"></script>
+    <script src="{{ asset('web/assets/js/theme.min.js') }}"></script>
     @yield('script')
 
 </body>

@@ -25,6 +25,7 @@
         </div>
         <div class="card-body">
             <form class="row" id="productForm">
+                @method('put')
                 <div class="col-12 mb-3">
                     <label class="form-label" for="name">Name:</label>
                     <input class="form-control" id="name" type="text" name="name" value="{{ $product->name }}" />
@@ -99,7 +100,7 @@
             $('#productForm').on('submit', function (e) {
                 e.preventDefault();
                 let formData = new FormData(this);
-                ajaxCall('{{ route('admin.products.update', $product->id) }}', 'PUT', formData, function (response) {
+                ajaxCall('{{ route('admin.products.update', $product->id) }}', 'POST', formData, function (response) {
                     if (response.status === 'success') {
                         window.location.href = '{{ route('admin.products.index') }}';
                     }
