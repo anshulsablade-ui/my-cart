@@ -7,30 +7,12 @@ use App\Models\Cart;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Number;
+use Illuminate\Support\Str;
 
 class CartController extends Controller
 {
-    // public function AddToCart(Request $request)
-    // {
-    //     $validator = validator($request->all(), [
-    //         'user_id' => 'required|exists:users,id',
-    //         'product_id' => 'required|exists:products,id',
-    //         'quantity' => 'required|integer|min:1'
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json(['status' => 'error', 'message' => $validator->errors()], 422);
-    //     }
-
-
-
-
-    //     return response()->json(['status' => 'success', 'message' => 'Item added to cart']);
-    // }
-
-
-    //
-
     private function getSessionId()
     {
         if (!session()->has('cart_session_id')) {
@@ -44,10 +26,16 @@ class CartController extends Controller
     {
         // dd($request->all());
         // dd(session()->get('user.id'));
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1'
         ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $validator->errors()->first()
+            ]);
+        }
 
         $product = Product::where('id', $request->product_id)->first();
 
@@ -74,15 +62,22 @@ class CartController extends Controller
             ]);
         } else {
             Cart::create([
-                'user_id' => Auth::id(),
+                'user_id' => session()->get('user.id') ? session()->get('user.id') : null,
                 'session_id' => session()->get('user.id') ? null : $this->getSessionId(),
                 'product_id' => $product->id,
-                'qty' => $request->quantity,
+                'quantity' => $request->quantity,
             ]);
+            session()->put('cart_count', Cart::where(function ($q) {
+                if (session()->get('user')) {
+                    $q->where('user_id', session()->get('user.id'));
+                } else {
+                    $q->where('session_id', $this->getSessionId());
+                }
+            })->count());
         }
 
         return response()->json([
-            'status' => true,
+            'status' => 'success',
             'message' => 'Product added to cart'
         ]);
     }
@@ -90,16 +85,24 @@ class CartController extends Controller
     /** Cart List */
     public function index()
     {
-        $carts = Cart::with('product')
+        $carts = Cart::with('product.primaryImage')
             ->where(function ($q) {
-                if (Auth::check()) {
-                    $q->where('user_id', Auth::id());
+                if (session()->get('user')) {
+                    $q->where('user_id', session()->get('user.id'));
                 } else {
                     $q->where('session_id', $this->getSessionId());
                 }
             })->get();
+        $subtotal = 0;
+        $discounted_price = 0;
+        foreach ($carts as $item) {
+            $subtotal += $item->product->final_price * $item->quantity;
+            $discounted_price += $item->product->discounted_price * $item->quantity;
+        }
+        session()->put('cart_count', $carts->count());
+        // dd($carts->toArray());
 
-        return view('cart.index', compact('carts'));
+        return view('mycart.cart', compact('carts', 'subtotal', 'discounted_price'));
     }
 
     /** Update Qty */
@@ -107,16 +110,37 @@ class CartController extends Controller
     {
         $request->validate([
             'cart_id' => 'required|exists:carts,id',
-            'qty' => 'required|integer|min:1'
+            'quantity' => 'required|integer|min:1'
         ]);
 
-        Cart::where('id', $request->cart_id)->update([
-            'qty' => $request->qty
+        $cart = Cart::where('id', $request->cart_id)->update([
+            'quantity' => $request->quantity
         ]);
 
+        $carts = Cart::with('product')
+            ->where(function ($q) {
+                if (session()->get('user')) {
+                    $q->where('user_id', session()->get('user.id'));
+                } else {
+                    $q->where('session_id', $this->getSessionId());
+                }
+            })->get();
+
+        $subtotal = 0;
+        $discounted_price = 0;
+        foreach ($carts as $item) {
+            $subtotal += $item->product->final_price * $item->quantity;
+            $discounted_price += $item->product->discounted_price * $item->quantity;
+        }
+
+        $cart = Cart::with('product')->where('id', $request->cart_id)->first();
         return response()->json([
-            'status' => true,
-            'message' => 'Cart updated'
+            'status' => 'success',
+            'message' => 'Cart updated successfully.',
+            'cart' => $cart,
+            'subtotal' => Number::currency($subtotal, 'INR'),
+            'discounted_price' => Number::currency($discounted_price, 'INR'),
+            'grand_total' => Number::currency($subtotal , 'INR')
         ]);
     }
 
@@ -125,8 +149,15 @@ class CartController extends Controller
     {
         Cart::where('id', $request->cart_id)->delete();
 
+        session()->put('cart_count', Cart::where(function ($q) {
+            if (session()->get('user')) {
+                $q->where('user_id', session()->get('user.id'));
+            } else {
+                $q->where('session_id', $this->getSessionId());
+            }
+        })->count());
         return response()->json([
-            'status' => true,
+            'status' => 'success',
             'message' => 'Item removed'
         ]);
     }

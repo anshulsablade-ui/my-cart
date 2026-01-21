@@ -84,7 +84,7 @@
                      return `<div class="d-flex"><div class="me-2">${image}</div><div>${data}</div></div>`;
                   }
                  },
-                { data: 'price',
+                { data: 'final_price',
                   render: function(data, type, row) {
                      if (type !== 'display') return data;
 

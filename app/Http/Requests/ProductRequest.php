@@ -25,8 +25,10 @@ class ProductRequest extends FormRequest
             'category' => 'required|exists:categories,id',
             'brand' => 'required|exists:brands,id',
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
-            'compare_price' => 'nullable|numeric',
+            'base_price' => 'required|numeric',
+            'discount_percentage' => 'nullable|numeric',
+            'discounted_price' => 'nullable|numeric',
+            'final_price' => 'required|numeric',
             'stock' => 'required|integer',
             'description' => 'required|string',
             'status' => 'required|in:active,inactive',
@@ -51,7 +53,9 @@ class ProductRequest extends FormRequest
             'price.required' => 'Price is required.',
             'price.numeric' => 'Price must be a numeric value.',
 
-            'compare_price.numeric' => 'Compare price must be a numeric value.',
+            'discount_percentage.numeric' => 'Discount percentage must be a numeric value.',
+            'discounted_price.numeric' => 'Discounted price must be a numeric value.',
+            'final_price.numeric' => 'Final price must be a numeric value.',
 
             'stock.required' => 'Stock is required.',
             'stock.integer' => 'Stock must be an integer value.',

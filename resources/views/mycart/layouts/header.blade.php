@@ -23,17 +23,6 @@
               <input type="search" class="form-control form-control-lg form-icon-start border-white rounded-pill" placeholder="Search the products">
             </div>
 
-            <!-- Sale link visible on screens > 1200px wide (xl breakpoint) -->
-            <a class="d-none d-xl-flex align-items-center text-decoration-none animate-shake navbar-stuck-hide me-3 me-xl-4 me-xxl-5" href="shop-catalog-electronics.html">
-              <div class="btn btn-icon btn-lg fs-lg text-primary bg-body-secondary bg-opacity-75 pe-none rounded-circle">
-                <i class="ci-percent animate-target"></i>
-              </div>
-              <div class="ps-2 text-nowrap">
-                <div class="fs-xs text-body">Only this month</div>
-                <div class="fw-medium text-white">Super Sale 20%</div>
-              </div>
-            </a>
-
             <!-- Button group -->
             <div class="d-flex align-items-center">
 
@@ -92,18 +81,18 @@
               </a>
 
               <!-- Wishlist button visible on screens > 768px wide (md breakpoint) -->
-              <a class="btn btn-icon btn-lg fs-lg btn-outline-secondary border-0 rounded-circle animate-pulse d-none d-md-inline-flex" href="account-wishlist.html">
+              <a class="btn btn-icon btn-lg fs-lg btn-outline-secondary border-0 rounded-circle animate-pulse d-none d-md-inline-flex" href="{{ route('wishlist.index') }}">
                 <i class="ci-heart animate-target"></i>
                 <span class="visually-hidden">Wishlist</span>
               </a>
 
               <!-- Cart button -->
-              <button type="button" class="btn btn-icon btn-lg btn-secondary position-relative rounded-circle ms-2" data-bs-toggle="offcanvas" data-bs-target="#shoppingCart" aria-controls="shoppingCart" aria-label="Shopping cart">
-                <span class="position-absolute top-0 start-100 mt-n1 ms-n3 badge text-bg-success border border-3 border-dark rounded-pill" style="--cz-badge-padding-y: .25em; --cz-badge-padding-x: .42em">3</span>
+              <a href="{{ route('cart.index') }}" class="btn btn-icon btn-lg btn-secondary position-relative rounded-circle ms-2">
+                <span class="position-absolute top-0 start-100 mt-n1 ms-n3 badge text-bg-success border border-3 border-dark rounded-pill" style="--cz-badge-padding-y: .25em; --cz-badge-padding-x: .42em" id="cartItemCount">{{ session('cart_count', 0) }}</span>
                 <span class="position-absolute top-0 start-0 d-flex align-items-center justify-content-center w-100 h-100 rounded-circle animate-slide-end fs-lg">
                   <i class="ci-shopping-cart animate-target ms-n1"></i>
                 </span>
-              </button>
+              </a>
             </div>
           </div>
         </div>

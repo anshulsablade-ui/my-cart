@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Mycart\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cart;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -87,5 +88,32 @@ class AuthController extends Controller
             'status' => 'success',
             'message' => 'Registration successful.'
         ], 200);
+    }
+
+    public function gaustCartMerge()
+    {
+        if (!session()->has('cart_session_id')) {
+            return;
+        }
+
+        $sessionId = session('cart_session_id');
+
+        $guestCarts = Cart::where('session_id', $sessionId)->get();
+
+        foreach ($guestCarts as $guestCart) {
+
+            $userCart = Cart::where('user_id', session()->get('user.id'))
+                ->where('product_id', $guestCart->product_id)
+                ->first();
+
+            if ($userCart) {
+                $guestCart->update([
+                    'user_id' => session()->get('user.id'),
+                    'session_id' => null,
+                ]);
+            }
+        }
+
+        session()->forget('cart_session_id');
     }
 }

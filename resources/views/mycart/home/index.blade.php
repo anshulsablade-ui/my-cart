@@ -200,7 +200,11 @@
                       </a>
                     </h3>
                     <div class="d-flex align-items-center justify-content-between pb-2 mb-1">
-                      <div class="h5 lh-1 mb-0">{{ Number::currency($product->price, 'INR') }} <del class="text-body-tertiary fs-sm fw-normal">{{ Number::currency($product->original_price, 'INR') }}</del></div>
+                      <div class="h5 lh-1 mb-0">{{ Number::currency($product->final_price, 'INR') }} 
+                        @if ($product->base_price != $product->final_price)
+                          <del class="text-body-tertiary fs-sm fw-normal">{{ Number::currency($product->base_price, 'INR') }}</del>
+                        @endif
+                      </div>
                       <button type="button" class="product-card-button btn btn-icon btn-secondary animate-slide-end ms-2" aria-label="Add to Cart">
                         <i class="ci-shopping-cart fs-base animate-target"></i>
                       </button>

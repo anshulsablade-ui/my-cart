@@ -110,14 +110,14 @@
           <!-- Product options -->
           <div class="col-md-6 col-xl-5 offset-xl-1 pt-4">
             <div class="ps-md-4 ps-xl-0">
-              <div class="position-relative" id="zoomPane">
+              <div class="position-relative" id="zoomPane" style="height: 400px">
 
                 <!-- Page title -->
                 <h1 class="h3 mb-4">{{ $product->name }}</h1>
 
                 <!-- Price -->
                 <div class="d-flex flex-wrap align-items-center mb-3">
-                  <div class="h4 mb-0 me-3">{{ Number::currency($product->price, 'INR') }}</div>
+                  <div class="h4 mb-0 me-3">{{ Number::currency($product->final_price, 'INR') }}</div>
                   @if ($product->stock > 0)
                   <div class="d-flex align-items-center text-success fs-sm ms-auto">
                     <i class="ci-check-circle fs-base me-2"></i>
@@ -136,15 +136,15 @@
                     <button type="button" class="btn btn-icon btn-lg" data-decrement="" aria-label="Decrement quantity">
                       <i class="ci-minus"></i>
                     </button>
-                    <input type="number" name="quantity" class="form-control form-control-lg" value="1" min="1" max="5" readonly="">
+                    <input type="number" id="quantity" name="quantity" class="form-control form-control-lg" value="1" min="1" max="5" readonly="">
                     <button type="button" class="btn btn-icon btn-lg" data-increment="" aria-label="Increment quantity">
                       <i class="ci-plus"></i>
                     </button>
                   </div>
-                  <button type="button" class="btn btn-icon btn-lg btn-secondary animate-pulse order-sm-3 order-md-2 order-lg-3" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-sm" data-bs-title="Add to Wishlist" aria-label="Add to Wishlist">
+                  <button type="button" id="addToWishlist" data-product-id="{{ $product->id }}" class="btn btn-icon btn-lg btn-secondary animate-pulse order-sm-3 order-md-2 order-lg-3" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-sm" data-bs-title="Add to Wishlist" aria-label="Add to Wishlist">
                     <i class="ci-heart fs-lg animate-target"></i>
                   </button>
-                  <button type="button" class="btn btn-lg btn-primary w-100 animate-slide-end order-sm-2 order-md-4 order-lg-2" id="addToCart">
+                  <button type="button" class="btn btn-lg btn-primary w-100 animate-slide-end order-sm-2 order-md-4 order-lg-2" id="addToCart" data-product-id="{{ $product->id }}">
                     <i class="ci-shopping-cart fs-lg animate-target ms-n1 me-2"></i>
                     Add to cart
                   </button>
@@ -392,7 +392,11 @@
                       <span class="text-body-tertiary fs-xs">68</span>
                     </div>
                     <h4 class="fs-sm fw-medium mb-2">{{ $product->name }}</h4>
-                    <div class="h5 mb-0">{{ Number::currency($product->price, 'INR') }}</div>
+                    <div class="h5 mb-0">{{ Number::currency($product->final_price, 'INR') }} 
+                        @if ($product->base_price != $product->final_price)
+                          <del class="text-body-tertiary fs-sm fw-normal">{{ Number::currency($product->base_price, 'INR') }}</del>
+                        @endif
+                    </div>
                   </div>
                 </div>
                 <div class="d-flex gap-2 gap-lg-3">
@@ -631,19 +635,78 @@
 <script>
   $(document).ready(function () {
 
+    function messageAlert(message, type) {
+        const Toast = Swal.mixin({
+          toast: true,
+          position: "top",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+          }
+        });
+        Toast.fire({
+          icon: type,
+          title: message
+        });
+    }
+
+    $('#addToWishlist').on('click', function () {
+        var productId = $(this).data('product-id');
+
+        $.ajax({
+          type: "post",
+          url: "{{ route('wishlist.add') }}",
+          data: { product_id: productId },
+          success: function (response) {
+            // var response = JSON.parse(response);
+            if(response.status == 'success'){
+              messageAlert(response.message, 'success');
+            } else {
+              messageAlert(response.message, 'error');
+            }
+          },
+          error: function (xhr, status, error) {
+            var err = JSON.parse(xhr.responseText);
+            if(err.status == 'error'){
+              console.log(err);
+              messageAlert(err.message, 'error');
+            }
+          }
+        });
+    });
+
+
     $('#addToCart').on('click', function () {
       
       var quantity = $("#quantity").val();
       var productId = $(this).data('product-id');
 
-      console.log(productId, quantity);
-
-
-      // ajaxCall("{{ route('cart.add') }}", 'POST', { product_id: productId, quantity: quantity }, function(response) {
-      //   alert('Product added to cart successfully!');
-      // }, function(xhr, status, error) {
-      //   alert('Error adding product to cart.');
-      // });
+      $.ajax({
+        type: "post",
+        url: "{{ route('cart.add') }}",
+        data: { product_id: productId, quantity: quantity },
+        dataType: "dataType",
+        success: function (response) {
+          // var response = JSON.parse(response);
+          if(response.status == 'success'){
+            messageAlert(response.message, 'success');
+            // Update cart count
+            $('#cartItemCount').text(response.cartItemCount);
+          } else {
+            messageAlert(response.message, 'error');
+          }
+        },
+        error: function (xhr, status, error) {
+          var err = JSON.parse(xhr.responseText);
+          if(err.status == 'error'){
+            console.log(err);
+            messageAlert(err.message, 'error');
+          }
+        }
+      });
     });
 
   });
