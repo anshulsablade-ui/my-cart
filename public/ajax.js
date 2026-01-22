@@ -43,3 +43,21 @@ $('body').on('click', '.delete', function (e) {
         }
     })
 });
+
+function messageAlert(message, type) {
+    const Toast = Swal.mixin({
+        toast: true,
+        position: "top",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+        }
+    });
+    Toast.fire({
+        icon: type,
+        title: message
+    });
+}

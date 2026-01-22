@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Controllers\Admin\Auth\AuthController;
+use App\Http\Controllers\Admin\LocationController;
+use App\Http\Controllers\Mycart\AddressController;
 use App\Http\Controllers\Mycart\Auth\AuthController as MycartAuthController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Mycart\CartController;
+use App\Http\Controllers\Mycart\CheckoutController;
 use App\Http\Controllers\Mycart\HomeController;
 use App\Http\Controllers\Mycart\ProductController as MycartProductController;
 use App\Http\Controllers\Mycart\WishlistController;
@@ -56,6 +59,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 });
 
+
+
+// Location Routes
+Route::get('/getCountries', [LocationController::class, 'getCountries'])->name('getCountries');
+Route::get('/getStates/{id}', [LocationController::class, 'getStates'])->name('getState');
+Route::get('/getCities/{id}', [LocationController::class, 'getCities'])->name('getCity');
+
+
+
 // Mycart Routes
 Route::prefix('home')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -75,6 +87,18 @@ Route::prefix('home')->group(function () {
         Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
         Route::post('/wishlist/add', [WishlistController::class, 'add'])->name('wishlist.add');
         Route::delete('/wishlist/remove', [WishlistController::class, 'remove'])->name('wishlist.remove');
+
+        // Checkout Routes
+        Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+        Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.placeOrder');
+        Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
+
+        // User Address Routes
+        Route::get('/address', [AddressController::class, 'index'])->name('address');
+        Route::post('/address', [AddressController::class, 'store'])->name('address.store');
+        Route::get('/address/edit/{id}', [AddressController::class, 'edit'])->name('address.edit');
+        Route::put('/address/{id}', [AddressController::class, 'update'])->name('address.update');
+        Route::delete('/address/{id}', [AddressController::class, 'delete'])->name('address.delete');
 
         Route::get('/logout', [MycartAuthController::class, 'logout'])->name('logout');
     });

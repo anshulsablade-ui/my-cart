@@ -46,10 +46,10 @@ class WishlistController extends Controller
         ]);
     }
 
-    public function remove($productId)
+    public function remove(Request $request)
     {
         Wishlist::where('user_id', session()->get('user.id'))
-            ->where('product_id', $productId)
+            ->where('product_id', $request->product_id)
             ->delete();
 
         return response()->json([

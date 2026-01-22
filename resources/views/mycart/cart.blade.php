@@ -131,6 +131,10 @@
                       <span class="text-danger fw-medium discount">{{ Number::currency($discounted_price, 'INR') }}</span>
                     </li>
                     <li class="d-flex justify-content-between">
+                      Gst tax (18%):
+                      <span class="text-dark-emphasis fw-medium gst-amount">{{ Number::currency($gstAmount, 'INR') }}</span>
+                    </li>
+                    <li class="d-flex justify-content-between">
                       Shipping:
                       <span class="text-dark-emphasis fw-medium">Calculated at checkout</span>
                     </li>
@@ -138,9 +142,9 @@
                   <div class="border-top pt-4 mt-4">
                     <div class="d-flex justify-content-between mb-3">
                       <span class="fs-sm">Grand total:</span>
-                      <span class="h5 mb-0 grand-total">{{ Number::currency($subtotal, 'INR') }}</span>
+                      <span class="h5 mb-0 grand-total">{{ Number::currency($grandTotal, 'INR') }}</span>
                     </div>
-                    <a class="btn btn-lg btn-primary w-100" href="checkout-v1-delivery-1.html">
+                    <a class="btn btn-lg btn-primary w-100" href="{{ route('checkout.index') }}">
                       Proceed to checkout
                       <i class="ci-chevron-right fs-lg ms-1 me-n1"></i>
                     </a>
@@ -222,24 +226,11 @@
 
                             $('tr[data-cart-id="' + cartId + '"]').find('.total-price').text(response.cart.quantity * response.cart.product.final_price);
                             $('.order-summary').find('.subtotal').text(response.subtotal);
-                            $('.order-summary').find('.discount').text(response.discount);
+                            $('.order-summary').find('.discount').text(response.discounted_price);
+                            $('.order-summary').find('.gst-amount').text(response.gstAmount);
                             $('.order-summary').find('.grand-total').text(response.grand_total);
                             
-                            const Toast = Swal.mixin({
-                              toast: true,
-                              position: "top",
-                              showConfirmButton: false,
-                              timer: 3000,
-                              timerProgressBar: true,
-                              didOpen: (toast) => {
-                                toast.onmouseenter = Swal.stopTimer;
-                                toast.onmouseleave = Swal.resumeTimer;
-                              }
-                            });
-                            Toast.fire({
-                              icon: "success",
-                              title: response.message
-                            });
+                            messageAlert(response.message, 'success');
                             
                         }
                     }

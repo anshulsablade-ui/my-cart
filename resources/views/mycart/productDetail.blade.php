@@ -635,24 +635,6 @@
 <script>
   $(document).ready(function () {
 
-    function messageAlert(message, type) {
-        const Toast = Swal.mixin({
-          toast: true,
-          position: "top",
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
-          didOpen: (toast) => {
-            toast.onmouseenter = Swal.stopTimer;
-            toast.onmouseleave = Swal.resumeTimer;
-          }
-        });
-        Toast.fire({
-          icon: type,
-          title: message
-        });
-    }
-
     $('#addToWishlist').on('click', function () {
         var productId = $(this).data('product-id');
 
@@ -702,8 +684,11 @@
         error: function (xhr, status, error) {
           var err = JSON.parse(xhr.responseText);
           if(err.status == 'error'){
-            console.log(err);
             messageAlert(err.message, 'error');
+          }
+          if (err.status == 'success') {
+            messageAlert(response.message, 'success');
+            $('#cartItemCount').text(response.cartItemCount);
           }
         }
       });

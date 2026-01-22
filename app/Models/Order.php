@@ -12,7 +12,7 @@ class Order extends Model
         'user_id', 
         'sub_total', 
         'discount_percentage', 
-        'discount_amount',
+        'discounted_price',
         'tax_amount',
         'shipping_amount',
         'grand_total',

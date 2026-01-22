@@ -93,16 +93,15 @@ class CartController extends Controller
                     $q->where('session_id', $this->getSessionId());
                 }
             })->get();
-        $subtotal = 0;
-        $discounted_price = 0;
-        foreach ($carts as $item) {
-            $subtotal += $item->product->final_price * $item->quantity;
-            $discounted_price += $item->product->discounted_price * $item->quantity;
-        }
+
+        $subtotal = $carts->sum(fn ($item) => $item->product->base_price * $item->quantity);
+        $discounted_price = $carts->sum(fn ($item) => $item->product->discounted_price * $item->quantity);
+        $gstAmount = ($subtotal * 18) / 100;
+        $grandTotal = $subtotal + $gstAmount;
         session()->put('cart_count', $carts->count());
         // dd($carts->toArray());
 
-        return view('mycart.cart', compact('carts', 'subtotal', 'discounted_price'));
+        return view('mycart.cart', compact('carts', 'subtotal', 'discounted_price', 'gstAmount', 'grandTotal'));
     }
 
     /** Update Qty */
@@ -126,12 +125,10 @@ class CartController extends Controller
                 }
             })->get();
 
-        $subtotal = 0;
-        $discounted_price = 0;
-        foreach ($carts as $item) {
-            $subtotal += $item->product->final_price * $item->quantity;
-            $discounted_price += $item->product->discounted_price * $item->quantity;
-        }
+        $subtotal = $carts->sum(fn ($item) => $item->product->base_price * $item->quantity);
+        $discounted_price = $carts->sum(fn ($item) => $item->product->discounted_price * $item->quantity);
+        $gstAmount = ($subtotal * 18) / 100;
+        $grandTotal = $subtotal + $gstAmount;
 
         $cart = Cart::with('product')->where('id', $request->cart_id)->first();
         return response()->json([
@@ -140,7 +137,8 @@ class CartController extends Controller
             'cart' => $cart,
             'subtotal' => Number::currency($subtotal, 'INR'),
             'discounted_price' => Number::currency($discounted_price, 'INR'),
-            'grand_total' => Number::currency($subtotal , 'INR')
+            'gstAmount' => Number::currency($gstAmount, 'INR'),
+            'grand_total' => Number::currency($grandTotal , 'INR')
         ]);
     }
 
