@@ -51,7 +51,7 @@ class AuthController extends Controller
     {
         if (Session::has('user')) {
             Session::forget('user');
-            return redirect()->route('home');
+            return redirect()->route('login')->with('success', 'Logout successful.');
         }
     }
 

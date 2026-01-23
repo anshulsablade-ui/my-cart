@@ -10,14 +10,15 @@ class Order extends Model
     protected $fillable = [
         'order_no', 
         'user_id', 
-        'sub_total', 
+        'subtotal', 
         'discount_percentage', 
         'discounted_price',
         'tax_amount',
         'shipping_amount',
         'grand_total',
         'payment_status',
-        'order_status', 
+        'order_status',
+        'notes', 
         'payment_method'
         ];
 

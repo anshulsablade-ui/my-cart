@@ -6,14 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\Country;
 use App\Models\Order;
+use App\Models\OrderAddress;
 use App\Models\OrderItem;
 use App\Models\UserAddress;
 use Illuminate\Http\Request;
+use Stripe\Stripe;
+use Stripe\PaymentIntent;
 use Illuminate\Support\Facades\DB;
 
 class CheckoutController extends Controller
 {
-    
     // Show checkout page
     public function index(Request $request)
     {
@@ -46,12 +48,13 @@ class CheckoutController extends Controller
     // Place order
     public function placeOrder(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'address_id' => 'required',
-            'payment_method' => 'required'
+            'payment_method' => 'required|in:cod,online',
         ]);
 
-        $cartItems = Cart::with('product.primaryImage')->where('user_id', session()->get('user.id'))->get();
+        $cartItems = Cart::with('product')->where('user_id', session()->get('user.id'))->get();
 
         if ($cartItems->isEmpty()) {
             return response()->json(['status' => false, 'message' => 'Cart is empty']);
@@ -60,45 +63,58 @@ class CheckoutController extends Controller
         DB::beginTransaction();
 
         try {
-            $subTotal = 0;
-
-            foreach ($cartItems as $item) {
-                $subTotal += $item->price * $item->qty;
-            }
-
-            $gst = round($subTotal * 0.18, 2);
-            $discountPercentage = $request->discount_percentage ?? 0;
-            $discountAmount = round($subTotal * $discountPercentage / 100, 2);
-            $grandTotal = $subTotal + $gst - $discountAmount;
+            $subTotal = $cartItems->sum(fn ($item) => $item->product->base_price * $item->quantity);
+            $discountPercentage = $cartItems->sum(fn ($item) => $item->product->discount_percentage * $item->quantity);
+            $discountAmount = ($subTotal * $discountPercentage) / 100;
+            $gst = ($subTotal * 18) / 100;
+            $shippingAmount = 0;
+            $grandTotal = $subTotal - $discountAmount + $gst + $shippingAmount;
 
             $order = Order::create([
+                'order_no' => 'ORD-' . now()->format('Ymd') . '-' . rand(1000, 9999),
                 'user_id' => session()->get('user.id'),
-                'address_id' => $request->address_id,
                 'subtotal' => $subTotal,
-                'gst_amount' => $gst,
                 'discount_percentage' => $discountPercentage,
-                'discount_amount' => $discountAmount,
+                'discounted_price' => $discountAmount,
+                'tax_amount' => $gst,
+                'shipping_amount' => $shippingAmount,
                 'grand_total' => $grandTotal,
+                'payment_status' => 'pending',
+                'order_status' => 'pending',
                 'payment_method' => $request->payment_method,
-                'status' => 'pending'
+                'notes' => $request->notes,
             ]);
 
             foreach ($cartItems as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $item->product_id,
-                    'price' => $item->price,
-                    'qty' => $item->qty,
-                    'total' => $item->price * $item->qty
+                    'price' => $item->product->final_price,
+                    'quantity' => $item->quantity,
+                    'total' => $item->product->price * $item->quantity
                 ]);
             }
 
-            $this->clearCart($request);
+            Cart::where('user_id', session()->get('user.id'))->delete();
+
+            $address = UserAddress::where('id', $request->address_id)->first();
+
+            OrderAddress::create([
+                'order_id' => $order->id,
+                'address_type' => 'shipping',
+                'name' => $address->name,
+                'phone' => $address->phone,
+                'address' => $address->address,
+                'country_id' => $address->country_id,
+                'state_id' => $address->state_id,
+                'city_id' => $address->city_id,
+                'pincode' => $address->pincode
+            ]);
 
             DB::commit();
 
             return response()->json([
-                'status' => true,
+                'status' => 'success',
                 'order_id' => $order->id,
                 'redirect' => route('checkout.success', $order->id)
             ]);
@@ -116,19 +132,38 @@ class CheckoutController extends Controller
     // Order success page
     public function success($orderId)
     {
-        $order = Order::with('items.product')->findOrFail($orderId);
-        return view('checkout.success', compact('order'));
+        $order = Order::with('orderItems.product.primaryImage')->where('id', $orderId)->first();
+        // dd($order->toArray());
+        return view('mycart.orderdetails', compact('order'));
     }
 
-    // Clear cart after order
-    private function clearCart(Request $request)
+        public function payment(Request $request)
     {
-        Cart::where(function ($q) use ($request) {
-            if (session()->get('user')) {
-                $q->where('user_id', session()->get('user.id'));
-            } else {
-                $q->where('session_id', $request->session()->getId());
-            }
-        })->delete();
+        Stripe::setApiKey(config('services.stripe.secret'));
+
+        try {
+            $amount = 500 * 100; // ₹500 → paise
+
+            $intent = PaymentIntent::create([
+                'amount' => $amount,
+                'currency' => 'inr',
+                'payment_method' => $request->payment_method,
+                'confirmation_method' => 'manual',
+                'confirm' => true,
+                'automatic_payment_methods' => [
+                    'enabled' => true,
+                ],
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'redirect' => route('checkout.success')
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
 }

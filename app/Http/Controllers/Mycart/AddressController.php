@@ -20,17 +20,23 @@ class AddressController extends Controller
     {
         // dd($request->all());
         $request->validated();
+        $addresses = UserAddress::where('user_id', session()->get('user.id'))->where('is_primary', '1')->first();
+        if ($addresses && $request->is_primary == '1') {
+            $addresses->update([
+                'is_primary' => '0',
+            ]);
+        }
         UserAddress::create([
             'user_id' => session()->get('user.id'),
             'name' => $request->address_name,
             'address_type' => $request->address_type,
             'address' => $request->address,
             'phone' => $request->mobile_number,
-            'country_id' => $request->country_id,
-            'state_id' => $request->state_id,
-            'city_id' => $request->city_id,
+            'country_id' => $request->country,
+            'state_id' => $request->state,
+            'city_id' => $request->city,
             'pincode' => $request->pincode,
-            'is_primary' => $request->is_primary,
+            'is_primary' => $request->is_primary ?? '0',
             'status' => $request->status ?? 'active',
         ]);
 
@@ -54,17 +60,24 @@ class AddressController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Address not found'], 404);
         }
 
+        $addresses = UserAddress::where('user_id', session()->get('user.id'))->where('is_primary', '1')->first();
+        if ($addresses && $request->is_primary == '1') {
+            $addresses->update([
+                'is_primary' => '0',
+            ]);
+        }
+
         $userAddress->update([
             'name' => $request->address_name,
             'address_type' => $request->address_type,
             'address' => $request->address,
             'phone' => $request->mobile_number,
-            'country_id' => $request->country_id,
-            'state_id' => $request->state_id,
-            'city_id' => $request->city_id,
+            'country_id' => $request->country,
+            'state_id' => $request->state,
+            'city_id' => $request->city,
             'pincode' => $request->pincode,
-            'is_primary' => $request->is_primary,
-            'status' => $request->status
+            'is_primary' => $request->is_primary ?? '0',
+            'status' => $request->status ?? 'active',
         ]);
         
         session()->flash('success', 'Address updated successfully');

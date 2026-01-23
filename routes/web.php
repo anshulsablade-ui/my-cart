@@ -91,7 +91,7 @@ Route::prefix('home')->group(function () {
         // Checkout Routes
         Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
         Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.placeOrder');
-        Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
+        Route::get('/checkout/success/{orderId}', [CheckoutController::class, 'success'])->name('checkout.success');
 
         // User Address Routes
         Route::get('/address', [AddressController::class, 'index'])->name('address');
@@ -101,6 +101,9 @@ Route::prefix('home')->group(function () {
         Route::delete('/address/{id}', [AddressController::class, 'delete'])->name('address.delete');
 
         Route::get('/logout', [MycartAuthController::class, 'logout'])->name('logout');
+
+        Route::post('/stripe-payment', [CheckoutController::class, 'payment'])->name('stripe.payment');
+
     });
 });
 
