@@ -33,6 +33,7 @@ class AuthController extends Controller
         if ($user && Hash::check($request->password, $user->password)) {
 
             Session::put('user', $user);
+            Session::put('cart_count', Cart::where('user_id', $user->id)->count());
 
             session()->flash('success', 'Login successful.');
             return response()->json([

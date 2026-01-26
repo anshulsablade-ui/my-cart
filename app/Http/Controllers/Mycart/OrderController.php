@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Http\Controllers\Mycart;
+
+use App\Http\Controllers\Controller;
+use App\Models\Order;
+use Illuminate\Http\Request;
+
+class OrderController extends Controller
+{
+    public function index()
+    {
+        $orders = Order::with('orderItems.product')->where('user_id', session()->get('user.id'))->get();      
+        return view('mycart.account.orders', compact('orders'));
+    }
+
+    public function show()
+    {
+        return view('mycart.order.create');
+    }
+}

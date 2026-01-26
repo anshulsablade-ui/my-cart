@@ -44,7 +44,7 @@
                     <th scope="col" class="text-body fs-sm fw-normal py-3 d-none d-md-table-cell"><span class="text-body">Total</span></th>
                     <th scope="col" class="py-0 px-0">
                       <div class="nav justify-content-end">
-                        <button type="button" class="nav-link d-inline-block text-decoration-underline text-nowrap py-3 px-0">Clear cart</button>
+                        <button type="button" class="nav-link d-inline-block text-decoration-underline text-nowrap py-3 px-0" id="clearCart">Clear cart</button>
                       </div>
                     </th>
                   </tr>
@@ -59,7 +59,7 @@
                                 @if ($item->product->discount_percentage)
                                     <span class="badge text-bg-danger position-absolute start-0">-{{ $item->product->discount_percentage }}%</span>
                                 @endif
-                                <img src="{{ asset('images/products/thumb/' . $item->product->primaryImage->image) }}" width="110" alt="{{ $item->product->name }}">
+                                <img src="{{ asset('images/products/thumb/' . ($item->product->primaryImage->image ?? 'no-image.png')) }}" width="110" alt="{{ $item->product->name }}">
                               </a>
                               <div class="w-100 min-w-0 ps-2 ps-xl-3">
                                 <h5 class="d-flex animate-underline mb-2">
@@ -163,6 +163,30 @@
 @section('script')
     <script>
         $(document).ready(function () {
+
+            // Clear cart
+            $('body').on('click', '#clearCart', function () {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            type: "delete",
+                            url: "{{ route('cart.clear') }}",
+                            success: function (response) {
+                                window.location.reload();
+                            }
+                        });
+                    }
+                })
+            })
+
             // Remove item from cart
             $('body').on('click', '.cart-remove-btn', function () {
                 let cartId = $(this).closest('tr').data('cart-id');

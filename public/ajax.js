@@ -11,6 +11,7 @@ function ajaxCall(url, method, data, successCallback, errorCallback) {
         data: data,
         processData: false,
         contentType: false,
+        global: false,
         success: successCallback,
         error: errorCallback
     });
@@ -34,7 +35,7 @@ $('body').on('click', '.delete', function (e) {
             $.ajax({
                 type: "delete",
                 url: url,
-
+                global: false,
                 success: function (response) {
                     // table.ajax.reload();
                     window.location.reload();
@@ -61,3 +62,41 @@ function messageAlert(message, type) {
         title: message
     });
 }
+
+
+$("body").on("click", ".addToCart", function () {
+    var productId = $(this).data('product-id');
+    $.ajax({
+        type: "post",
+        url: "/home/cart/add",
+        data: { product_id: productId, quantity: 1 },
+        global: false,
+        success: function (response) {
+            if (response.status == 'success') {
+                messageAlert(response.message, 'success');
+                $('#cartItemCount').html(response.cart_count);
+            } else {
+                messageAlert(response.message, 'error');
+            }
+        }
+    });
+});
+
+$("body").on("click", ".addToWishlist", function () {
+    var productId = $(this).data('product-id');
+    $.ajax({
+        type: "post",
+        url: "/home/wishlist/add",
+        data: { product_id: productId },
+        global: false,
+        success: function (response) {
+            if (response.status == 'success') {
+                messageAlert(response.message, 'success');
+            } else if (response.status == 'info') {
+                messageAlert(response.message, 'info');
+            } else {
+                window.location.href = "/auth/login";
+            }
+        }
+    });
+});

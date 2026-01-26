@@ -34,19 +34,24 @@
               }
             }">
               <div class="swiper-wrapper">
-                @foreach ($product->images as $item)
-                    
-                <div class="swiper-slide">
-                  <div class="ratio ratio-1x1">
-                    <img src="{{ asset('images/products/medium/'.$item->image) }}" data-zoom="{{ asset('images/products/large/'.$item->image) }}" data-zoom-options="{
-                      &quot;paneSelector&quot;: &quot;#zoomPane&quot;,
-                      &quot;inlinePane&quot;: 768,
-                      &quot;hoverDelay&quot;: 500,
-                      &quot;touchDisable&quot;: true
-                    }" alt="Preview">
+                @forelse ($product->images as $item) 
+                  <div class="swiper-slide">
+                    <div class="ratio ratio-1x1">
+                      <img src="{{ asset('images/products/medium/' . $item->image ) }}" data-zoom="{{ asset('images/products/large/'.$item->image) }}" data-zoom-options="{
+                        &quot;paneSelector&quot;: &quot;#zoomPane&quot;,
+                        &quot;inlinePane&quot;: 768,
+                        &quot;hoverDelay&quot;: 500,
+                        &quot;touchDisable&quot;: true
+                      }" alt="Preview">
+                    </div>
                   </div>
-                </div>
-                @endforeach
+                @empty
+                  <div class="swiper-slide">
+                    <div class="ratio ratio-1x1">
+                      <img src="{{ asset('images/products/medium/no-image.png') }}" alt="Preview">
+                    </div>
+                  </div>
+                @endforelse
 
               </div>
 
@@ -94,13 +99,19 @@
             }">
               <div class="swiper-wrapper">
 
-                @foreach ($product->images as $item)
+                @forelse ($product->images as $item)
                 <div class="swiper-slide swiper-thumb">
                   <div class="ratio ratio-1x1" style="max-width: 94px">
-                    <img src="{{ asset('images/products/thumb/'.$item->image) }}" class="swiper-thumb-img" alt="Thumbnail">
+                    <img src="{{ asset('images/products/thumb/' . $item->image ) }}" class="swiper-thumb-img" alt="Thumbnail">
                   </div>
                 </div>
-                @endforeach
+                @empty
+                  <div class="swiper-slide swiper-thumb">
+                    <div class="ratio ratio-1x1" style="max-width: 94px">
+                      <img src="{{ asset('images/products/thumb/no-image.png') }}" class="swiper-thumb-img" alt="Thumbnail">
+                    </div>
+                  </div>
+                @endforelse
                 
               </div>
             </div>
@@ -141,7 +152,7 @@
                       <i class="ci-plus"></i>
                     </button>
                   </div>
-                  <button type="button" id="addToWishlist" data-product-id="{{ $product->id }}" class="btn btn-icon btn-lg btn-secondary animate-pulse order-sm-3 order-md-2 order-lg-3" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-sm" data-bs-title="Add to Wishlist" aria-label="Add to Wishlist">
+                  <button type="button" data-product-id="{{ $product->id }}" class="btn btn-icon btn-lg btn-secondary animate-pulse order-sm-3 order-md-2 order-lg-3 addToWishlist" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-sm" data-bs-title="Add to Wishlist" aria-label="Add to Wishlist">
                     <i class="ci-heart fs-lg animate-target"></i>
                   </button>
                   <button type="button" class="btn btn-lg btn-primary w-100 animate-slide-end order-sm-2 order-md-4 order-lg-2" id="addToCart" data-product-id="{{ $product->id }}">
@@ -167,7 +178,11 @@
                 </div>
                 <div class="w-100 min-w-0 ps-2">
                   <h4 class="fs-sm fw-medium text-truncate mb-1">Apple iPhone 14 Plus 128GB Blue</h4>
-                  <div class="h6 mb-0">$940.00</div>
+                  <div class="h6 mb-0">$940.00
+                      @if ($product->base_price != $product->final_price)
+                        <del class="text-body-tertiary fs-sm fw-normal">{{ Number::currency($product->base_price, 'INR') }}</del>
+                      @endif
+                  </div>
                 </div>
               </div>
               <div class="d-flex gap-2 ms-auto">
@@ -378,7 +393,7 @@
               <div class="border rounded p-3 p-lg-4">
                 <div class="d-flex align-items-center mb-3">
                   <div class="ratio ratio-1x1 flex-shrink-0" style="width: 110px">
-                    <img src="{{ asset('images/products/thumb/'.$product->images[0]->image) }}" alt="{{ asset('images/products/'.$product->thumbnail) }}" width="110" alt="iPhone 14">
+                    <img src="{{ asset('images/products/thumb/' . ( $product->images[0]->image ?? 'no-image.png' )) }}" alt="{{ asset('images/products/'.$product->thumbnail) }}" width="110" alt="iPhone 14">
                   </div>
                   <div class="w-100 min-w-0 ps-2 ps-sm-3">
                     <div class="d-flex align-items-center gap-2 mb-2">
@@ -404,7 +419,7 @@
                     <i class="ci-shopping-cart fs-base animate-target ms-n1 me-2"></i>
                     Add to cart
                   </button>
-                  <button type="button" class="btn btn-icon btn-secondary animate-pulse" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-sm" data-bs-title="Add to Wishlist" aria-label="Add to Wishlist">
+                  <button type="button" class="btn btn-icon btn-secondary animate-pulse addToWishlist" data-product-id="{{ $product->id }}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-sm" data-bs-title="Add to Wishlist" aria-label="Add to Wishlist">
                     <i class="ci-heart fs-base animate-target"></i>
                   </button>
                 </div>
@@ -419,14 +434,13 @@
       <section class="container pb-4 pb-md-5 mb-2 mb-sm-0 mb-lg-2 mb-xl-4">
         <h2 class="h3 border-bottom pb-4 mb-0">Viewed products</h2>
 
-        <!-- Product carousel -->
         <div class="position-relative mx-md-1">
 
           <!-- External slider prev/next buttons visible on screens > 500px wide (sm breakpoint) -->
-          <button type="button" class="viewed-prev btn btn-prev btn-icon btn-outline-secondary bg-body rounded-circle animate-slide-start position-absolute top-50 start-0 z-2 translate-middle-y ms-n1 d-none d-sm-inline-flex" aria-label="Prev">
+          <button type="button" class="offers-prev btn btn-icon btn-outline-secondary bg-body rounded-circle animate-slide-start position-absolute top-50 start-0 z-2 translate-middle-y ms-n1 d-none d-sm-inline-flex" aria-label="Prev">
             <i class="ci-chevron-left fs-lg animate-target"></i>
           </button>
-          <button type="button" class="viewed-next btn btn-next btn-icon btn-outline-secondary bg-body rounded-circle animate-slide-end position-absolute top-50 end-0 z-2 translate-middle-y me-n1 d-none d-sm-inline-flex" aria-label="Next">
+          <button type="button" class="offers-next btn btn-icon btn-outline-secondary bg-body rounded-circle animate-slide-end position-absolute top-50 end-0 z-2 translate-middle-y me-n1 d-none d-sm-inline-flex" aria-label="Next">
             <i class="ci-chevron-right fs-lg animate-target"></i>
           </button>
 
@@ -436,8 +450,8 @@
             &quot;spaceBetween&quot;: 24,
             &quot;loop&quot;: true,
             &quot;navigation&quot;: {
-              &quot;prevEl&quot;: &quot;.viewed-prev&quot;,
-              &quot;nextEl&quot;: &quot;.viewed-next&quot;
+              &quot;prevEl&quot;: &quot;.offers-prev&quot;,
+              &quot;nextEl&quot;: &quot;.offers-next&quot;
             },
             &quot;breakpoints&quot;: {
               &quot;768&quot;: {
@@ -450,17 +464,15 @@
           }">
             <div class="swiper-wrapper">
 
-              <!-- Item -->
+            @foreach ($simmlarProducts as $product)
+
               <div class="swiper-slide">
                 <div class="product-card animate-underline hover-effect-opacity bg-body rounded">
                   <div class="position-relative">
                     <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 mt-3 me-3">
                       <div class="d-flex flex-column gap-2">
-                        <button type="button" class="btn btn-icon btn-secondary animate-pulse d-none d-lg-inline-flex" aria-label="Add to Wishlist">
+                        <button type="button" class="btn btn-icon btn-secondary animate-pulse d-none d-lg-inline-flex addToWishlist" data-product-id="{{ $product->id }}" aria-label="Add to Wishlist">
                           <i class="ci-heart fs-base animate-target"></i>
-                        </button>
-                        <button type="button" class="btn btn-icon btn-secondary animate-rotate d-none d-lg-inline-flex" aria-label="Compare">
-                          <i class="ci-refresh-cw fs-base animate-target"></i>
                         </button>
                       </div>
                     </div>
@@ -470,61 +482,49 @@
                       </button>
                       <ul class="dropdown-menu dropdown-menu-end fs-xs p-2" style="min-width: auto">
                         <li>
-                          <a class="dropdown-item" href="#!">
+                          <a class="dropdown-item addToWishlist" data-product-id="{{ $product->id }}" href="javascript:void(0);">
                             <i class="ci-heart fs-sm ms-n1 me-2"></i>
                             Add to Wishlist
                           </a>
                         </li>
-                        <li>
-                          <a class="dropdown-item" href="#!">
-                            <i class="ci-refresh-cw fs-sm ms-n1 me-2"></i>
-                            Compare
-                          </a>
-                        </li>
                       </ul>
                     </div>
-                    <a class="d-block rounded-top overflow-hidden p-3 p-sm-4" href="#!">
-                      <span class="badge bg-danger position-absolute top-0 start-0 mt-2 ms-2 mt-lg-3 ms-lg-3">-17%</span>
+                    <a class="d-block rounded-top overflow-hidden p-3 p-sm-4" href="{{ route('product.show', $product->slug) }}">
                       <div class="ratio" style="--cz-aspect-ratio: calc(240 / 258 * 100%)">
-                        <img src="web/assets/img/shop/electronics/11.png" alt="Nikon Camera">
+                        <img src="{{ asset('images/products/medium/' . ($product->primaryImage->image ?? 'no-image.png')) }}" alt="{{ $product->name }}" class="img-fluid">
                       </div>
                     </a>
                   </div>
                   <div class="w-100 min-w-0 px-1 pb-2 px-sm-3 pb-sm-3">
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                      <div class="d-flex gap-1 fs-xs">
-                        <i class="ci-star-filled text-warning"></i>
-                        <i class="ci-star-filled text-warning"></i>
-                        <i class="ci-star-filled text-warning"></i>
-                        <i class="ci-star-filled text-warning"></i>
-                        <i class="ci-star-filled text-warning"></i>
-                      </div>
-                      <span class="text-body-tertiary fs-xs">(14)</span>
-                    </div>
+
                     <h3 class="pb-1 mb-2">
-                      <a class="d-block fs-sm fw-medium text-truncate" href="#!">
-                        <span class="animate-target">VRB01 Camera Nikon Max</span>
+                      <a class="d-block fs-sm fw-medium text-truncate" href="{{ route('product.show', $product->slug) }}">
+                        <span class="animate-target">{{ $product->name }}</span>
                       </a>
                     </h3>
-                    <div class="d-flex align-items-center justify-content-between">
-                      <div class="h5 lh-1 mb-0">$652.00 <del class="text-body-tertiary fs-sm fw-normal">$785.00</del></div>
-                      <button type="button" class="product-card-button btn btn-icon btn-secondary animate-slide-end ms-2" aria-label="Add to Cart">
+                    <div class="d-flex align-items-center justify-content-between pb-2 mb-1">
+                      <div class="h5 lh-1 mb-0">{{ Number::currency($product->final_price, 'INR') }} 
+                        @if ($product->base_price != $product->final_price)
+                          <del class="text-body-tertiary fs-sm fw-normal">{{ Number::currency($product->base_price, 'INR') }}</del>
+                        @endif
+                      </div>
+                      <button type="button" class="product-card-button btn btn-icon btn-secondary animate-slide-end ms-2 addToCart" data-product-id="{{ $product->id }}" data-product-id="{{ $product->id }}" aria-label="Add to Cart">
                         <i class="ci-shopping-cart fs-base animate-target"></i>
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
-
+            @endforeach
             </div>
           </div>
 
           <!-- External slider prev/next buttons visible on screens < 500px wide (sm breakpoint) -->
           <div class="d-flex justify-content-center gap-2 mt-n2 mb-3 pb-1 d-sm-none">
-            <button type="button" class="viewed-prev btn btn-prev btn-icon btn-outline-secondary bg-body rounded-circle animate-slide-start me-1" aria-label="Prev">
+            <button type="button" class="offers-prev btn btn-icon btn-outline-secondary bg-body rounded-circle animate-slide-start me-1" aria-label="Prev">
               <i class="ci-chevron-left fs-lg animate-target"></i>
             </button>
-            <button type="button" class="viewed-next btn btn-next btn-icon btn-outline-secondary bg-body rounded-circle animate-slide-end" aria-label="Next">
+            <button type="button" class="offers-next btn btn-icon btn-outline-secondary bg-body rounded-circle animate-slide-end" aria-label="Next">
               <i class="ci-chevron-right fs-lg animate-target"></i>
             </button>
           </div>
@@ -635,32 +635,6 @@
 <script>
   $(document).ready(function () {
 
-    $('#addToWishlist').on('click', function () {
-        var productId = $(this).data('product-id');
-
-        $.ajax({
-          type: "post",
-          url: "{{ route('wishlist.add') }}",
-          data: { product_id: productId },
-          success: function (response) {
-            // var response = JSON.parse(response);
-            if(response.status == 'success'){
-              messageAlert(response.message, 'success');
-            } else {
-              messageAlert(response.message, 'error');
-            }
-          },
-          error: function (xhr, status, error) {
-            var err = JSON.parse(xhr.responseText);
-            if(err.status == 'error'){
-              console.log(err);
-              messageAlert(err.message, 'error');
-            }
-          }
-        });
-    });
-
-
     $('#addToCart').on('click', function () {
       
       var quantity = $("#quantity").val();
@@ -670,13 +644,13 @@
         type: "post",
         url: "{{ route('cart.add') }}",
         data: { product_id: productId, quantity: quantity },
-        dataType: "dataType",
+        global: false,
         success: function (response) {
           // var response = JSON.parse(response);
           if(response.status == 'success'){
             messageAlert(response.message, 'success');
             // Update cart count
-            $('#cartItemCount').text(response.cartItemCount);
+            $('#cartItemCount').text(response.cart_count);
           } else {
             messageAlert(response.message, 'error');
           }

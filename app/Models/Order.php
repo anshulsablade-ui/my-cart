@@ -10,8 +10,7 @@ class Order extends Model
     protected $fillable = [
         'order_no', 
         'user_id', 
-        'subtotal', 
-        'discount_percentage', 
+        'subtotal',
         'discounted_price',
         'tax_amount',
         'shipping_amount',
@@ -30,5 +29,15 @@ class Order extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function orderAddresses()
+    {
+        return $this->hasMany(OrderAddress::class);
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
     }
 }

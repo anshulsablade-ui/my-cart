@@ -67,18 +67,21 @@ class CartController extends Controller
                 'product_id' => $product->id,
                 'quantity' => $request->quantity,
             ]);
-            session()->put('cart_count', Cart::where(function ($q) {
+
+            $cart_count = Cart::where(function ($q) {
                 if (session()->get('user')) {
                     $q->where('user_id', session()->get('user.id'));
                 } else {
                     $q->where('session_id', $this->getSessionId());
                 }
-            })->count());
+            })->count();
+            session()->put('cart_count', $cart_count);
         }
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Product added to cart'
+            'message' => 'Product added to cart',
+            'cart_count' => $cart_count
         ]);
     }
 
@@ -147,16 +150,34 @@ class CartController extends Controller
     {
         Cart::where('id', $request->cart_id)->delete();
 
-        session()->put('cart_count', Cart::where(function ($q) {
+        $cart_count = Cart::where(function ($q) {
             if (session()->get('user')) {
                 $q->where('user_id', session()->get('user.id'));
             } else {
                 $q->where('session_id', $this->getSessionId());
             }
-        })->count());
+        })->count();
+        session()->put('cart_count', $cart_count);
         return response()->json([
             'status' => 'success',
-            'message' => 'Item removed'
+            'message' => 'Item removed.',
+            'cart_count' => $cart_count
+        ]);
+    }
+
+    public function removeAll()
+    {
+        Cart::where(function ($q) {
+            if (session()->get('user')) {
+                $q->where('user_id', session()->get('user.id'));
+            } else {
+                $q->where('session_id', $this->getSessionId());
+            }
+        })->delete();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Cart cleared.',
+            'cart_count' => 0
         ]);
     }
 }

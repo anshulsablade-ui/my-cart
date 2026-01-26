@@ -159,7 +159,7 @@
                   <div class="position-relative">
                     <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 mt-3 me-3">
                       <div class="d-flex flex-column gap-2">
-                        <button type="button" class="btn btn-icon btn-secondary animate-pulse d-none d-lg-inline-flex" aria-label="Add to Wishlist">
+                        <button type="button" class="btn btn-icon btn-secondary animate-pulse d-none d-lg-inline-flex addToWishlist" data-product-id="{{ $product->id }}" aria-label="Add to Wishlist">
                           <i class="ci-heart fs-base animate-target"></i>
                         </button>
                       </div>
@@ -170,7 +170,7 @@
                       </button>
                       <ul class="dropdown-menu dropdown-menu-end fs-xs p-2" style="min-width: auto">
                         <li>
-                          <a class="dropdown-item" href="#!">
+                          <a class="dropdown-item addToWishlist" data-product-id="{{ $product->id }}" href="javascript:void(0);">
                             <i class="ci-heart fs-sm ms-n1 me-2"></i>
                             Add to Wishlist
                           </a>
@@ -196,7 +196,7 @@
                           <del class="text-body-tertiary fs-sm fw-normal">{{ Number::currency($product->base_price, 'INR') }}</del>
                         @endif
                       </div>
-                      <button type="button" class="product-card-button btn btn-icon btn-secondary animate-slide-end ms-2" aria-label="Add to Cart">
+                      <button type="button" class="product-card-button btn btn-icon btn-secondary animate-slide-end ms-2 addToCart" data-product-id="{{ $product->id }}" data-product-id="{{ $product->id }}" aria-label="Add to Cart">
                         <i class="ci-shopping-cart fs-base animate-target"></i>
                       </button>
                     </div>

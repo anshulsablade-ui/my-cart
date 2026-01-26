@@ -19,10 +19,12 @@ class ProductController extends Controller
             abort(404);
         }
 
-        $simmlarProducts = Product::where('category_id', $product->category_id)
+        $simmlarProducts = Product::with('primaryImage', 'category', 'brand')
+            ->where('category_id', $product->category_id)
             ->whereNot('id', $product->id)
-            ->where('id', '!=', $product->id)
             ->where('status', 'active')
+            ->where('stock', '>', 0)
+            ->inRandomOrder()
             ->take(8)
             ->get();
         // dd($product->toArray());

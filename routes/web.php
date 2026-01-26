@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Mycart\CartController;
 use App\Http\Controllers\Mycart\CheckoutController;
 use App\Http\Controllers\Mycart\HomeController;
+use App\Http\Controllers\Mycart\OrderController;
 use App\Http\Controllers\Mycart\ProductController as MycartProductController;
 use App\Http\Controllers\Mycart\WishlistController;
 use Illuminate\Support\Facades\Route;
@@ -79,6 +80,7 @@ Route::prefix('home')->group(function () {
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
     Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+    Route::delete('/cart/clear', [CartController::class, 'removeAll'])->name('cart.clear');
 
     
     Route::middleware('userLogin')->group(function () {
@@ -90,8 +92,11 @@ Route::prefix('home')->group(function () {
 
         // Checkout Routes
         Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-        Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.placeOrder');
-        Route::get('/checkout/success/{orderId}', [CheckoutController::class, 'success'])->name('checkout.success');
+
+        Route::post('/checkout', [CheckoutController::class, 'processOrder'])->name('order.process');
+        Route::post('/checkout/place-order', [CheckoutController::class, 'verifyPayment'])->name('order.verify-payment');
+        Route::get('/checkout/success/{orderId}', [CheckoutController::class, 'orderSuccess'])->name('order.success');
+
 
         // User Address Routes
         Route::get('/address', [AddressController::class, 'index'])->name('address');
@@ -100,9 +105,14 @@ Route::prefix('home')->group(function () {
         Route::put('/address/{id}', [AddressController::class, 'update'])->name('address.update');
         Route::delete('/address/{id}', [AddressController::class, 'delete'])->name('address.delete');
 
+
+        // order Routes
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{id}', [OrderController::class, 'show'])->name('order.show');
+
         Route::get('/logout', [MycartAuthController::class, 'logout'])->name('logout');
 
-        Route::post('/stripe-payment', [CheckoutController::class, 'payment'])->name('stripe.payment');
+        // Route::post('/stripe-payment', [CheckoutController::class, 'payment'])->name('stripe.payment');
 
     });
 });

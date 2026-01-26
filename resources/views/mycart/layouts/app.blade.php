@@ -40,11 +40,53 @@
 
     <!-- Customizer -->
     <script src="{{ asset('web/assets/js/customizer.min.js') }}"></script>
+    <style>
+      #global-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.6);
+        z-index: 9999;
+        display: none;
+      }
+    
+      #global-loader .spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 45px;
+        height: 45px;
+        margin: -22px 0 0 -22px;
+        border: 4px solid #ddd;
+        border-top: 4px solid #0d6efd;
+        /* Bootstrap primary */
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+    
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+    
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
     @yield('style')
 </head>
 
   <!-- Body -->
   <body>
+
+    <!-- Global AJAX Loader -->
+    <div id="global-loader">
+        <div class="spinner"></div>
+    </div>
+
 
     @include('mycart.layouts.header')
     @yield('content')
@@ -92,6 +134,14 @@
             title: "{{ session('success') }}"
           });
         @endif
+      });
+
+      $(document).ajaxStart(function () {
+        $("#global-loader").fadeIn(200);
+      });
+
+      $(document).ajaxStop(function () {
+        $("#global-loader").fadeOut(200);
       });
     </script>
     @yield('script')
