@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Mycart;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserAddressRequest;
+use App\Models\Country;
 use App\Models\UserAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -12,8 +13,9 @@ class AddressController extends Controller
 {
     public function index()
     {
-        $addresses = UserAddress::where('user_id', session()->get('user.id'))->get();
-        return view('mycart.address', compact('addresses'));
+        $addresses = UserAddress::where('user_id', session()->get('user.id'))->with('country', 'state', 'city')->get();
+        $countries = Country::all();
+        return view('mycart.account.addresses', compact('addresses', 'countries'));
     }
 
     public function store(UserAddressRequest $request)

@@ -174,11 +174,11 @@
             <div class="container d-flex align-items-center">
               <div class="d-flex align-items-center min-w-0 ms-n2 me-3">
                 <div class="ratio ratio-1x1 flex-shrink-0" style="width: 50px">
-                  <img src="web/assets/img/shop/electronics/thumbs/10.png" alt="iPhone 14">
+                  <img src="{{ asset('images/products/thumb/' . ($product->primaryImage->image ?? 'no-image.png')) }}" alt="{{ $product->name }}">
                 </div>
                 <div class="w-100 min-w-0 ps-2">
-                  <h4 class="fs-sm fw-medium text-truncate mb-1">Apple iPhone 14 Plus 128GB Blue</h4>
-                  <div class="h6 mb-0">$940.00
+                  <h4 class="fs-sm fw-medium text-truncate mb-1">{{ $product->name }}</h4>
+                  <div class="h6 mb-0">{{ Number::currency($product->final_price, 'INR') }}
                       @if ($product->base_price != $product->final_price)
                         <del class="text-body-tertiary fs-sm fw-normal">{{ Number::currency($product->base_price, 'INR') }}</del>
                       @endif
@@ -186,14 +186,14 @@
                 </div>
               </div>
               <div class="d-flex gap-2 ms-auto">
-                <button type="button" class="btn btn-icon btn-secondary animate-pulse" aria-label="Add to Wishlist">
+                <button type="button" class="btn btn-icon btn-secondary animate-pulse addToWishlist" data-product-id="{{ $product->id }}" aria-label="Add to Wishlist">
                   <i class="ci-heart fs-base animate-target"></i>
                 </button>
-                <button type="button" class="btn btn-primary animate-slide-end d-none d-sm-inline-flex">
+                <button type="button" class="btn btn-primary animate-slide-end d-none d-sm-inline-flex addToCart" data-product-id="{{ $product->id }}">
                   <i class="ci-shopping-cart fs-base animate-target ms-n1 me-2"></i>
                   Add to cart
                 </button>
-                <button type="button" class="btn btn-icon btn-primary animate-slide-end d-sm-none" aria-label="Add to Cart">
+                <button type="button" class="btn btn-icon btn-primary animate-slide-end d-sm-none addToCart" data-product-id="{{ $product->id }}" aria-label="Add to Cart">
                   <i class="ci-shopping-cart fs-lg animate-target"></i>
                 </button>
               </div>

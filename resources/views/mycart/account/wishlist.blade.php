@@ -59,7 +59,7 @@
                               <del class="text-body-tertiary fs-sm fw-normal">{{ Number::currency($item->product->base_price, 'INR') }}</del>
                             @endif
                           </div>
-                          <button type="button" class="product-card-button btn btn-icon btn-secondary animate-slide-end ms-2" aria-label="Add to Cart">
+                          <button type="button" class="product-card-button btn btn-icon btn-secondary animate-slide-end ms-2 addToCart" data-product-id="{{ $item->product->id }}" aria-label="Add to Cart">
                             <i class="ci-shopping-cart fs-base animate-target"></i>
                           </button>
                         </div>

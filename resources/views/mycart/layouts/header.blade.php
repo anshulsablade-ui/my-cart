@@ -76,13 +76,13 @@
 
               @if (session()->has('user'))
                 <div class="position-relative" id="accountBtn">
-                  <a class="btn btn-icon btn-lg btn-secondary animate-scale fs-5 fw-normal position-relative rounded-circle ms-2 d-none d-md-inline-flex" href="account-orders.html" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="tooltip-sm text-nowrap" data-bs-container="#accountBtn" title="{{ session('user.name') }}">
+                  <a class="btn btn-icon btn-lg btn-secondary animate-scale fs-5 fw-normal position-relative rounded-circle ms-2 d-none d-md-inline-flex" href="{{ route('profile.index') }}" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="tooltip-sm text-nowrap" data-bs-container="#accountBtn" title="{{ session('user.name') }}">
                     <span class="animate-target">{{ substr(session('user.name'), 0, 1) }}</span>
                   </a>
                 </div>
               @else
                 <!-- Account button visible on screens > 768px wide (md breakpoint) -->
-                <a class="btn btn-icon btn-lg fs-lg btn-outline-secondary border-0 rounded-circle animate-shake d-none d-md-inline-flex" href="{{ route('login') }}">
+                <a class="btn btn-icon btn-lg fs-lg btn-outline-secondary border-0 rounded-circle animate-shake d-none d-md-inline-flex" href="{{ route('profile.index') }}">
                   <i class="ci-user animate-target"></i>
                   <span class="visually-hidden">Account</span>
                 </a>

@@ -8,11 +8,15 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
     public function showLoginForm()
     {
+        if (session('user')) {
+            return redirect()->route('home')->with('error', 'You are already logged in.');
+        }
         return view('mycart.auth.login');
     }
 
@@ -58,12 +62,15 @@ class AuthController extends Controller
 
     public function showRegisterForm()
     {
+        if (session('user')) {
+            return redirect()->route('home')->with('error', 'You are already logged in.');
+        }
         return view('mycart.auth.register');
     }
 
     public function register(Request $request)
     {
-        $validator = validator(request()->all(), [
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8'
@@ -108,7 +115,7 @@ class AuthController extends Controller
                 ->first();
 
             if ($userCart) {
-                $guestCart->update([
+                $userCart->update([
                     'user_id' => session()->get('user.id'),
                     'session_id' => null,
                 ]);
@@ -116,5 +123,36 @@ class AuthController extends Controller
         }
 
         session()->forget('cart_session_id');
+    }
+
+    public function passwordUpdate(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|min:8',
+            'new_password' => 'required|min:8'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::where('id', session()->get('user.id'))->first();
+        if (Hash::check($request->current_password, $user->password)) {
+            $user->update([
+                'password' => Hash::make($request->new_password)
+            ]);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Password updated successfully.'
+            ]);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => ['current_password' => ['Wrong current password.']]
+            ], 422);
+        }
     }
 }

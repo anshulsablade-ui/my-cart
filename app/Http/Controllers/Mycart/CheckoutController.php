@@ -95,7 +95,7 @@ class CheckoutController extends Controller
                 'tax_amount' => $gst,
                 'shipping_amount' => $shippingAmount,
                 'grand_total' => $grandTotal,
-                'payment_status' => 'paid',
+                'payment_status' => 'pending',
                 'order_status' => 'processing',
                 'payment_method' => $request->payment_method,
                 'notes' => $request->notes,
@@ -113,6 +113,7 @@ class CheckoutController extends Controller
             }
 
             Cart::where('user_id', session()->get('user.id'))->delete();
+            session()->put('cart_count', 0);
 
             $address = UserAddress::where('id', $request->shipping_address_id)->first();
 
@@ -148,7 +149,7 @@ class CheckoutController extends Controller
 
                 $razorpayOrder = $api->order->create([
                     'receipt' => $order->order_no,
-                    'amount' => $grandTotal * 100, // Amount in paise
+                    'amount' => $grandTotal * 100, 
                     'currency' => 'INR',
                     'notes' => [
                         'order_id' => $order->id,

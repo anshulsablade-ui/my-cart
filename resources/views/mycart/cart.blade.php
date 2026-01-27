@@ -230,8 +230,6 @@
                     quantity--;
                     $(this).closest('tr').find('.cart-quantity').val(quantity);
                     updateCartQuantity(cartId, quantity);
-                
-                    $(this).closest('tr').find('.total-price').text('₹')
                 }
             });
 
@@ -248,7 +246,7 @@
                         if(response.status == 'success') {
                             console.log(response.message);
 
-                            $('tr[data-cart-id="' + cartId + '"]').find('.total-price').text(response.cart.quantity * response.cart.product.final_price);
+                            $('tr[data-cart-id="' + cartId + '"]').find('.total-price').text('₹' + response.cart.quantity * response.cart.product.final_price);
                             $('.order-summary').find('.subtotal').text(response.subtotal);
                             $('.order-summary').find('.discount').text(response.discounted_price);
                             $('.order-summary').find('.gst-amount').text(response.gstAmount);

@@ -31,4 +31,13 @@ class ProductController extends Controller
 
         return view('mycart.productDetail', compact('product', 'simmlarProducts'));
     }
+
+    public function productList(Request $request)
+    {
+        $products = Product::with('primaryImage', 'category', 'brand')
+            ->where('status', 'active')
+            ->where('stock', '>', 0)
+            ->paginate();
+        return view('mycart.productList', compact('products'));
+    }
 }

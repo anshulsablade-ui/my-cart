@@ -10,12 +10,13 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $orders = Order::with('orderItems.product')->where('user_id', session()->get('user.id'))->get();      
+        $orders = Order::with('orderItems.product')->where('user_id', session()->get('user.id'))->paginate();      
         return view('mycart.account.orders', compact('orders'));
     }
 
-    public function show()
+    public function show($id)
     {
-        return view('mycart.order.create');
+        $order = Order::with('orderItems.product')->where('id', $id)->first();
+        return view('mycart.orderdetails', compact('order'));
     }
 }

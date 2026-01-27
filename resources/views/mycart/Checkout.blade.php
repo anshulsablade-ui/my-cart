@@ -20,21 +20,20 @@
                       <div class="row">
                           <div class="col">
                             @foreach ($addresses as $address)
-                              <div class="form-check border-bottom">
+                              <div class="form-check border-bottom pb-2">
                                 <input type="radio" class="form-check-input" name="shipping_address" value="{{ $address->id }}" id="address_{{ $address->id }}">
                                 <label class="form-check-label w-100">
-                                  
-                                    <div class="">
+                                    <div>
                                       <div class="nav flex-nowrap align-items-center justify-content-between pb-1 mb-3">
                                         <div class="d-flex align-items-center gap-3 me-4">
                                           <h2 class="h6 mb-0">{{ $address->name }}</h2>
-                                          @if ($address->is_primary == 1)
-                                              <span class="badge text-bg-info rounded-pill">Primary</span>
-                                          @endif
+                                            @if ($address->is_primary == 1)
+                                                <span class="badge text-bg-info rounded-pill">Primary</span>
+                                            @endif
                                         </div>
-                                        
+                                        <a class="nav-link text-decoration-underline p-0 address-edit" href="{{ route('address.edit', $address->id) }}">Edit</a>
                                       </div>
-                                      <div class="collapse primary-address show" id="primaryAddressPreview">
+                                      <div class="primary-address">
                                         <ul class="list-unstyled fs-sm m-0">
                                           <li>{{ $address->state->name . ' ' . $address->pincode . ', ' . $address->country->name }}</li>
                                           <li>{{ $address->address }}</li>
@@ -42,7 +41,7 @@
                                       </div>
                                     </div>
                                 </label>
-                                <a class="nav-link hiding-collapse-toggle text-decoration-underline p-0 collapsed address-edit" href="{{ route('address.edit', $address->id) }}">Edit</a>
+
                               </div>
                             @endforeach                
                           </div>
@@ -112,7 +111,7 @@
                     <a class="d-flex align-items-center gap-2 text-decoration-none" href="#orderPreview" data-bs-toggle="offcanvas">
                         @foreach ($cartItems as $item)
                             <div class="ratio ratio-1x1" style="max-width: 64px">
-                              <img src="{{ asset('images/products/thumb/' . $item->product->primaryImage->image) }}" class="d-block p-1" alt="iPhone">
+                              <img src="{{ asset('images/products/thumb/' . ($item->product->primaryImage->image ?? 'no-image.png')) }}" class="d-block p-1" alt="iPhone">
                             </div>
                         @endforeach
                       
@@ -246,13 +245,10 @@
 
 @endsection
 @section('script')
-      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>'
-      {{-- <script src="https://js.stripe.com/v3/"></script> --}}
+      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
   <script>
       $(document).ready(function () {
-
-        // Order Place
 
         // Reset form on modal close
         $('#addressModal').on('hidden.bs.modal', function () {
@@ -477,237 +473,4 @@
       });
     }
   </script>
-
-      {{-- <script>
-          $(document).ready(function() {
-
-              $('#place-order-btn').on('click', function() {
-                  // $(this).prop('disabled', true).text('Processing...');
-                  const shippingAddress = $('input[name="shipping_address"]:checked').val();
-                  const paymentMethod = $('input[name="payment_method"]:checked').val();
-
-                  if (!shippingAddress) {
-                      messageAlert('Please select a shipping address', 'error');
-                      return;
-                  }
-
-                  if (!paymentMethod) {
-                      messageAlert('Please select a payment method', 'error');
-                      return;
-                  }
-
-                  if (paymentMethod === 'cod') {
-                      placeOrder();
-                  } else if (paymentMethod === 'razorpay') {
-                      createRazorpayOrder();
-                  }
-              });
-
-              // Place Order
-              function placeOrder() {
-                  $.ajax({
-                      url: '{{ route("checkout.placeOrder") }}',
-                      method: 'POST',
-                      data: {
-                          shipping_address: $('input[name="shipping_address"]:checked').val(),
-                          payment_method: $('input[name="payment_method"]:checked').val(),
-                          notes: $("#notes").val()
-                      },
-                      success: function(response) {
-                          if (response.status == 'success') {
-                              window.location.href = response.redirect_url;
-                          }
-                      }
-                  });
-              }
-
-              // Create Razorpay Order
-              function createRazorpayOrder() {
-                  $.ajax({
-                      url: '{{ route("createRazorpayOrder") }}',
-                      method: 'POST',
-                      data: { notes: $("#notes").val() },
-                      success: function(response) {
-                        if (response.status == 'success') {
-                          initiateRazorpay(response);
-                        }
-                      }
-                  });
-              }
-
-              // Place Order
-              // $('#place-order-btn').on('click', function() {
-              //     const shippingAddress = $('input[name="shipping_address"]:checked').val();
-              //     // const billingAddress = $('input[name="billing_address"]:checked').val();
-              //     const paymentMethod = $('input[name="payment_method"]:checked').val();
-
-              //     if (!shippingAddress) {
-              //         messageAlert('Please select a shipping address', 'error');
-              //         return;
-              //     }
-
-              //     $(this).prop('disabled', true).text('Processing...');
-
-              //     $.ajax({
-              //         url: '{{ route("checkout.placeOrder") }}',
-              //         method: 'POST',
-              //         data: {
-              //             shipping_address_id: shippingAddress,
-              //             payment_method: paymentMethod
-              //         },
-              //         success: function(response) {
-              //             if (response.success) {
-              //                 if (paymentMethod === 'cod') {
-              //                     window.location.href = response.redirect;
-              //                 } else {
-              //                     // Razorpay payment
-              //                     initiateRazorpay(response);
-              //                 }
-              //             }
-              //         },
-              //         error: function(xhr) {
-              //             alert('Error: ' + (xhr.responseJSON?.error || 'Something went wrong'));
-              //             $('#place-order-btn').prop('disabled', false).text('Place Order');
-              //         }
-              //     });
-              // });
-
-              // Razorpay Integration
-              function initiateRazorpay(data) {
-                  const options = {
-                      key: data.key,
-                      amount: data.amount * 100,
-                      currency: data.currency,
-                      name: 'My Cart',
-                      order_id: data.razorpay_order_id,
-                      handler: function(response) {
-                          verifyPayment(response);
-                      },
-                      prefill: {
-                          name: data.user.name,
-                          email: data.user.email,
-                          contact: data.user.contact
-                      },
-                      theme: {
-                          color: '#0d6efd'
-                      },
-                      modal: {
-                          ondismiss: function() {
-                              $('#place-order-btn').prop('disabled', false).text('Place Order');
-                          }
-                      }
-                  };
-
-                  const rzp = new Razorpay(options);
-                  rzp.open();
-              }
-
-              // Verify Payment
-              function verifyPayment(response) {
-                  const shippingAddress = $('input[name="shipping_address"]:checked').val();
-                  const paymentMethod = $('input[name="payment_method"]:checked').val();
-
-                  $.ajax({
-                      url: '{{ route("verifyPayment") }}',
-                      method: 'POST',
-                      data: {
-                          razorpay_payment_id: response.razorpay_payment_id,
-                          razorpay_order_id: response.razorpay_order_id,
-                          razorpay_signature: response.razorpay_signature,
-                          shipping_address_id: shippingAddress,
-                          payment_method: paymentMethod,
-                          notes: $("#notes").val()
-                      },
-                      success: function(res) {
-                          if (res.success) {
-                              window.location.href = res.redirect;
-                          }
-                      },
-                      error: function(xhr) {
-                          alert('Payment verification failed: ' + (xhr.responseJSON?.error || 'Unknown error'));
-                          $('#place-order-btn').prop('disabled', false).text('Place Order');
-                      }
-                  });
-              }
-          });
-      </script> --}}
-
-  {{-- <script>
-  $(document).ready(function () {
-
-      const stripe = Stripe("{{ config('services.stripe.key') }}");
-      const elements = stripe.elements();
-
-      const style = {
-          base: {
-              fontSize: '16px',
-              color: '#32325d',
-          }
-      };
-
-      const cardNumber = elements.create('cardNumber', { style });
-      const cardExpiry = elements.create('cardExpiry', { style });
-      const cardCvc = elements.create('cardCvc', { style });
-
-      cardNumber.mount('#card-number');
-      cardExpiry.mount('#card-expiry');
-      cardCvc.mount('#card-cvc');
-
-      // PAY BUTTON CLICK (Stripe)
-      $('#payNow').on('click', async function () {
-
-          let paymentMethod = $('input[name="payment_method"]:checked').val();
-          if (paymentMethod !== 'stripe') return;
-
-          let address_id = $('input[name="address_id"]:checked').val();
-          let notes = $('textarea[name="notes"]').val();
-
-          if (!address_id) {
-              alert('Please select shipping address');
-              return;
-          }
-
-          $('#payNow').addClass('disabled').text('Processing...');
-
-          const { paymentMethod: pm, error } =
-              await stripe.createPaymentMethod({
-                  type: 'card',
-                  card: cardNumber,
-              });
-
-          if (error) {
-              $('#card-errors').text(error.message);
-              $('#payNow').removeClass('disabled')
-                          .text('Pay {{ Number::currency($grandTotal, 'INR') }}');
-              return;
-          }
-
-          // STEP 1: Place Order + Stripe charge
-          $.ajax({
-              url: "{{ route('stripe.payment') }}",
-              method: "POST",
-              data: {
-                  _token: "{{ csrf_token() }}",
-                  payment_method: pm.id,
-                  address_id: address_id,
-                  notes: notes
-              },
-              success: function (res) {
-                  if (res.success) {
-                      window.location.href =
-                          `/checkout/success/${res.order_id}`;
-                  }
-              },
-              error: function (xhr) {
-                  $('#card-errors').text(xhr.responseJSON.message);
-                  $('#payNow').removeClass('disabled')
-                              .text('Pay {{ Number::currency($grandTotal, 'INR') }}');
-              }
-          });
-      });
-
-  });
-  </script> --}}
-
-
 @endsection

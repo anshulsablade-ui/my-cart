@@ -8,11 +8,13 @@ use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Mycart\Auth\SocialAuthController;
 use App\Http\Controllers\Mycart\CartController;
 use App\Http\Controllers\Mycart\CheckoutController;
 use App\Http\Controllers\Mycart\HomeController;
 use App\Http\Controllers\Mycart\OrderController;
 use App\Http\Controllers\Mycart\ProductController as MycartProductController;
+use App\Http\Controllers\Mycart\ProfileController;
 use App\Http\Controllers\Mycart\WishlistController;
 use Illuminate\Support\Facades\Route;
 
@@ -74,6 +76,7 @@ Route::prefix('home')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
 
     Route::get('/product/{slug}', [MycartProductController::class, 'detail'])->name('product.show');
+    Route::get('/products', [MycartProductController::class, 'productList'])->name('products.list');
 
     // Add To Cart Route
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -99,7 +102,7 @@ Route::prefix('home')->group(function () {
 
 
         // User Address Routes
-        Route::get('/address', [AddressController::class, 'index'])->name('address');
+        Route::get('/address', [AddressController::class, 'index'])->name('address.index');
         Route::post('/address', [AddressController::class, 'store'])->name('address.store');
         Route::get('/address/edit/{id}', [AddressController::class, 'edit'])->name('address.edit');
         Route::put('/address/{id}', [AddressController::class, 'update'])->name('address.update');
@@ -110,7 +113,15 @@ Route::prefix('home')->group(function () {
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/{id}', [OrderController::class, 'show'])->name('order.show');
 
+        // Profile Routes
+        Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+        Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+        // logout
         Route::get('/logout', [MycartAuthController::class, 'logout'])->name('logout');
+        
+        // password change
+        Route::post('/password-change', [MycartAuthController::class, 'passwordUpdate'])->name('password.update');
 
         // Route::post('/stripe-payment', [CheckoutController::class, 'payment'])->name('stripe.payment');
 
@@ -123,4 +134,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/login', [MycartAuthController::class, 'login'])->name('login.post');
     Route::get('/register', [MycartAuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [MycartAuthController::class, 'register'])->name('register.post');
+
+    // Social Login
+    Route::get('/{provider}', [SocialAuthController::class, 'redirect'])->name('auth.redirect');
+    Route::get('/{provider}/callback', [SocialAuthController::class, 'callback'])->name('auth.callback');
 });

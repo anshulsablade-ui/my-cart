@@ -114,7 +114,7 @@
             <h2 class="h3 pe-3 me-3 mb-md-0">Special offers for you</h2>
           </div>
           <div class="nav ms-3">
-            <a class="nav-link animate-underline px-0 py-2" href="shop-catalog-electronics.html">
+            <a class="nav-link animate-underline px-0 py-2" href="{{ route('products.list') }}">
               <span class="animate-target text-nowrap">View all</span>
               <i class="ci-chevron-right fs-base ms-1"></i>
             </a>
