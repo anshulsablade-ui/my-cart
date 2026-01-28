@@ -40,7 +40,7 @@
 
     <!-- Customizer -->
     <script src="{{ asset('web/assets/js/customizer.min.js') }}"></script>
-    <style>
+    {{-- <style>
       #global-loader {
         position: fixed;
         top: 0;
@@ -75,7 +75,7 @@
           transform: rotate(360deg);
         }
       }
-    </style>
+    </style> --}}
     @yield('style')
 </head>
 

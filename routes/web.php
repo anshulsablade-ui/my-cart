@@ -1,13 +1,15 @@
 <?php
 
 use App\Http\Controllers\Admin\Auth\AuthController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\LocationController;
-use App\Http\Controllers\Mycart\AddressController;
-use App\Http\Controllers\Mycart\Auth\AuthController as MycartAuthController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Mycart\AddressController;
+use App\Http\Controllers\Mycart\Auth\AuthController as MycartAuthController;
 use App\Http\Controllers\Mycart\Auth\SocialAuthController;
 use App\Http\Controllers\Mycart\CartController;
 use App\Http\Controllers\Mycart\CheckoutController;
@@ -36,6 +38,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('adminLogin')->group(function () {
 
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/sales-chart', [DashboardController::class, 'salesChart']);
 
         // Category Routes
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
@@ -59,6 +62,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/products/{id}', [ProductController::class, 'update'])->name('products.update');
         Route::delete('/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
 
+        // Order Routes
+        Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{id}', [AdminOrderController::class, 'show'])->name('order.show');
+        Route::put('/orders/{id}', [AdminOrderController::class, 'update'])->name('order.update');
+        Route::delete('/orders/{id}', [AdminOrderController::class, 'destroy'])->name('order.destroy');
+
+        // Customer Routes
+        Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
+        Route::delete('/customers/{id}', [CustomerController::class, 'destroy'])->name('customer.destroy');
+
     });
 });
 
@@ -75,8 +88,12 @@ Route::get('/getCities/{id}', [LocationController::class, 'getCities'])->name('g
 Route::prefix('home')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
 
+    // Product Routes
     Route::get('/product/{slug}', [MycartProductController::class, 'detail'])->name('product.show');
     Route::get('/products', [MycartProductController::class, 'productList'])->name('products.list');
+    Route::get('/products/search', [MycartProductController::class, 'search'])->name('products.search');
+    // Product Fillter Routes
+    Route::get('/product/filter-{slug}', [MycartProductController::class, 'productFillter'])->name('product.filter');
 
     // Add To Cart Route
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -122,8 +139,6 @@ Route::prefix('home')->group(function () {
         
         // password change
         Route::post('/password-change', [MycartAuthController::class, 'passwordUpdate'])->name('password.update');
-
-        // Route::post('/stripe-payment', [CheckoutController::class, 'payment'])->name('stripe.payment');
 
     });
 });

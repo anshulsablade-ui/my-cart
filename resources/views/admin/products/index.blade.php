@@ -32,7 +32,7 @@
     </div>
     <div class="card-body px-0">
       <!-- data table -->
-      <table class="table mb-0 data-table fs-10" id="categoriesTable">
+      <table class="table mb-0 data-table fs-10" id="productsTable">
         <thead class="bg-200">
           <tr>
             <th class="text-900 text-nowrap py-1">Name</th>
@@ -59,7 +59,7 @@
     $(document).ready(function() {
 
         // Product DataTable
-        let table = $('#categoriesTable').DataTable({
+        let table = $('#productsTable').DataTable({
             processing: true,
             serverSide: true,
             ajax: "{{ route('admin.products.index') }}",

@@ -52,12 +52,7 @@
                     <label class="form-label ps-1" for="password">Password</label>
                     <input class="form-control" type="password" name="password" id="password" placeholder="Password" autocomplete />
                   </div>
-                  <div class="row flex-between-center">
-                    <div class="col-auto">
-                      <a class="fs-10" href="forgot-password.html">Forgot Password?</a>
-                    </div>
-                  </div>
-                  <div class="mb-3"><button class="btn btn-primary d-block w-100 mt-3" type="submit" name="submit">Log in</button></div>
+                  <div class="mb-3"><button class="btn btn-primary d-block w-100 mt-4" type="submit" name="submit">Log in</button></div>
                 </form>
               </div>
             </div>

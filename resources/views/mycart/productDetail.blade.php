@@ -128,7 +128,11 @@
 
                 <!-- Price -->
                 <div class="d-flex flex-wrap align-items-center mb-3">
-                  <div class="h4 mb-0 me-3">{{ Number::currency($product->final_price, 'INR') }}</div>
+                  <div class="h4 mb-0 me-3">{{ Number::currency($product->final_price, 'INR') }}
+                      @if ($product->base_price != $product->final_price)
+                        <del class="text-body-tertiary fs-sm fw-normal">{{ Number::currency($product->base_price, 'INR') }}</del>
+                      @endif
+                  </div>
                   @if ($product->stock > 0)
                   <div class="d-flex align-items-center text-success fs-sm ms-auto">
                     <i class="ci-check-circle fs-base me-2"></i>

@@ -12,18 +12,7 @@
                     <img src="{{ asset('/assets/img/favicons/mycart.png') }}" alt="MyCart" width="140" />
                 </a>
               </h4>
-              <p class="text-body fs-sm text-sm-end text-md-start mb-sm-0 mb-md-3 ms-0 ms-sm-auto ms-md-0 me-4">Got questions? Contact us 24/7</p>
-              <div class="dropdown" style="max-width: 250px">
-                <button type="button" class="btn btn-secondary dropdown-toggle justify-content-between w-100" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  Help and consultation
-                </button>
-                <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#!">Help center &amp; FAQ</a></li>
-                  <li><a class="dropdown-item" href="#!">Support chat</a></li>
-                  <li><a class="dropdown-item" href="#!">Open support ticket</a></li>
-                  <li><a class="dropdown-item" href="#!">Call center</a></li>
-                </ul>
-              </div>
+              
             </div>
             <div class="col-md-8">
               <div class="row row-cols-1 row-cols-sm-3 gx-3 gx-md-4">

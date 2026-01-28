@@ -21,33 +21,36 @@
                 <span class="nav-link-text ps-1">Dashboard</span>
             </div>
           </a>
-          <a class="nav-link dropdown-indicator @if (request()->segment(2) !== 'brands' && request()->segment(2) !== 'categories')collapsed @endif" href="#e-commerce" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="e-commerce">
+          <a class="nav-link @if (request()->routeIs('admin.products.index')) active @endif" href="{{ route('admin.products.index') }}">
             <div class="d-flex align-items-center">
-                <span class="nav-link-icon"><span class="fas fa-shopping-cart"></span></span>
-                <span class="nav-link-text ps-1">E commerce</span>
+              <span class="nav-link-icon"><span class="fas fa-shopping-cart"></span></span>
+              <span class="nav-link-text ps-1">Product list</span>
             </div>
           </a>
-          <ul class="nav collapse @if (request()->segment(2) == 'brands' || request()->segment(2) == 'categoies') show @endif" id="e-commerce">
-            <li class="nav-item">
-              <a class="nav-link @if (request()->routeIs('admin.products.index')) active @endif" href="{{ route('admin.products.index') }}">
-                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Product list</span></div>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link @if (request()->routeIs('admin.categories.index')) active @endif" href="{{ route('admin.categories.index') }}">
-                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Category list</span></div>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link @if (request()->routeIs('admin.brands.index')) active @endif" href="{{ route('admin.brands.index') }}">
-                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Brand list</span></div>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="../app/e-commerce/customers.html">
-                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Customers</span></div>
-              </a>
-            </li>
+          <a class="nav-link @if (request()->routeIs('admin.categories.index')) active @endif" href="{{ route('admin.categories.index') }}">
+            <div class="d-flex align-items-center">
+              <span class="nav-link-icon"><span class="fab fa-trello"></span></span>
+              <span class="nav-link-text ps-1">Category list</span>
+            </div>
+          </a>
+          <a class="nav-link @if (request()->routeIs('admin.brands.index')) active @endif" href="{{ route('admin.brands.index') }}">
+            <div class="d-flex align-items-center">
+              <span class="nav-link-icon"><span class="fas fa-tags"></span></span>
+              <span class="nav-link-text ps-1">Brand list</span>
+            </div>
+          </a> 
+          <a class="nav-link @if (request()->routeIs('admin.orders.index')) active @endif" href="{{ route('admin.orders.index') }}">
+            <div class="d-flex align-items-center">
+              <span class="nav-link-icon"><span class="fas fa-box-open"></span></span>
+              <span class="nav-link-text ps-1">Order list</span>
+            </div>
+          </a> 
+          <a class="nav-link @if (request()->routeIs('admin.customers.index')) active @endif" href="{{ route('admin.customers.index') }}">
+            <div class="d-flex align-items-center">
+              <span class="nav-link-icon"><span class="fas fa-user"></span></span>
+              <span class="nav-link-text ps-1">Customers</span>
+            </div>
+          </a>                                                   
           </ul>
         </li>
       </ul>

@@ -106,7 +106,7 @@
                   render: function(data, type, row) {
                     if (type !== 'display') return data;
 
-                    let logoUrl = row.logo ? `<img src="${row.logo}" alt="${data}" width="40">` : 'No Image';
+                    let logoUrl = row.logo ? `<img src="${row.logo}" alt="${data}" width="40">` : `<img src="{{ asset('images/brands/no-image.png') }}" alt="no image" width="40">`;
                     return `<div class="d-flex align-items-center"><div class="me-2">${logoUrl}</div><div>${data}</div></div>`;
                   }
                  },

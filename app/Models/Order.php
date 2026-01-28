@@ -33,7 +33,7 @@ class Order extends Model
 
     public function orderAddresses()
     {
-        return $this->hasMany(OrderAddress::class);
+        return $this->hasOne(OrderAddress::class);
     }
 
     public function payment()
