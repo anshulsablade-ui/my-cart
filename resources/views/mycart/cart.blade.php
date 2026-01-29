@@ -83,7 +83,11 @@
                               </div>
                             </div>
                           </td>
-                          <td class="h6 py-3 d-none d-xl-table-cell">{{ Number::currency($item->product->final_price, 'INR') }}</td>
+                          <td class="h6 py-3 d-none d-xl-table-cell">{{ Number::currency($item->product->final_price, 'INR') }}
+                            @if ($item->product->base_price != $item->product->final_price)
+                              <del class="text-body-tertiary fs-sm fw-normal">{{ Number::currency($item->product->base_price, 'INR') }}</del>
+                            @endif
+                          </td>
                           <td class="py-3 d-none d-md-table-cell">
                             <div class="count-input">
                               <button type="button" class="btn btn-icon decrement-btn">

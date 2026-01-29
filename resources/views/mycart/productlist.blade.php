@@ -1,7 +1,7 @@
 @extends('mycart.layouts.app')
 @section('title', 'Product Catalog')
 @section('style')
-    
+
 @endsection
 @section('content')
     <!-- Page content -->
@@ -25,11 +25,11 @@
             <div class="d-md-flex align-items-start">
               <div class="h6 fs-sm fw-normal text-nowrap translate-middle-y mt-3 mb-0 me-4">Found <span class="fw-semibold">{{ $products->total() }}</span> items</div>
               <div class="d-flex flex-wrap gap-2">
-                <button type="button" class="btn btn-sm btn-secondary">
+                {{-- <button type="button" class="btn btn-sm btn-secondary">
                   <i class="ci-close fs-sm ms-n1 me-1"></i>
                   Sale
-                </button>
-                <button type="button" class="btn btn-sm btn-secondary bg-transparent border-0 text-decoration-underline px-0 ms-2">
+                </button> --}}
+                <button type="button" id="clearFilters" class="btn btn-sm btn-secondary bg-transparent border-0 text-decoration-underline px-0 ms-2">
                   Clear all
                 </button>
               </div>
@@ -39,13 +39,14 @@
             <div class="d-flex align-items-center justify-content-lg-end text-nowrap">
               <label class="form-label fw-semibold mb-0 me-2">Sort by:</label>
               <div style="width: 190px">
-                <select class="form-select border-0 rounded-0 px-1" aria-label="Sort by">
-                  <option value="Relevance">Relevance</option>
-                  <option value="Popularity">Popularity</option>
-                  <option value="Price: Low to High">Price: Low to High</option>
-                  <option value="Price: High to Low">Price: High to Low</option>
-                  <option value="Newest Arrivals">Newest Arrivals</option>
+                <select id="sortFilter" name="sort" class="form-select border-0 rounded-0 px-1">
+                  <option value="">Relevance</option>
+                  <option value="price_asc">Price: Low to High</option>
+                  <option value="price_desc">Price: High to Low</option>
+                  <option value="newest">Newest Arrivals</option>
+                  {{-- <option value="popularity">Popularity</option> --}}
                 </select>
+
               </div>
             </div>
           </div>
@@ -68,7 +69,7 @@
               <div class="offcanvas-body flex-column pt-2 py-lg-0">
 
                 <!-- Status -->
-                <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
+                {{-- <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
                   <h4 class="h6">Status</h4>
                   <div class="d-flex flex-wrap gap-2">
                     <button type="button" class="btn btn-sm btn-outline-secondary">
@@ -78,7 +79,7 @@
                     <button type="button" class="btn btn-sm btn-outline-secondary">Same Day Delivery</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary">Available to Order</button>
                   </div>
-                </div>
+                </div> --}}
 
                 <!-- Categories -->
                 <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
@@ -86,7 +87,7 @@
                   <ul class="list-unstyled d-block m-0">
                     @foreach ($categories->take(8) as $category)          
                       <li class="nav d-block pt-2 mt-1">
-                        <a class="nav-link animate-underline fw-normal p-0 categoryFillter" href="javascript:void(0);" data-category-id="{{ $category->id }}">
+                        <a class="nav-link animate-underline fw-normal p-0 categoryFilter" href="javascript:void(0);" data-category-id="{{ $category->id }}">
                           <span class="animate-target text-truncate me-3">{{ $category->name }}</span>
                           <span class="text-body-secondary fs-xs ms-auto">{{ $category->products_count  }}</span>
                         </a>
@@ -98,7 +99,7 @@
                             <div class="d-flex flex-column gap-1">
                               @foreach ($categories->skip(8) as $category)
                                 <li class="nav d-block pt-2 mt-1">
-                                  <a class="nav-link animate-underline fw-normal p-0 categoryFillter" href="javascript:void(0);" data-category-id="{{ $category->id }}">
+                                  <a class="nav-link animate-underline fw-normal p-0 categoryFilter" href="javascript:void(0);" data-category-id="{{ $category->id }}">
                                     <span class="animate-target text-truncate me-3">{{ $category->name }}</span>
                                     <span class="text-body-secondary fs-xs ms-auto">{{ $category->products_count  }}</span>
                                   </a>
@@ -117,23 +118,17 @@
                 </div>
 
                 <!-- Price range -->
-                <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
-                  <h4 class="h6 mb-2" id="slider-label">Price</h4>
-                  <div class="range-slider" data-range-slider="{&quot;startMin&quot;: 340, &quot;startMax&quot;: 1250, &quot;min&quot;: 0, &quot;max&quot;: 1600, &quot;step&quot;: 1, &quot;tooltipPrefix&quot;: &quot;$&quot;}" aria-labelledby="slider-label">
-                    <div class="range-slider-ui"></div>
+                {{-- <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
+                  <h4 class="h6 mb-2" id="slider-label">Price (₹)</h4>
+                  <div class="pt-2">
                     <div class="d-flex align-items-center">
-                      <div class="position-relative w-50">
-                        <i class="ci-dollar-sign position-absolute top-50 start-0 translate-middle-y ms-3"></i>
-                        <input type="number" class="form-control form-icon-start" min="0" data-range-slider-min="">
-                      </div>
+                      <input type="number" class="form-control form-icon-start" name="min_price" min="0">
                       <i class="ci-minus text-body-emphasis mx-2"></i>
-                      <div class="position-relative w-50">
-                        <i class="ci-dollar-sign position-absolute top-50 start-0 translate-middle-y ms-3"></i>
-                        <input type="number" class="form-control form-icon-start" min="0" data-range-slider-max="">
-                      </div>
+                      <input type="number" class="form-control form-icon-start" name="max_price" min="0">
                     </div>
+                    <button class="btn btn-primary w-100 mt-3" type="button" id="price-filter">filter</button>
                   </div>
-                </div>
+                </div> --}}
 
                 <!-- Brand (checkboxes) -->
                 <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
@@ -142,7 +137,7 @@
                     @foreach ($brands->take(8) as $brand)    
                       <div class="d-flex align-items-center justify-content-between">
                         <div class="form-check">
-                          <input type="checkbox" class="form-check-input brandFillter" name="brand[]" value="{{ $brand->id }}" id="{{ $brand->slug }}">
+                          <input type="checkbox" class="form-check-input brandFilter" name="brand[]" value="{{ $brand->id }}" id="{{ $brand->slug }}">
                           <label for="{{ $brand->slug }}" class="form-check-label text-body-emphasis">{{ $brand->name }}</label>
                         </div>
                         <span class="text-body-secondary fs-xs">{{ $brand->products_count  }}</span>
@@ -173,6 +168,7 @@
                   </div>
                 </div>
 
+                {{-- <button class="btn btn-primary" type="button" id="filter">filter</button> --}}
               </div>
             </div>
           </aside>
@@ -180,6 +176,12 @@
 
           <!-- Product grid -->
           <div class="col-lg-9">
+            <div id="product-list">
+              @include('mycart.component.product', ['products' => $products])
+            </div>
+          </div>
+
+          {{-- <div class="col-lg-9">
             <div class="row row-cols-2 row-cols-md-3 g-4 pb-3 mb-3">
 
                 @foreach ($products as $product)
@@ -241,21 +243,151 @@
                 {{ $products->links('mycart.pagination.catalog') }}
             </nav>
 
-          </div>
+          </div> --}}
         </div>
       </section>
 
     </main>
+        <!-- Filter offcanvas toggle that is visible on screens < 992px wide (lg breakpoint) -->
+    <button type="button" class="fixed-bottom z-sticky w-100 btn btn-lg btn-dark border-0 border-top border-light border-opacity-10 rounded-0 pb-4 d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#filterSidebar" aria-controls="filterSidebar" data-bs-theme="light">
+      <i class="ci-filter fs-base me-2"></i>
+      Filters
+    </button>
 @endsection
 @section('script')
+
 <script>
-  $(document).ready(function () {
-    $('body').on('click', '.categoryFillter', '.brandFillter', function () {
-      var category = $(this).data('category');
-      var brand = $(this).data('brand');
-      // var url = "?category=" + category + "&brand=" + brand;
-      window.location.href = url;
+$(document).ready(function () {
+
+    $('#clearFilters').on('click', function () {
+
+    $.ajax({
+      url: "{{ route('products.filter') }}",
+      type: "GET",
+      beforeSend: function () {
+        $('#product-list').html('<p class="text-center py-5">Loading...</p>');
+      },
+      success: function (response) {
+        $('.categoryFilter').removeClass('active');
+
+        $('.brandFilter').prop('checked', false);
+       
+        $('#product-list').html(response);
+      }
     });
+
   });
+
+  // function updateURL(category, brands, sort, page = 1, min_price, max_price) {
+  //   let params = new URLSearchParams();
+
+  //   if (category) params.set('category', category);
+  //   if (brands.length) params.set('brands', brands.join(','));
+  //   if (sort) params.set('sort', sort);
+  //   if (page > 1) params.set('page', page);
+  //   if (min_price) params.set('min_price', min_price);
+  //   if (max_price) params.set('max_price', max_price);
+
+  //   history.pushState({}, '', '?' + params.toString());
+  // }
+
+  function applyFilter(page = 1) {
+    let brands = [];
+    let category = $('.categoryFilter.active').data('category-id');
+    let sort = $('#sortFilter').val();
+    let min_price = $('#min_price').val();
+    let max_price = $('#max_price').val();
+
+    $('.brandFilter:checked').each(function () {
+      brands.push($(this).val());
+    });
+
+    // updateURL(category, brands, sort, page, min_price, max_price);
+
+    $.ajax({
+      url: "{{ route('products.filter') }}",
+      type: "GET",
+      data: {
+        search: $('#search').val(),
+        category: category,
+        brands: brands,
+        sort: sort,
+        page: page,
+        min_price: min_price,
+        max_price: max_price
+      },
+      beforeSend: function () {
+        $('#product-list').html('<p class="text-center py-5">Loading...</p>');
+      },
+      success: function (response) {
+        $('#product-list').html(response);
+      }
+    });
+  }
+
+  // price-filter
+  $('body').on('click', '#price-filter', function () {
+    applyFilter();
+  })
+
+  // CATEGORY CLICK
+  $('body').on('click', '.categoryFilter', function () {
+    $('.categoryFilter').removeClass('active');
+    $(this).addClass('active');
+    $('.brandFilter').prop('checked', false);
+
+    applyFilter();
+  });
+
+  // BRAND CHECK
+  $('body').on('change', '.brandFilter', function () {
+    applyFilter();
+  });
+
+  // SORT
+  $('#sortFilter').on('change', function () {
+    applyFilter();
+  });
+
+  // PAGINATION
+  // $('body').on('click', '.pagination a', function (e) {
+  //   e.preventDefault();
+  //   let page = new URL($(this).attr('href')).searchParams.get('page');
+  //   applyFilter(page);
+  // });
+
+  // RESTORE STATE FROM URL
+  // function restoreFromURL() {
+  //   let params = new URLSearchParams(window.location.search);
+
+  //   let category = params.get('category');
+  //   let brands = params.get('brands');
+  //   let sort = params.get('sort');
+
+  //   if (category) {
+  //     $('.categoryFilter').removeClass('active');
+  //     $('.categoryFilter[data-category-id="' + category + '"]').addClass('active');
+  //   }
+
+  //   if (brands) {
+  //     brands.split(',').forEach(id => {
+  //       $('.brandFilter[value="' + id + '"]').prop('checked', true);
+  //     });
+  //   }
+
+  //   if (sort) {
+  //     $('#sortFilter').val(sort);
+  //   }
+
+  //   if (category || brands || sort) {
+  //     applyFilter(params.get('page') ?? 1);
+  //   }
+  // }
+
+  // restoreFromURL();
+
+});
 </script>
+
 @endsection
+

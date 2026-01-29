@@ -17,7 +17,7 @@ class DashboardController extends Controller
         $totalOrders = Order::count();
         $totatUsers = User::whereNot('role', 'admin')->count();
         $totalProducts = Product::count();
-        $totalRevenue = Order::sum('grand_total');
+        $totalRevenue = Order::where('order_status', 'completed')->sum('grand_total');
         return view('admin.dashboard.index', compact('users', 'totalOrders', 'totatUsers', 'totalProducts', 'totalRevenue'));
     }
 
@@ -31,7 +31,8 @@ class DashboardController extends Controller
 
             $months[] = $date->format('M');
 
-            $sales[] = Order::whereMonth('created_at', $date->month)
+            $sales[] = Order::where('order_status', 'completed')
+                ->whereMonth('created_at', $date->month)
                 ->whereYear('created_at', $date->year)
                 ->sum('grand_total');
         }

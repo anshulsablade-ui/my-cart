@@ -149,7 +149,7 @@ class CheckoutController extends Controller
 
                 $razorpayOrder = $api->order->create([
                     'receipt' => $order->order_no,
-                    'amount' => $grandTotal * 100, 
+                    'amount' => (int) round($grandTotal * 100),
                     'currency' => 'INR',
                     'notes' => [
                         'order_id' => $order->id,
@@ -171,7 +171,8 @@ class CheckoutController extends Controller
                         'name' => session()->get('user.name'),
                         'email' => session()->get('user.email'),
                         'contact' => session()->get('user.phone') ?? ''
-                    ]
+                    ],
+                    'redirect' => route('order.success', $order->id)
                 ]);
             }
 
@@ -267,11 +268,47 @@ class CheckoutController extends Controller
             ->where('id', $orderId)
             ->where('user_id', session()->get('user.id'))
             ->first();
-// dd($order->toArray());
+        // dd($order->toArray());
         if (!$order) {
             return response()->json(['error' => 'Order not found'], 404);
         }
 
         return view('mycart.order-success', compact('order'));
+    }
+
+    public function createOrder(Request $request)
+    {
+        $api = new Api(config('services.razorpay.key'), config('services.razorpay.secret'));
+        $order = Order::where('id', $request->order_id)->first();
+
+        if (!$order) {
+            return response()->json(['error' => 'Order not found'], 404);
+        }
+
+        $razorpayOrder = $api->order->create([
+            'receipt' => 'order_' . time(),
+            'amount' => (int) round($request->amount * 100),
+            'currency' => 'INR',
+            'notes' => [
+                'order_id' => $request->order_id,
+                'user_id' => session()->get('user.id')
+            ]
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'razorpay_order_id' => $razorpayOrder['id'],
+            'amount' => $request->amount,
+            'currency' => 'INR',
+            'order_id' => $order->id,
+            'order_no' => $order->order_no,
+            'key' => config('services.razorpay.key'),
+            'user' => [
+                'name' => session()->get('user.name'),
+                'email' => session()->get('user.email'),
+                'contact' => session()->get('user.phone') ?? ''
+            ],
+            'redirect' => route('order.success', $order->id)
+        ]);
     }
 }

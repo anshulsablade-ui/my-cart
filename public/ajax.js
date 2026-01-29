@@ -11,7 +11,7 @@ function ajaxCall(url, method, data, successCallback, errorCallback) {
         data: data,
         processData: false,
         contentType: false,
-        global: false,
+        // global: false,
         success: successCallback,
         error: errorCallback
     });

@@ -178,6 +178,9 @@
                       </ul>
                     </div>
                     <a class="d-block rounded-top overflow-hidden p-3 p-sm-4" href="{{ route('product.show', $product->slug) }}">
+                      @if ($product->discount_percentage)
+                        <span class="badge text-bg-danger position-absolute start-0">-{{ $product->discount_percentage }}%</span>
+                      @endif
                       <div class="ratio" style="--cz-aspect-ratio: calc(240 / 258 * 100%)">
                         <img src="{{ asset('images/products/medium/' . ($product->primaryImage->image ?? 'no-image.png')) }}" alt="{{ $product->name }}" class="img-fluid">
                       </div>

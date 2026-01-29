@@ -108,19 +108,17 @@
                         <a class="nav-link text-decoration-underline p-0" href="{{ route('cart.index') }}">Edit</a>
                       </div>
                     </div>
-                    <a class="d-flex align-items-center gap-2 text-decoration-none" href="#orderPreview" data-bs-toggle="offcanvas">
+                    <div class="d-flex align-items-center gap-2 text-decoration-none">
                         @foreach ($cartItems as $item)
                             <div class="ratio ratio-1x1" style="max-width: 64px">
                               <img src="{{ asset('images/products/thumb/' . ($item->product->primaryImage->image ?? 'no-image.png')) }}" class="d-block p-1" alt="iPhone">
                             </div>
                         @endforeach
-                      
-                      <i class="ci-chevron-right text-body fs-xl p-0 ms-auto"></i>
-                    </a>
+                    </div>
                   </div>
                   <ul class="list-unstyled fs-sm gap-3 mb-0">
                     <li class="d-flex justify-content-between">
-                      Subtotal (3 items):
+                      Subtotal ({{ count($cartItems) }} items):
                       <span class="text-dark-emphasis fw-medium">{{ Number::currency($subtotal, 'INR') }}</span>
                     </li>
                     <li class="d-flex justify-content-between">
@@ -391,7 +389,12 @@
       const paymentMethod = $('input[name="payment_method"]:checked').val();
 
       if (!shippingAddress) {
-        alert('Please select a shipping address');
+        messageAlert('Please select a shipping address', 'info');
+        return;
+      }
+
+      if (!paymentMethod) {
+        messageAlert('Please select a payment method', 'info');
         return;
       }
 
@@ -401,6 +404,7 @@
         data: {
           shipping_address_id: shippingAddress,
           payment_method: paymentMethod,
+          notes: $('#notes').val(),
         },
         success: function (response) {
           if (response.success) {
@@ -414,7 +418,6 @@
         },
         error: function (xhr) {
           alert('Error: ' + (xhr.responseJSON?.error || 'Something went wrong'));
-          $('#place-order-btn').prop('disabled', false).text('Place Order');
         }
       });
     });
@@ -425,7 +428,7 @@
         key: data.key,
         amount: data.amount * 100,
         currency: data.currency,
-        name: 'Your Store Name',
+        name: 'MyCart',
         description: 'Order #' + data.order_no,
         order_id: data.razorpay_order_id,
         handler: function (response) {
@@ -441,7 +444,8 @@
         },
         modal: {
           ondismiss: function () {
-            $('#place-order-btn').prop('disabled', false).text('Place Order');
+            messageAlert('Payment cancelled', 'error');
+            window.location.href = response.redirect;
           }
         }
       };
@@ -468,7 +472,6 @@
         },
         error: function (xhr) {
           alert('Payment verification failed: ' + (xhr.responseJSON?.error || 'Unknown error'));
-          $('#place-order-btn').prop('disabled', false).text('Place Order');
         }
       });
     }

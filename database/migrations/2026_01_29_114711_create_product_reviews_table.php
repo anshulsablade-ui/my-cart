@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+Schema::create('product_reviews', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('product_id')->constrained();
+    $table->foreignId('user_id')->constrained();
+    $table->tinyInteger('rating'); // 1–5
+    $table->text('review')->nullable();
+    $table->enum('status', ['active', 'inactive'])->default('active');
+    $table->timestamps();
+
+    $table->unique(['product_id', 'user_id']); // one review per product
+});
+
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('product_reviews');
+    }
+};

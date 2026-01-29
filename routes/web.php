@@ -16,6 +16,7 @@ use App\Http\Controllers\Mycart\CheckoutController;
 use App\Http\Controllers\Mycart\HomeController;
 use App\Http\Controllers\Mycart\OrderController;
 use App\Http\Controllers\Mycart\ProductController as MycartProductController;
+use App\Http\Controllers\Mycart\ProductReviewController;
 use App\Http\Controllers\Mycart\ProfileController;
 use App\Http\Controllers\Mycart\WishlistController;
 use Illuminate\Support\Facades\Route;
@@ -91,9 +92,11 @@ Route::prefix('home')->group(function () {
     // Product Routes
     Route::get('/product/{slug}', [MycartProductController::class, 'detail'])->name('product.show');
     Route::get('/products', [MycartProductController::class, 'productList'])->name('products.list');
-    Route::get('/products/search', [MycartProductController::class, 'search'])->name('products.search');
-    // Product Fillter Routes
-    Route::get('/product/filter-{slug}', [MycartProductController::class, 'productFillter'])->name('product.filter');
+    Route::get('/products/filter', [MycartProductController::class, 'productFilter'])->name('products.filter');
+
+    Route::post('/products/search', [MycartProductController::class, 'search'])->name('products.search');
+
+    // Route::get('/product/filter/{slug?}', [MycartProductController::class, 'productFilter'])->name('product.filter');
 
     // Add To Cart Route
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -116,6 +119,8 @@ Route::prefix('home')->group(function () {
         Route::post('/checkout', [CheckoutController::class, 'processOrder'])->name('order.process');
         Route::post('/checkout/place-order', [CheckoutController::class, 'verifyPayment'])->name('order.verify-payment');
         Route::get('/checkout/success/{orderId}', [CheckoutController::class, 'orderSuccess'])->name('order.success');
+    
+        Route::post('/razorpay/order', [CheckoutController::class, 'createOrder'])->name('razorpay.order');
 
 
         // User Address Routes
@@ -124,6 +129,11 @@ Route::prefix('home')->group(function () {
         Route::get('/address/edit/{id}', [AddressController::class, 'edit'])->name('address.edit');
         Route::put('/address/{id}', [AddressController::class, 'update'])->name('address.update');
         Route::delete('/address/{id}', [AddressController::class, 'delete'])->name('address.delete');
+
+        // review Routes
+        Route::post('/review', [ProductReviewController::class, 'store'])->name('review.store');
+        Route::put('/review/{id}', [ProductReviewController::class, 'update'])->name('review.update');
+        Route::delete('/review/delete', [ProductReviewController::class, 'delete'])->name('review.delete');
 
 
         // order Routes

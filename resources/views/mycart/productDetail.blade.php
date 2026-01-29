@@ -132,6 +132,9 @@
                       @if ($product->base_price != $product->final_price)
                         <del class="text-body-tertiary fs-sm fw-normal">{{ Number::currency($product->base_price, 'INR') }}</del>
                       @endif
+                      @if ($product->discount_percentage)
+                        <span class="text-success">-{{ $product->discount_percentage }}%</span>
+                      @endif
                   </div>
                   @if ($product->stock > 0)
                   <div class="d-flex align-items-center text-success fs-sm ms-auto">
@@ -206,17 +209,19 @@
         </div>
       </section>
 
-      <!-- Product details and Reviews shared container -->
+      <!-- Reviews shared container -->
       <section class="container pb-5 mb-2 mb-md-3 mb-lg-4 mb-xl-5">
         <div class="row">
           <div class="col-md-7">
             <!-- Reviews -->
             <div class="d-flex align-items-center pt-5 mb-4 mt-2 mt-md-3 mt-lg-4" id="reviews" style="scroll-margin-top: 80px">
               <h2 class="h3 mb-0">Reviews</h2>
-              <button type="button" class="btn btn-secondary ms-auto" data-bs-toggle="modal" data-bs-target="#reviewForm">
-                <i class="ci-edit-3 fs-base ms-n1 me-2"></i>
-                Leave a review
-              </button>
+              @if ($orderCompleted)     
+                <button type="button" class="btn btn-secondary ms-auto" data-bs-toggle="modal" data-bs-target="#reviewForm">
+                  <i class="ci-edit-3 fs-base ms-n1 me-2"></i>
+                  Leave a review
+                </button>
+              @endif
             </div>
 
             <!-- Reviews stats -->
@@ -540,27 +545,16 @@
     <!-- Review form modal -->
     <div class="modal fade" id="reviewForm" data-bs-backdrop="static" tabindex="-1" aria-labelledby="reviewFormLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <form class="modal-content needs-validation" novalidate="">
+        <form class="modal-content" id="reviewForm">
+          <input type="hidden" name="product_id" value="{{ $product->id }}">
           <div class="modal-header border-0">
             <h5 class="modal-title" id="reviewFormLabel">Leave a review</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body pb-3 pt-0">
             <div class="mb-3">
-              <label for="review-name" class="form-label">Your name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="review-name" required="">
-              <div class="invalid-feedback">Please enter your name!</div>
-              <small class="form-text">Will be displayed on the comment.</small>
-            </div>
-            <div class="mb-3">
-              <label for="review-email" class="form-label">Your email <span class="text-danger">*</span></label>
-              <input type="email" class="form-control" id="review-email" required="">
-              <div class="invalid-feedback">Please provide a valid email address!</div>
-              <small class="form-text">Authentication only - we won't spam you.</small>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Rating <span class="text-danger">*</span></label>
-              <select class="form-select" data-select="{
+              <label class="form-label" for="rating">Rating <span class="text-danger">*</span></label>
+              <select class="form-select" name="rating" id="rating" data-select="{
                 &quot;placeholderValue&quot;: &quot;Choose rating&quot;,
                 &quot;choices&quot;: [
                   {
@@ -609,22 +603,13 @@
                     }
                   }
                 ]
-              }" data-select-template="true" required=""></select>
-              <div class="invalid-feedback">Please choose your rating!</div>
+              }" data-select-template="true"></select>
+              {{-- <div class="invalid-feedback" id="rating_error"></div> --}}
             </div>
             <div class="mb-3">
-              <label class="form-label" for="review-text">Review <span class="text-danger">*</span></label>
-              <textarea class="form-control" rows="4" id="review-text" required=""></textarea>
-              <div class="invalid-feedback">Please write a review!</div>
-              <small class="form-text">Your review must be at least 50 characters.</small>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Pros</label>
-              <input type="text" class="form-select" data-select="{&quot;placeholderValue&quot;: &quot;Type and hit \&quot;Enter\&quot;&quot;}">
-            </div>
-            <div>
-              <label class="form-label">Cons</label>
-              <input type="text" class="form-select" data-select="{&quot;placeholderValue&quot;: &quot;Type and hit \&quot;Enter\&quot;&quot;}">
+              <label class="form-label" for="review">Review <span class="text-danger">*</span></label>
+              <textarea class="form-control" rows="4" id="review" name="review"></textarea>
+              {{-- <div class="invalid-feedback" id="review_error"></div> --}}
             </div>
           </div>
           <div class="modal-footer flex-nowrap gap-3 border-0 px-4">
@@ -638,6 +623,37 @@
 @section('script')
 <script>
   $(document).ready(function () {
+
+    $("#reviewForm").submit(function (e) { 
+      e.preventDefault();
+      let formData = new FormData(this);
+      
+      $.ajax({
+        type: "post",
+        url: "{{ route('review.store') }}",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+          if(response.status == 'success'){
+            messageAlert(response.message, 'success');
+            window.location.reload();
+            // $('#reviewForm')[0].reset();
+            // $('#reviewForm').modal('hide');
+          }
+        },
+        error: function (response) {
+        var response = JSON.parse(response.responseText);
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+        
+        $.each(response.message, function (key, value) { 
+             $(`#${key}`).addClass('is-invalid').after(` <span class="invalid-feedback">${value}</span> `);
+        });
+        }
+      });
+      
+    });
 
     $('#addToCart').on('click', function () {
       

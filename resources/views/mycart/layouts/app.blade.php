@@ -136,13 +136,13 @@
         @endif
       });
 
-      $(document).ajaxStart(function () {
-        $("#global-loader").fadeIn(200);
-      });
+      // $(document).ajaxStart(function () {
+      //   $("#global-loader").fadeIn(200);
+      // });
 
-      $(document).ajaxStop(function () {
-        $("#global-loader").fadeOut(200);
-      });
+      // $(document).ajaxStop(function () {
+      //   $("#global-loader").fadeOut(200);
+      // });
     </script>
     @yield('script')
 

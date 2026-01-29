@@ -19,27 +19,6 @@
                 <div class="col-md-4 col-xl-6 mb-3 mb-md-0">
                   <h1 class="h2 me-3 mb-0">Orders</h1>
                 </div>
-                {{-- <div class="col-md-8 col-xl-6">
-                  <div class="row row-cols-1 row-cols-sm-2 g-3 g-xxl-4">
-                    <div class="col">
-                      <select class="form-select">
-                        <option value="processing">Processing</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
-                        <option value="pending">Pending</option>
-                    </select>
-                    </div>
-                    <div class="col">
-                      <select class="form-select" aria-label="Timeframe sorting">
-                        <option value="all-time">For all time</option>
-                        <option value="last-year">For last year</option>
-                        <option value="last-3-months">For last 3 months</option>
-                        <option value="last-30-days">For last 30 days</option>
-                        <option value="last-week">For last week</option>
-                      </select>
-                    </div>
-                  </div>
-                </div> --}}
               </div>
 
 
@@ -52,13 +31,16 @@
                         <span class="text-body fw-normal">Order <span class="d-none d-md-inline">#</span></span>
                       </th>
                       <th scope="col" class="py-3 d-none d-md-table-cell">
-                        <button type="button" class="btn orders-sort fw-normal text-body p-0" data-sort="date">Order date</button>
+                        <span class="text-body fw-normal">Order date</span>
                       </th>
                       <th scope="col" class="py-3 d-none d-md-table-cell">
-                        <span class="text-body fw-normal">Status</span>
+                        <span class="text-body fw-normal">Order status</span>
                       </th>
                       <th scope="col" class="py-3 d-none d-md-table-cell">
-                        <button type="button" class="btn orders-sort fw-normal text-body p-0" data-sort="total">Total</button>
+                        <span class="text-body fw-normal">Paymant status</span>
+                      </th>
+                      <th scope="col" class="py-3 d-none d-md-table-cell">
+                        <span class="text-body fw-norma">Total</span>
                       </th>
                       <th scope="col" class="py-3">&nbsp;</th>
                     </tr>
@@ -87,28 +69,31 @@
                           </td>
                           <td class="fw-medium py-3 d-none d-md-table-cell">
                             <span class="d-flex align-items-center">
-                              <span class="bg-info rounded-circle p-1 me-2"></span>
                               {{ ucfirst($order->order_status) }}
                             </span>
                           </td>
                           <td class="fw-medium py-3 d-none d-md-table-cell">
-                            {{ Number::currency($order->subtotal, 'INR') }}
-                            <span class="total d-none">210590</span>
+                            <span class="d-flex align-items-center">
+                              {{ ucfirst($order->payment_status) }}
+                            </span>
+                          </td>
+                          <td class="fw-medium py-3 d-none d-md-table-cell">
+                            {{ Number::currency($order->grand_total, 'INR') }}
                           </td>
                           <td class="py-3 pe-0">
                             <span class="d-flex align-items-center justify-content-end position-relative gap-1 gap-sm-2 ms-n2 ms-sm-0">
-                              @foreach ($order->orderItems as $item)
+                              @foreach ($order->orderItems->take(3) as $item)
                                 <span><img src="{{ asset('images/products/thumb/' . ($item->product->primaryImage->image ?? 'no-image.png')) }}" width="64" alt="Thumbnail"></span>
                               @endforeach
-                              <a class="btn btn-icon btn-ghost btn-secondary stretched-link border-0" href="{{ route('order.show', $order->id) }}">
-                                <i class="ci-chevron-right fs-lg"></i>
-                              </a>
+                              @if ($order->orderItems->count() > 3)
+                                  <span class="fw-medium me-1">+{{ $order->orderItems->count() - 3 }}</span>
+                              @endif
                             </span>
                           </td>
                         </tr>
                     @empty
                       <div class="text-center py-5">
-                        <p class="text-muted mb-3">You haven’t added any addresses yet.</p>
+                        <p class="text-muted mb-3">You haven’t made any orders yet.</p>
                       </div>
                     @endforelse
 

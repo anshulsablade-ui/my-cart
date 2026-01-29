@@ -5,11 +5,6 @@
         <div class="row flex-nowrap align-items-center g-0">
           <div class="col col-lg-3 d-flex align-items-center">
 
-            <!-- Mobile offcanvas menu toggler (Hamburger) -->
-            <button type="button" class="navbar-toggler me-4 me-lg-0" data-bs-toggle="offcanvas" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-
             <!-- Navbar brand (Logo) -->
             <a href="{{ route('home') }}" class="navbar-brand me-0">
               <img src="{{ asset('/assets/img/favicons/mycart.png') }}" alt="" width="110">
@@ -19,8 +14,12 @@
 
             <!-- Search visible on screens > 991px wide (lg breakpoint) -->
             <div class="position-relative flex-fill d-none d-lg-block pe-4 pe-xl-5">
-              <i class="ci-search position-absolute top-50 translate-middle-y d-flex fs-lg text-white ms-3"></i>
-              <input type="search" class="form-control form-control-lg form-icon-start border-white rounded-pill" placeholder="Search the products">
+              <form action="{{ route('products.search') }}" method="post">
+                @csrf
+                <i class="ci-search position-absolute top-50 translate-middle-y d-flex fs-lg text-white ms-3"></i>
+                <input type="search" id="search" name="search" value="{{ $search ?? '' }}" class="form-control form-control-lg form-icon-start border-white rounded-pill" placeholder="Search the products">
+                <button type="submit" class="d-none">Search</button>
+              </form>
             </div>
 
             <!-- Button group -->
