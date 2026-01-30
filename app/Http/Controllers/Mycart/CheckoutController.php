@@ -28,17 +28,31 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Your cart is empty');
         }
 
-        $subtotal = $cartItems->sum(fn($item) => $item->product->base_price * $item->quantity);
-        $discounted_price = $cartItems->sum(fn($item) => $item->product->discounted_price * $item->quantity);
-        $gstAmount = ($subtotal * 18) / 100;
-        $grandTotal = $subtotal + $gstAmount;
+        $subTotal = 0;
+        $discounted_price = 0;
+
+        foreach ($cartItems as $item) {
+            $price = $item->product->base_price;
+            $qty = $item->quantity;
+
+            $itemTotal = $price * $qty;
+            $itemDiscount = ($itemTotal * $item->product->discount_percentage) / 100;
+
+            $subTotal += $itemTotal;
+            $discounted_price += $itemDiscount;
+        }
+
+        $gstAmount = (($subTotal - $discounted_price) * 18) / 100;
+        $shippingAmount = 0;
+
+        $grandTotal = ($subTotal - $discounted_price) + $gstAmount + $shippingAmount;
 
         $addresses = UserAddress::where('user_id', session()->get('user.id'))->with('country', 'state', 'city')->get();
         $countries = Country::all();
 
         return view('mycart.checkout', compact(
             'cartItems',
-            'subtotal',
+            'subTotal',
             'discounted_price',
             'gstAmount',
             'grandTotal',

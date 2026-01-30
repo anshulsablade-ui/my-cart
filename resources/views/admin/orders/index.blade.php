@@ -38,7 +38,7 @@
             <th class="text-900 text-nowrap py-1">Order</th>
             <th class="text-900 text-nowrap py-1">Date</th>
             <th class="text-900 text-nowrap py-1">Items</th>
-            {{-- <th class="text-900 text-nowrap py-1">Payment</th> --}}
+            <th class="text-900 text-nowrap py-1">Payment</th>
             <th class="text-900 text-nowrap py-1">Status</th>
             <th class="text-900 text-nowrap py-1">Amount</th>
             <th class="text-900 text-nowrap py-1">Actions</th>
@@ -86,19 +86,19 @@
                  },
                 { data: 'date'},
                 { data: 'items' },
-                // { data: 'payment_status',
-                //   render: function(data, type, row) {
-                //     if (type !== 'display') return data;
+                { data: 'payment_status',
+                  render: function(data, type, row) {
+                    if (type !== 'display') return data;
 
-                //     if (data === 'pending') {
-                //         return `<span class="badge badge rounded-pill d-block badge-subtle-warning">Pending<span class="ms-1 fas fa-stream" data-fa-transform="shrink-2"></span></span>`;
-                //     } else if (data === 'paid') {
-                //         return `<span class="badge badge rounded-pill d-block badge-subtle-success">Paid<span class="ms-1 fas fa-check" data-fa-transform="shrink-2"></span></span>`;
-                //     } else if (data === 'failed') {
-                //         return `<span class="badge badge rounded-pill d-block badge-subtle-danger">Failed<span class="ms-1 fas fa-ban" data-fa-transform="shrink-2"></span></span>`;
-                //     }
-                //   }
-                //  },
+                    if (data === 'pending') {
+                        return `<span class="badge badge rounded-pill d-block badge-subtle-warning">Pending<span class="ms-1 fas fa-stream" data-fa-transform="shrink-2"></span></span>`;
+                    } else if (data === 'paid') {
+                        return `<span class="badge badge rounded-pill d-block badge-subtle-success">Paid<span class="ms-1 fas fa-check" data-fa-transform="shrink-2"></span></span>`;
+                    } else if (data === 'failed') {
+                        return `<span class="badge badge rounded-pill d-block badge-subtle-danger">Failed<span class="ms-1 fas fa-ban" data-fa-transform="shrink-2"></span></span>`;
+                    }
+                  }
+                 },
                 { data: 'order_status',
                   render: function(data, type, row) {
                     if (type !== 'display') return data;

@@ -98,8 +98,8 @@ class CartController extends Controller
             })->get();
 
         $subtotal = $carts->sum(fn ($item) => $item->product->base_price * $item->quantity);
-        $discounted_price = $carts->sum(fn ($item) => $item->product->discounted_price * $item->quantity);
-        $gstAmount = ($subtotal * 18) / 100;
+        $discounted_price = $carts->sum(fn ($item) => $item->product->base_price * $item->quantity * $item->product->discount_percentage / 100 );
+        $gstAmount = (($subtotal - $discounted_price) * 18) / 100;
         $grandTotal = $subtotal + $gstAmount;
         session()->put('cart_count', $carts->count());
         // dd($carts->toArray());

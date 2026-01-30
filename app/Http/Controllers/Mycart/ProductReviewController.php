@@ -18,15 +18,26 @@ class ProductReviewController extends Controller
         if ($validated->fails()) {
             return response()->json(['status' => 'error', 'message' => $validated->errors()], 422);
         }
-dd($request->all());
-        $request->user()->reviews()->create([
+
+        $review = ProductReview::create([
             'product_id' => $request->product_id,
             'user_id' => session()->get('user.id'),
             'rating' => $request->rating,
             'review' => $request->review,
+            'status' => $request->status ?? 'active',
         ]);
 
-        return response()->json(['status' => 'success', 'message' => 'Review submitted successfully'], 201);
+        return response()->json(['status' => 'success', 'message' => 'Review submitted successfully', 'data' => $review], 201);
+    }
+
+    public function edit(Request $request)
+    {
+        $revirw = ProductReview::where('product_id', $request->product_id)->where('user_id', session()->get('user.id'))->first();
+        if (!$revirw) {
+            return response()->json(['status' => 'error', 'message' => 'Review not found'], 404);
+        }
+
+        return response()->json(['status' => 'success', 'data' => $revirw], 200);
     }
     public function update(Request $request)
     {
@@ -42,11 +53,12 @@ dd($request->all());
         $revirw->update([
             'rating' => $request->rating,
             'review' => $request->review,
+            'status' => $request->status ?? 'active',
         ]);
 
         return response()->json(['status' => 'success', 'message' => 'Review updated successfully'], 200);
     }
-    
+
     public function delete(Request $request)
     {
         $revirw = ProductReview::where('product_id', $request->product_id)->where('user_id', session()->get('user.id'))->first();

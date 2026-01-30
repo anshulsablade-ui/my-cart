@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\ProductReview;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -29,7 +30,7 @@ class ProductController extends Controller
             });
         }
         $products = $products->paginate();
-
+        // dd($products->toArray());
         $categories = Category::withCount('products')->whereHas('products', function ($query) {
             $query->where('stock', '>', 0);
         })->get();
@@ -46,14 +47,20 @@ class ProductController extends Controller
             ->where('slug', $slug)
             ->where('status', 'active')
             ->first();
+        $reviews = ProductReview::with(['user:id,name'])->where('product_id', $product->id)->paginate(5);
+        // dd($product->toArray());
+        $orderCompleted = false;
+        $reviewhas = false;
 
-        
-        $orderCompleted = Order::where('user_id', session()->get('user.id'))
-            ->where('order_status', 'completed')
-            ->whereHas('orderItems', function ($query) use ($product) {
-                $query->where('product_id', $product->id);
-            })
-            ->exists();
+        if ($product) {
+            $orderCompleted = Order::where('user_id', session()->get('user.id'))
+                ->where('order_status', 'completed')
+                ->whereHas('orderItems', function ($query) use ($product) {
+                    $query->where('product_id', $product->id);
+                })
+                ->exists();
+            $reviewhas = ProductReview::where('product_id', $product->id)->where('user_id', session()->get('user.id'))->exists();
+        }
         if (!$product) {
             abort(404);
         }
@@ -66,12 +73,12 @@ class ProductController extends Controller
             ->take(8)
             ->get();
 
-        return view('mycart.productDetail', compact('product', 'simmlarProducts', 'orderCompleted'));
+        return view('mycart.productDetail', compact('product', 'reviews', 'simmlarProducts', 'orderCompleted', 'reviewhas'));
     }
 
     public function productList(Request $request)
     {
-        $products = Product::with('primaryImage', 'category', 'brand')
+        $products = Product::with('primaryImage')
             ->where('status', 'active')
             ->where('stock', '>', 0)
             ->paginate();
@@ -87,30 +94,95 @@ class ProductController extends Controller
         return view('mycart.productList', compact('products', 'categories', 'brands'));
     }
 
+    // public function productFilter(Request $request)
+    // {
+    //     // dd($request->all());
+    //     $products = Product::with('primaryImage')->where('status', 'active')->where('stock', '>', 0);
+
+    //     // search filter
+    //     $search = $request->search;
+    //     if ($search) {
+    //         $products->where(function ($query) use ($search) {
+    //             $query->where('name', 'like', '%' . $search . '%');
+    //         })->orWhereHas('category', function ($query) use ($search) {
+    //             $query->where('name', 'like', '%' . $search . '%');
+    //         })->orWhereHas('brand', function ($query) use ($search) {
+    //             $query->where('name', 'like', '%' . $search . '%');
+    //         });
+    //     }
+
+    //     // category filter
+    //     if ($request->category) {
+    //         $products->where('category_id', $request->category);
+    //     }
+
+    //     // brand filter
+    //     if ($request->brands) {
+    //         $brands = is_array($request->brands)
+    //             ? $request->brands
+    //             : explode(',', $request->brands);
+
+    //         $products->whereIn('brand_id', $brands);
+    //     }
+
+    //     // price filter
+    //     if ($request->min_price && $request->max_price) {
+    //         $products->whereBetween('final_price', [$request->min_price, $request->max_price]);
+    //     }
+
+    //     // sort filter
+    //     switch ($request->sort) {
+    //         case 'price_asc':
+    //             $products->orderBy('final_price', 'asc');
+    //             break;
+
+    //         case 'price_desc':
+    //             $products->orderBy('final_price', 'desc');
+    //             break;
+
+    //         case 'newest':
+    //             $products->orderBy('created_at', 'desc');
+    //             break;
+
+    //         default:
+    //             $products->get();
+    //     }
+    //     $products = $products->paginate();
+
+
+    //     return view('mycart.component.product', compact('products'))->render();
+    // }
+
+
     public function productFilter(Request $request)
     {
-        // dd($request->all());
-        $products = Product::with('primaryImage')->where('status', 'active')->where('stock', '>', 0);
+        $products = Product::with('primaryImage')
+            ->where('status', 'active')
+            ->where('stock', '>', 0);
 
         // search filter
-        $search = $request->search;
-        if ($search) {
-            $products->where(function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%');
-            })->orWhereHas('category', function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%');
-            })->orWhereHas('brand', function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%');
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $products->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhereHas('category', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('brand', function ($q3) use ($search) {
+                        $q3->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
         // category filter
-        if ($request->category) {
+        if ($request->filled('category')) {
             $products->where('category_id', $request->category);
         }
 
         // brand filter
-        if ($request->brands) {
+        if ($request->filled('brands')) {
+
             $brands = is_array($request->brands)
                 ? $request->brands
                 : explode(',', $request->brands);
@@ -119,8 +191,11 @@ class ProductController extends Controller
         }
 
         // price filter
-        if ($request->min_price && $request->max_price) {
-            $products->whereBetween('final_price', [$request->min_price, $request->max_price]);
+        if ($request->filled('min_price') && $request->filled('max_price')) {
+            $products->whereBetween('final_price', [
+                $request->min_price,
+                $request->max_price
+            ]);
         }
 
         // sort filter
@@ -137,25 +212,14 @@ class ProductController extends Controller
                 $products->orderBy('created_at', 'desc');
                 break;
 
-            case 'popularity':
-                $products->orderBy('views', 'desc'); // or sales_count
-                break;
-
             default:
-                $products->latest();
+                $products->orderBy('id', 'desc');
+                break;
         }
-        $products = $products->paginate();
 
-        // $categories = Category::whereHas('products', function ($query) {
-        //     $query->where('stock', '>', 0);
-        // })->get();
-
-        // $brands = Brand::whereHas('products', function ($query) {
-        //     $query->where('stock', '>', 0);
-        // })->get();
+        $products = $products->paginate(12)->withQueryString();
 
         return view('mycart.component.product', compact('products'))->render();
-        // return response()->json(['products' => $products, 'categories' => $categories, 'brands' => $brands]);
     }
 
 }

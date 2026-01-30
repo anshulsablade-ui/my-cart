@@ -48,7 +48,8 @@ class OrderController extends Controller
         if (!$order) {
             return redirect()->route('admin.orders.index')->with('error', 'Order not found');
         }
-        $order->order_status = $request->status;
+
+        $order->payment_status = $request->payment_status;
         $order->save();
         return response()->json([ 'status' => 'success', 'message' => 'Order status updated successfully']);
     }
@@ -62,7 +63,20 @@ class OrderController extends Controller
     public function destroy($id)
     {
         $order = Order::where('id', $id)->first();
+    
+        if (!$order) {
+            return redirect()->route('admin.orders.index')->with('error', 'Order not found');
+        }
+    
+        $orderItems = $order->orderItems;
+        foreach ($orderItems as $orderItem) {
+            $orderItem->delete();
+        }
+        $order->orderAddresses->delete();
+        $order->payment->delete();
+
         $order->delete();
-        return redirect()->route('admin.orders.index')->with('success', 'Order deleted successfully');
+        session()->flash('success', 'Order deleted successfully');
+        return response()->json(['status' => 'success', 'message' => 'Order deleted successfully']);
     }
 }

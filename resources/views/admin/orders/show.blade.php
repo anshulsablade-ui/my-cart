@@ -124,7 +124,69 @@
         </div>
       </div>
     </div>
+    {{-- <div class="card mb-3">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-6 d-flex">
+            <div class="d-flex align-items-end g-3">
+              <select class="form-select me-2" name="order_status" id="order_status" aria-label="Default select example">
+                <option value="panding" {{ $order->order_status == 'panding' ? 'selected' : '' }} >Panding</option>
+                <option value="processing" {{ $order->order_status == 'processing' ? 'selected' : '' }}>Processing</option>
+                <option value="completed" {{ $order->order_status == 'completed' ? 'selected' : '' }}>Completed</option>
+                <option value="cancelled" {{ $order->order_status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+              </select>
+              <select class="form-select" name="paymant_status" id="paymant_status" aria-label="Default select example">
+                <option value="panding" {{ $order->payment_status == 'panding' ? 'selected' : '' }}>Panding</option>
+                <option value="paid" {{ $order->payment_status == 'paid' ? 'selected' : '' }}>Paid</option>
+                <option value="failed" {{ $order->payment_status == 'failed' ? 'selected' : '' }}>Failed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> --}}
 @endsection
 @section('script')
-
+{{-- <script>
+  $(document).ready(function () {
+    $('#order_status').on('change', function () {
+      let status = $(this).val();
+      let orderId = "{{ $order->id }}";
+      $.ajax({
+        url: "{{ route('admin.order.update', $order->id) }}",
+        type: "PUT",
+        data: {
+          'order_status': status
+        },
+        success: function (response) {
+          if (response.status === 'success') {
+            window.location.reload();
+          }
+        },
+        error: function (xhr, status, error) {
+          console.log(error);
+        }
+      });
+    });
+    $('#paymant_status').on('change', function () {
+      let status = $(this).val();
+      let orderId = "{{ $order->id }}";
+      $.ajax({
+        url: "{{ route('admin.order.update', $order->id) }}",
+        type: "PUT",
+        data: {
+          'paymant_status': status
+        },
+        success: function (response) {
+          if (response.status === 'success') {
+            window.location.reload();
+          }
+        },
+        error: function (xhr, status, error) {
+          console.log(error);
+        }
+      });
+    });
+  });
+</script> --}}
 @endsection

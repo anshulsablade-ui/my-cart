@@ -35,7 +35,7 @@ $('body').on('click', '.delete', function (e) {
             $.ajax({
                 type: "delete",
                 url: url,
-                global: false,
+                // global: false,
                 success: function (response) {
                     // table.ajax.reload();
                     window.location.reload();

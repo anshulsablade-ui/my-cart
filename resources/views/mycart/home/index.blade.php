@@ -32,30 +32,15 @@
                     }
                   }">
                     <div class="swiper-wrapper">
-                      <div class="swiper-slide text-center text-xl-start pt-5 py-xl-5">
-                        <p class="text-body">Feel the real quality sound</p>
-                        <h2 class="display-4 pb-2 pb-xl-4">Headphones ProMax</h2>
-                        <a class="btn btn-lg btn-primary" href="shop-product-general-electronics.html">
-                          Shop now
-                          <i class="ci-arrow-up-right fs-lg ms-2 me-n1"></i>
-                        </a>
-                      </div>
-                      <div class="swiper-slide text-center text-xl-start pt-5 py-xl-5">
-                        <p class="text-body">Deal of the week</p>
-                        <h2 class="display-4 pb-2 pb-xl-4">Powerful iPad Pro M2</h2>
-                        <a class="btn btn-lg btn-primary" href="shop-product-general-electronics.html">
-                          Shop now
-                          <i class="ci-arrow-up-right fs-lg ms-2 me-n1"></i>
-                        </a>
-                      </div>
-                      <div class="swiper-slide text-center text-xl-start pt-5 py-xl-5">
-                        <p class="text-body">Virtual reality glasses</p>
-                        <h2 class="display-4 pb-2 pb-xl-4">Experience New Reality</h2>
-                        <a class="btn btn-lg btn-primary" href="shop-catalog-electronics.html">
-                          Shop now
-                          <i class="ci-arrow-up-right fs-lg ms-2 me-n1"></i>
-                        </a>
-                      </div>
+                      @foreach ($slideres as $slider)     
+                        <div class="swiper-slide text-center text-xl-start pt-5 py-xl-5">
+                          <h2 class="display-4 pb-2 pb-xl-4">{{ $slider->name }}</h2>
+                          <a class="btn btn-lg btn-primary" href="{{ route('product.show', $slider->slug) }}">
+                            Shop now
+                            <i class="ci-arrow-up-right fs-lg ms-2 me-n1"></i>
+                          </a>
+                        </div>
+                      @endforeach
                     </div>
                   </div>
                 </div>
@@ -72,21 +57,13 @@
                     }
                   }">
                     <div class="swiper-wrapper">
-                      <div class="swiper-slide d-flex justify-content-end">
-                        <div class="ratio rtl-flip" style="max-width: 495px; --cz-aspect-ratio: calc(537 / 495 * 100%)">
-                          <img src="web/assets/img/home/electronics/hero-slider/01.png" alt="Image">
+                      @foreach ($slideres as $slider)    
+                        <div class="swiper-slide d-flex justify-content-end">
+                          <div class="ratio rtl-flip" style="max-width: 495px; --cz-aspect-ratio: calc(537 / 495 * 100%)">
+                            <img src="{{ asset('images/products/large/' . ($slider->primaryImage->image ?? 'no-image.png')) }}" alt="{{ $slider->slug }}">
+                          </div>
                         </div>
-                      </div>
-                      <div class="swiper-slide d-flex justify-content-end">
-                        <div class="ratio rtl-flip" style="max-width: 495px; --cz-aspect-ratio: calc(537 / 495 * 100%)">
-                          <img src="web/assets/img/home/electronics/hero-slider/02.png" alt="Image">
-                        </div>
-                      </div>
-                      <div class="swiper-slide d-flex justify-content-end">
-                        <div class="ratio rtl-flip" style="max-width: 495px; --cz-aspect-ratio: calc(537 / 495 * 100%)">
-                          <img src="web/assets/img/home/electronics/hero-slider/03.png" alt="Image">
-                        </div>
-                      </div>
+                      @endforeach
                     </div>
                   </div>
                 </div>

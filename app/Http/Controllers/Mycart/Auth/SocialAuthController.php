@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Mycart\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cart;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialAuthController extends Controller
@@ -23,13 +24,12 @@ class SocialAuthController extends Controller
     {
         $socialUser = Socialite::driver($provider)->user();
 
-        dd($socialUser);
         $user = User::where('provider', $provider)->where('provider_id', $socialUser->getId())->first();
 
         if ($user) {
-            Auth::login($user, true);
+            session()->put('user', $user);
             session()->flash('success', 'Login successful!');
-            return redirect()->route('dashboard');
+            return redirect()->route('home');
         }
 
         $user = User::where('email', $socialUser->getEmail())->first();
@@ -51,9 +51,37 @@ class SocialAuthController extends Controller
             ]);
         }
 
-        Auth::login($user, true);
+        session()->put('user', $user);
+        $this->gaustCartMerge();
+        Session::put('cart_count', Cart::where('user_id', $user->id)->count());
         session()->flash('success', 'Login successful!');
-        return redirect()->route('dashboard');
+        return redirect()->route('home');
     }
 
+    public function gaustCartMerge()
+    {
+        if (!session()->has('cart_session_id')) {
+            return;
+        }
+
+        $sessionId = session('cart_session_id');
+
+        $guestCarts = Cart::where('session_id', $sessionId)->get();
+
+        foreach ($guestCarts as $guestCart) {
+
+            $userCart = Cart::where('user_id', session()->get('user.id'))
+                ->where('product_id', $guestCart->product_id)
+                ->first();
+
+            if ($userCart) {
+                $userCart->update([
+                    'user_id' => session()->get('user.id'),
+                    'session_id' => null,
+                ]);
+            }
+        }
+
+        session()->forget('cart_session_id');
+    }
 }

@@ -14,7 +14,7 @@ class Product extends Model
         'brand_id',
         'name',
         'slug',
-        'basic_price',
+        'base_price',
         'discount_percentage',
         'discounted_price',
         'final_price',
@@ -43,6 +43,11 @@ class Product extends Model
     public function images()
     {
         return $this->hasMany(ProductImage::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class);
     }
 
     public function primaryImage()

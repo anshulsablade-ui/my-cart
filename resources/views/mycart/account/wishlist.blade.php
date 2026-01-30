@@ -75,7 +75,7 @@
                   <h2 class="h4 mb-3">Your wishlist is empty.</h2>
                   <p class="mb-4">Explore our products and add them to your wishlist.</p>
                   <div>
-                    <a class="btn btn-primary" href="{{ route('home') }}">Continue shopping</a>
+                    <a class="btn btn-primary" href="{{ route('products.list') }}">Continue shopping</a>
                   </div>
                 </div>  
               @endif
@@ -127,7 +127,7 @@ $(document).ready(function () {
                     <h2 class="h4 mb-3">Your wishlist is empty.</h2>
                     <p class="mb-4">Explore our products and add them to your wishlist.</p>
                     <div>
-                      <a class="btn btn-primary" href="{{ route('home') }}">Continue shopping</a>
+                      <a class="btn btn-primary" href="{{ route('products.list') }}">Continue shopping</a>
                     </div>
                   </div>
                 `);

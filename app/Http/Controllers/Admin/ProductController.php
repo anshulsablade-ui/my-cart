@@ -52,7 +52,7 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         $request->validated();
-
+        
         $product = Product::create([
             'category_id' => $request->category,
             'brand_id' => $request->brand,

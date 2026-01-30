@@ -66,8 +66,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Order Routes
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/{id}', [AdminOrderController::class, 'show'])->name('order.show');
-        Route::put('/orders/{id}', [AdminOrderController::class, 'update'])->name('order.update');
-        Route::delete('/orders/{id}', [AdminOrderController::class, 'destroy'])->name('order.destroy');
+        Route::put('/orders/update/{id}', [AdminOrderController::class, 'update'])->name('order.update');
+        Route::delete('/orders/delete/{id}', [AdminOrderController::class, 'destroy'])->name('order.destroy');
 
         // Customer Routes
         Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
@@ -132,6 +132,7 @@ Route::prefix('home')->group(function () {
 
         // review Routes
         Route::post('/review', [ProductReviewController::class, 'store'])->name('review.store');
+        Route::get('/review/edit/{id}', [ProductReviewController::class, 'edit'])->name('review.edit');
         Route::put('/review/{id}', [ProductReviewController::class, 'update'])->name('review.update');
         Route::delete('/review/delete', [ProductReviewController::class, 'delete'])->name('review.delete');
 

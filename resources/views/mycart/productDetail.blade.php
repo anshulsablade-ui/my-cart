@@ -4,6 +4,85 @@
 
 @endsection
 @section('content')
+    @if ($orderCompleted) 
+    <!-- Review form modal -->
+    <div class="modal fade" id="reviewForm" data-bs-backdrop="static" tabindex="-1" aria-labelledby="reviewFormLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <form class="modal-content" id="reviewFormSubmit">
+          <input type="hidden" name="product_id" value="{{ $product->id }}">
+          <div class="modal-header border-0">
+            <h5 class="modal-title" id="reviewFormLabel">Leave a review</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body pb-3 pt-0">
+            <div class="mb-3">
+              <label class="form-label" for="rating">Rating <span class="text-danger">*</span></label>
+              <select class="form-select" name="rating" id="rating" data-select="{
+                &quot;placeholderValue&quot;: &quot;Choose rating&quot;,
+                &quot;choices&quot;: [
+                  {
+                    &quot;value&quot;: &quot;&quot;,
+                    &quot;label&quot;: &quot;Choose rating&quot;,
+                    &quot;placeholder&quot;: true
+                  },
+                  {
+                    &quot;value&quot;: &quot;1&quot;,
+                    &quot;label&quot;: &quot;<span class=\&quot;visually-hidden\&quot;>1 star</span>&quot;,
+                    &quot;customProperties&quot;: {
+                      &quot;icon&quot;: &quot;<span class=\&quot;d-flex gap-1 py-1\&quot;><i class=\&quot;ci-star-filled text-warning\&quot;></i></span>&quot;,
+                      &quot;selected&quot;: &quot;1 star&quot;
+                    }
+                  },
+                  {
+                    &quot;value&quot;: &quot;2&quot;,
+                    &quot;label&quot;: &quot;<span class=\&quot;visually-hidden\&quot;>2 stars</span>&quot;,
+                    &quot;customProperties&quot;: {
+                      &quot;icon&quot;: &quot;<span class=\&quot;d-flex gap-1 py-1\&quot;><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i></span>&quot;,
+                      &quot;selected&quot;: &quot;2 stars&quot;
+                    }
+                  },
+                  {
+                    &quot;value&quot;: &quot;3&quot;,
+                    &quot;label&quot;: &quot;<span class=\&quot;visually-hidden\&quot;>3 stars</span>&quot;,
+                    &quot;customProperties&quot;: {
+                      &quot;icon&quot;: &quot;<span class=\&quot;d-flex gap-1 py-1\&quot;><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i></span>&quot;,
+                      &quot;selected&quot;: &quot;3 stars&quot;
+                    }
+                  },
+                  {
+                    &quot;value&quot;: &quot;4&quot;,
+                    &quot;label&quot;: &quot;<span class=\&quot;visually-hidden\&quot;>4 stars</span>&quot;,
+                    &quot;customProperties&quot;: {
+                      &quot;icon&quot;: &quot;<span class=\&quot;d-flex gap-1 py-1\&quot;><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i></span>&quot;,
+                      &quot;selected&quot;: &quot;4 stars&quot;
+                    }
+                  },
+                  {
+                    &quot;value&quot;: &quot;5&quot;,
+                    &quot;label&quot;: &quot;<span class=\&quot;visually-hidden\&quot;>5 stars</span>&quot;,
+                    &quot;customProperties&quot;: {
+                      &quot;icon&quot;: &quot;<span class=\&quot;d-flex gap-1 py-1\&quot;><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i></span>&quot;,
+                      &quot;selected&quot;: &quot;5 stars&quot;
+                    }
+                  }
+                ]
+              }" data-select-template="true"></select>
+              <div class="invalid-feedback" id="rating_error"></div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="review">Review <span class="text-danger">*</span></label>
+              <textarea class="form-control" rows="4" id="review" name="review"></textarea>
+              <div class="invalid-feedback" id="review_error"></div>
+            </div>
+          </div>
+          <div class="modal-footer flex-nowrap gap-3 border-0 px-4">
+            <button type="reset" class="btn btn-secondary w-100 m-0" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary w-100 m-0">Submit review</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    @endif
     <main class="content-wrapper">
 
       <!-- Breadcrumb -->
@@ -212,187 +291,60 @@
       <!-- Reviews shared container -->
       <section class="container pb-5 mb-2 mb-md-3 mb-lg-4 mb-xl-5">
         <div class="row">
+
           <div class="col-md-7">
             <!-- Reviews -->
             <div class="d-flex align-items-center pt-5 mb-4 mt-2 mt-md-3 mt-lg-4" id="reviews" style="scroll-margin-top: 80px">
               <h2 class="h3 mb-0">Reviews</h2>
-              @if ($orderCompleted)     
+              @if ($orderCompleted)  
+                @if ($reviewhas == false)    
                 <button type="button" class="btn btn-secondary ms-auto" data-bs-toggle="modal" data-bs-target="#reviewForm">
                   <i class="ci-edit-3 fs-base ms-n1 me-2"></i>
                   Leave a review
                 </button>
+                @endif   
               @endif
             </div>
 
             <!-- Reviews stats -->
             <div class="row g-4 pb-3">
-              <div class="col-sm-4">
+              <div class="col-12">
 
                 <!-- Overall rating card -->
                 <div class="d-flex flex-column align-items-center justify-content-center h-100 bg-body-tertiary rounded p-4">
-                  <div class="h1 pb-2 mb-1">4.1</div>
+                  <div class="h1 pb-2 mb-1">{{ $reviews->avg('rating') }}</div>
                   <div class="hstack justify-content-center gap-1 fs-sm mb-2">
-                    <i class="ci-star-filled text-warning"></i>
-                    <i class="ci-star-filled text-warning"></i>
-                    <i class="ci-star-filled text-warning"></i>
-                    <i class="ci-star-filled text-warning"></i>
-                    <i class="ci-star text-body-tertiary opacity-60"></i>
+                    @for ($i = 1; $i <= 5; $i++)
+                      <i class="{{ $reviews->avg('rating') >= $i ? 'ci-star-filled text-warning' : 'ci-star text-body-tertiary opacity-75' }}"></i>
+                    @endfor
                   </div>
-                  <div class="fs-sm">68 reviews</div>
-                </div>
-              </div>
-              <div class="col-sm-8">
-
-                <!-- Rating breakdown by quantity -->
-                <div class="vstack gap-3">
-
-                  <!-- 5 stars -->
-                  <div class="hstack gap-2">
-                    <div class="hstack fs-sm gap-1">
-                      5<i class="ci-star-filled text-warning"></i>
-                    </div>
-                    <div class="progress w-100" role="progressbar" aria-label="Five stars" aria-valuenow="54" aria-valuemin="0" aria-valuemax="100" style="height: 4px">
-                      <div class="progress-bar bg-warning rounded-pill" style="width: 54%"></div>
-                    </div>
-                    <div class="fs-sm text-nowrap text-end" style="width: 40px;">37</div>
-                  </div>
-
-                  <!-- 4 stars -->
-                  <div class="hstack gap-2">
-                    <div class="hstack fs-sm gap-1">
-                      4<i class="ci-star-filled text-warning"></i>
-                    </div>
-                    <div class="progress w-100" role="progressbar" aria-label="Four stars" aria-valuenow="23.5" aria-valuemin="0" aria-valuemax="100" style="height: 4px">
-                      <div class="progress-bar bg-warning rounded-pill" style="width: 23.5%"></div>
-                    </div>
-                    <div class="fs-sm text-nowrap text-end" style="width: 40px;">16</div>
-                  </div>
-
-                  <!-- 3 stars -->
-                  <div class="hstack gap-2">
-                    <div class="hstack fs-sm gap-1">
-                      3<i class="ci-star-filled text-warning"></i>
-                    </div>
-                    <div class="progress w-100" role="progressbar" aria-label="Three stars" aria-valuenow="13" aria-valuemin="0" aria-valuemax="100" style="height: 4px">
-                      <div class="progress-bar bg-warning rounded-pill" style="width: 13%"></div>
-                    </div>
-                    <div class="fs-sm text-nowrap text-end" style="width: 40px;">9</div>
-                  </div>
-
-                  <!-- 2 stars -->
-                  <div class="hstack gap-2">
-                    <div class="hstack fs-sm gap-1">
-                      2<i class="ci-star-filled text-warning"></i>
-                    </div>
-                    <div class="progress w-100" role="progressbar" aria-label="Two stars" aria-valuenow="6" aria-valuemin="0" aria-valuemax="100" style="height: 4px">
-                      <div class="progress-bar bg-warning rounded-pill" style="width: 6%"></div>
-                    </div>
-                    <div class="fs-sm text-nowrap text-end" style="width: 40px;">4</div>
-                  </div>
-
-                  <!-- 1 star -->
-                  <div class="hstack gap-2">
-                    <div class="hstack fs-sm gap-1">
-                      1<i class="ci-star-filled text-warning"></i>
-                    </div>
-                    <div class="progress w-100" role="progressbar" aria-label="One star" aria-valuenow="3.5" aria-valuemin="0" aria-valuemax="100" style="height: 4px">
-                      <div class="progress-bar bg-warning rounded-pill" style="width: 3.5%"></div>
-                    </div>
-                    <div class="fs-sm text-nowrap text-end" style="width: 40px;">3</div>
-                  </div>
+                  <div class="fs-sm">{{ $reviews->count() }} reviews</div>
                 </div>
               </div>
             </div>
 
-            <!-- Review -->
-            <div class="border-bottom py-3 mb-3">
-              <div class="d-flex align-items-center mb-3">
-                <div class="text-nowrap me-3">
-                  <span class="h6 mb-0">Rafael Marquez</span>
-                  <i class="ci-check-circle text-success align-middle ms-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-sm" data-bs-title="Verified customer"></i>
+            @foreach ($reviews as $review)                
+              <!-- Review -->
+              <div class="border-bottom py-3 mb-3">
+                <div class="d-flex align-items-center mb-3">
+                  <div class="text-nowrap me-3">
+                    <span class="h6 mb-0">{{ ucfirst($review->user->name) }}</span>
+                  </div>
+                  <span class="text-body-secondary fs-sm ms-auto">{{ $review->created_at->format('M d, Y') }}</span>
                 </div>
-                <span class="text-body-secondary fs-sm ms-auto">June 28, 2024</span>
-              </div>
-              <div class="d-flex gap-1 fs-sm pb-2 mb-1">
-                <i class="ci-star-filled text-warning"></i>
-                <i class="ci-star-filled text-warning"></i>
-                <i class="ci-star-filled text-warning"></i>
-                <i class="ci-star-filled text-warning"></i>
-                <i class="ci-star-filled text-warning"></i>
-              </div>
-              <ul class="list-inline gap-2 pb-2 mb-1">
-                <li class="fs-sm me-4"><span class="text-dark-emphasis fw-medium">Color:</span> Blue</li>
-                <li class="fs-sm"><span class="text-dark-emphasis fw-medium">Model:</span> 128GB</li>
-              </ul>
-              <p class="fs-sm">The phone has a new A15 Bionic chip, which makes it lightning-fast and responsive. The camera system has also been upgraded, and it now includes a 12-megapixel ultra-wide lens and a 12-megapixel wide lens.</p>
-              <ul class="list-unstyled fs-sm pb-2 mb-1">
-                <li><span class="text-dark-emphasis fw-medium">Pros:</span> Powerful A15 Bionic chip, improved camera</li>
-                <li><span class="text-dark-emphasis fw-medium">Cons:</span> High price tag</li>
-              </ul>
-              <div class="nav align-items-center">
-                <button type="button" class="nav-link animate-underline px-0">
-                  <i class="ci-corner-down-right fs-base ms-1 me-1"></i>
-                  <span class="animate-target">Reply</span>
-                </button>
-                <button type="button" class="nav-link text-body-secondary animate-scale px-0 ms-auto me-n1">
-                  <i class="ci-thumbs-up fs-base animate-target me-1"></i>
-                  0
-                </button>
-                <hr class="vr my-2 mx-3">
-                <button type="button" class="nav-link text-body-secondary animate-scale px-0 ms-n1">
-                  <i class="ci-thumbs-down fs-base animate-target me-1"></i>
-                  0
-                </button>
-              </div>
-            </div>
-
-            <!-- Review -->
-            <div class="border-bottom py-3 mb-3">
-              <div class="d-flex align-items-center mb-3">
-                <div class="text-nowrap me-3">
-                  <span class="h6 mb-0">Daniel Adams</span>
+                <div class="d-flex gap-1 fs-sm pb-2 mb-1">
+                  @for ($i = 1; $i <= 5; $i++)
+                    <i class="{{ $review->rating >= $i ? 'ci-star-filled text-warning' : 'ci-star text-body-tertiary opacity-75' }}"></i>
+                  @endfor
                 </div>
-                <span class="text-body-secondary fs-sm ms-auto">May 15, 2024</span>
+                <p class="fs-sm">{{ $review->review }}</p>
               </div>
-              <div class="d-flex gap-1 fs-sm pb-2 mb-1">
-                <i class="ci-star-filled text-warning"></i>
-                <i class="ci-star-filled text-warning"></i>
-                <i class="ci-star-filled text-warning"></i>
-                <i class="ci-star-filled text-warning"></i>
-                <i class="ci-star text-body-tertiary opacity-75"></i>
-              </div>
-              <ul class="list-inline gap-2 pb-2 mb-1">
-                <li class="fs-sm me-4"><span class="text-dark-emphasis fw-medium">Color:</span> Blue</li>
-                <li class="fs-sm"><span class="text-dark-emphasis fw-medium">Model:</span> 128GB</li>
-              </ul>
-              <p class="fs-sm">The phone has a new A15 Bionic chip, which makes it lightning-fast and responsive. The camera system has also been upgraded, and it now includes a 12-megapixel ultra-wide lens and a 12-megapixel wide lens.</p>
-              <ul class="list-unstyled fs-sm pb-2 mb-1">
-                <li><span class="text-dark-emphasis fw-medium">Pros:</span> Powerful A15 Bionic chip, improved camera</li>
-                <li><span class="text-dark-emphasis fw-medium">Cons:</span> High price tag</li>
-              </ul>
-              <div class="nav align-items-center">
-                <button type="button" class="nav-link animate-underline px-0">
-                  <i class="ci-corner-down-right fs-base ms-1 me-1"></i>
-                  <span class="animate-target">Reply</span>
-                </button>
-                <button type="button" class="nav-link text-body-secondary animate-scale px-0 ms-auto me-n1">
-                  <i class="ci-thumbs-up text-success fs-base animate-target me-1"></i>
-                  18
-                </button>
-                <hr class="vr my-2 mx-3">
-                <button type="button" class="nav-link text-body-secondary animate-scale px-0 ms-n1">
-                  <i class="ci-thumbs-down text-danger fs-base animate-target me-1"></i>
-                  2
-                </button>
-              </div>
-            </div>
+            @endforeach
 
-            <div class="nav">
-              <a class="nav-link text-primary animate-underline px-0" href="shop-product-reviews-electronics.html">
-                <span class="animate-target">See all reviews</span>
-                <i class="ci-chevron-right fs-base ms-1"></i>
-              </a>
-            </div>
+              <!-- Pagination -->
+              <nav class="pt-3 pb-2 pb-sm-0 mt-2 mt-md-3" aria-label="Page navigation">
+                  {{ $reviews->links('mycart.pagination.custom') }}
+              </nav>
           </div>
 
 
@@ -499,6 +451,9 @@
                       </ul>
                     </div>
                     <a class="d-block rounded-top overflow-hidden p-3 p-sm-4" href="{{ route('product.show', $product->slug) }}">
+                      @if ($product->discount_percentage)
+                        <span class="badge text-bg-danger position-absolute start-0">-{{ $product->discount_percentage }}%</span>
+                      @endif
                       <div class="ratio" style="--cz-aspect-ratio: calc(240 / 258 * 100%)">
                         <img src="{{ asset('images/products/medium/' . ($product->primaryImage->image ?? 'no-image.png')) }}" alt="{{ $product->name }}" class="img-fluid">
                       </div>
@@ -541,119 +496,33 @@
       </section>
 
     </main>
-
-    <!-- Review form modal -->
-    <div class="modal fade" id="reviewForm" data-bs-backdrop="static" tabindex="-1" aria-labelledby="reviewFormLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <form class="modal-content" id="reviewForm">
-          <input type="hidden" name="product_id" value="{{ $product->id }}">
-          <div class="modal-header border-0">
-            <h5 class="modal-title" id="reviewFormLabel">Leave a review</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body pb-3 pt-0">
-            <div class="mb-3">
-              <label class="form-label" for="rating">Rating <span class="text-danger">*</span></label>
-              <select class="form-select" name="rating" id="rating" data-select="{
-                &quot;placeholderValue&quot;: &quot;Choose rating&quot;,
-                &quot;choices&quot;: [
-                  {
-                    &quot;value&quot;: &quot;&quot;,
-                    &quot;label&quot;: &quot;Choose rating&quot;,
-                    &quot;placeholder&quot;: true
-                  },
-                  {
-                    &quot;value&quot;: &quot;1&quot;,
-                    &quot;label&quot;: &quot;<span class=\&quot;visually-hidden\&quot;>1 star</span>&quot;,
-                    &quot;customProperties&quot;: {
-                      &quot;icon&quot;: &quot;<span class=\&quot;d-flex gap-1 py-1\&quot;><i class=\&quot;ci-star-filled text-warning\&quot;></i></span>&quot;,
-                      &quot;selected&quot;: &quot;1 star&quot;
-                    }
-                  },
-                  {
-                    &quot;value&quot;: &quot;2&quot;,
-                    &quot;label&quot;: &quot;<span class=\&quot;visually-hidden\&quot;>2 stars</span>&quot;,
-                    &quot;customProperties&quot;: {
-                      &quot;icon&quot;: &quot;<span class=\&quot;d-flex gap-1 py-1\&quot;><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i></span>&quot;,
-                      &quot;selected&quot;: &quot;2 stars&quot;
-                    }
-                  },
-                  {
-                    &quot;value&quot;: &quot;3&quot;,
-                    &quot;label&quot;: &quot;<span class=\&quot;visually-hidden\&quot;>3 stars</span>&quot;,
-                    &quot;customProperties&quot;: {
-                      &quot;icon&quot;: &quot;<span class=\&quot;d-flex gap-1 py-1\&quot;><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i></span>&quot;,
-                      &quot;selected&quot;: &quot;3 stars&quot;
-                    }
-                  },
-                  {
-                    &quot;value&quot;: &quot;4&quot;,
-                    &quot;label&quot;: &quot;<span class=\&quot;visually-hidden\&quot;>4 stars</span>&quot;,
-                    &quot;customProperties&quot;: {
-                      &quot;icon&quot;: &quot;<span class=\&quot;d-flex gap-1 py-1\&quot;><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i></span>&quot;,
-                      &quot;selected&quot;: &quot;4 stars&quot;
-                    }
-                  },
-                  {
-                    &quot;value&quot;: &quot;5&quot;,
-                    &quot;label&quot;: &quot;<span class=\&quot;visually-hidden\&quot;>5 stars</span>&quot;,
-                    &quot;customProperties&quot;: {
-                      &quot;icon&quot;: &quot;<span class=\&quot;d-flex gap-1 py-1\&quot;><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i><i class=\&quot;ci-star-filled text-warning\&quot;></i></span>&quot;,
-                      &quot;selected&quot;: &quot;5 stars&quot;
-                    }
-                  }
-                ]
-              }" data-select-template="true"></select>
-              {{-- <div class="invalid-feedback" id="rating_error"></div> --}}
-            </div>
-            <div class="mb-3">
-              <label class="form-label" for="review">Review <span class="text-danger">*</span></label>
-              <textarea class="form-control" rows="4" id="review" name="review"></textarea>
-              {{-- <div class="invalid-feedback" id="review_error"></div> --}}
-            </div>
-          </div>
-          <div class="modal-footer flex-nowrap gap-3 border-0 px-4">
-            <button type="reset" class="btn btn-secondary w-100 m-0" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary w-100 m-0">Submit review</button>
-          </div>
-        </form>
-      </div>
-    </div>
 @endsection
 @section('script')
 <script>
   $(document).ready(function () {
 
-    $("#reviewForm").submit(function (e) { 
+    $("#reviewFormSubmit").submit(function (e) { 
       e.preventDefault();
       let formData = new FormData(this);
-      
-      $.ajax({
-        type: "post",
-        url: "{{ route('review.store') }}",
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function (response) {
-          if(response.status == 'success'){
-            messageAlert(response.message, 'success');
-            window.location.reload();
-            // $('#reviewForm')[0].reset();
-            // $('#reviewForm').modal('hide');
-          }
-        },
-        error: function (response) {
+      ajaxCall("{{ route('review.store') }}", 'POST', formData, function (res) {
+        if (res.status == 'success') {
+          $('#reviewModal').modal('hide');
+          window.location.reload();
+        }
+      }, function (response) {
         var response = JSON.parse(response.responseText);
         $('.is-invalid').removeClass('is-invalid');
-        $('.invalid-feedback').remove();
         
         $.each(response.message, function (key, value) { 
-             $(`#${key}`).addClass('is-invalid').after(` <span class="invalid-feedback">${value}</span> `);
+             $(`#${key}`).addClass('is-invalid');
+             $(`#${key}_error`).text(value);
         });
-        }
-      });
+      })
       
     });
+
+
+    
 
     $('#addToCart').on('click', function () {
       

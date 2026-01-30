@@ -80,7 +80,7 @@
             <a href="{{ route('order.show', $order->id) }}" class="btn btn-primary">
               View Order
             </a>
-            <a href="{{ route('home') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('products.list') }}" class="btn btn-outline-secondary">
               Continue Shopping
             </a>
           </div>

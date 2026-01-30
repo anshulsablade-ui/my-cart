@@ -24,7 +24,7 @@
             <h2 class="h4 mb-3">Your Cart is empty.</h2>
             <p class="mb-4">Explore our products and add them to your cart.</p>
             <div>
-              <a class="btn btn-primary" href="{{ route('home') }}">Continue shopping</a>
+              <a class="btn btn-primary" href="{{ route('products.list') }}">Continue shopping</a>
             </div>
           </div>  
         @else  
@@ -110,7 +110,7 @@
               </table>
 
               <div class="nav position-relative z-2 mb-4 mb-lg-0">
-                <a class="nav-link animate-underline px-0" href="shop-catalog-electronics.html">
+                <a class="nav-link animate-underline px-0" href="{{ route('products.list') }}">
                   <i class="ci-chevron-left fs-lg me-1"></i>
                   <span class="animate-target">Continue shopping</span>
                 </a>

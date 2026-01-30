@@ -1,6 +1,6 @@
 <div class="row row-cols-2 row-cols-md-3 g-4 pb-3 mb-3">
 
-    @foreach ($products as $product)
+    @forelse ($products as $product)
       <!-- Item -->
       <div class="col">
         <div class="product-card animate-underline hover-effect-opacity bg-body rounded">
@@ -53,8 +53,12 @@
             </div>
           </div>
         </div>
-      </div>
-    @endforeach
+      </div>   
+    @empty
+    <div class="w-100">
+      <p class="text-center py-5">No products found</p>
+    </div>
+    @endforelse
 </div>
 
 <!-- Pagination -->

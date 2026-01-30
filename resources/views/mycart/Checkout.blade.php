@@ -119,7 +119,7 @@
                   <ul class="list-unstyled fs-sm gap-3 mb-0">
                     <li class="d-flex justify-content-between">
                       Subtotal ({{ count($cartItems) }} items):
-                      <span class="text-dark-emphasis fw-medium">{{ Number::currency($subtotal, 'INR') }}</span>
+                      <span class="text-dark-emphasis fw-medium">{{ Number::currency($subTotal, 'INR') }}</span>
                     </li>
                     <li class="d-flex justify-content-between">
                       Discount:

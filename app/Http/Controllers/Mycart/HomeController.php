@@ -14,6 +14,8 @@ class HomeController extends Controller
             ->where('status', 'active')
             ->limit(8)
             ->get();
-        return view('mycart.home.index', compact('products'));
+        $slideres = Product::with('primaryImage')->whereIn('id', [7, 101, 102, 9])->where('status', 'active')->get();
+
+        return view('mycart.home.index', compact('products', 'slideres'));
     }
 }
