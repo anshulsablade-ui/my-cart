@@ -89,7 +89,10 @@
   
                     <!-- Additional comments -->
                     <textarea class="form-control form-control-lg mb-4" id="notes" name="notes" rows="3" placeholder="Additional comments"></textarea>
-                    <button class="btn btn-lg btn-primary w-100 d-lg-flex payment-button" id="place-order-btn">Pay {{ Number::currency($grandTotal, 'INR') }}</button>
+                    <button class="btn btn-lg btn-primary w-100 d-lg-flex payment-button" id="place-order-btn">
+                      Pay {{ Number::currency($grandTotal, 'INR') }}
+                      <span class="spinner-border spinner-border-sm mx-2 d-none" role="status" aria-hidden="true"></span>
+                    </button>
                   </div>
                 </div>
                 
@@ -374,9 +377,9 @@
             let paymentMethod = $(this).val();
 
             if (paymentMethod === 'cod') {
-                $("#place-order-btn").text("Place Order");
+                $("#place-order-btn").text("Place Order").append(' <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>');
             } else {
-                $("#place-order-btn").text("Pay {{ Number::currency($grandTotal, 'INR') }}");
+                $("#place-order-btn").text("Pay {{ Number::currency($grandTotal, 'INR') }}").append(' <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>');
             }
         });
 
@@ -398,6 +401,11 @@
         return;
       }
 
+      $("#place-order-btn .spinner-border").removeClass("d-none");
+      
+      if (confirm("Are you sure you want to place this order?")) {
+        return;
+      }
       $.ajax({
         url: '{{ route("order.process") }}',
         method: 'POST',
@@ -405,6 +413,9 @@
           shipping_address_id: shippingAddress,
           payment_method: paymentMethod,
           notes: $('#notes').val(),
+        },
+        beforeSend: function () {
+          $("#place-order-btn .spinner-border").removeClass("d-none");
         },
         success: function (response) {
           if (response.success) {
@@ -428,8 +439,8 @@
         key: data.key,
         amount: data.amount * 100,
         currency: data.currency,
-        name: 'MyCart',
-        description: 'Order #' + data.order_no,
+        name: "{{ env('APP_NAME') }}",
+        // description: 'Order #' + data.order_no,
         order_id: data.razorpay_order_id,
         handler: function (response) {
           verifyPayment(response, data.order_id);
@@ -444,8 +455,8 @@
         },
         modal: {
           ondismiss: function () {
+            $("#place-order-btn .spinner-border").addClass("d-none");
             messageAlert('Payment cancelled', 'error');
-            window.location.href = response.redirect;
           }
         }
       };
@@ -456,6 +467,8 @@
 
     // Verify Payment
     function verifyPayment(response, orderId) {
+      const shippingAddress = $('input[name="shipping_address"]:checked').val();
+      const paymentMethod = $('input[name="payment_method"]:checked').val();
       $.ajax({
         url: '{{ route("order.verify-payment") }}',
         method: 'POST',
@@ -463,7 +476,9 @@
           razorpay_payment_id: response.razorpay_payment_id,
           razorpay_order_id: response.razorpay_order_id,
           razorpay_signature: response.razorpay_signature,
-          order_id: orderId
+          shipping_address_id: shippingAddress,
+          payment_method: paymentMethod,
+          notes: $('#notes').val(),
         },
         success: function (res) {
           if (res.success) {

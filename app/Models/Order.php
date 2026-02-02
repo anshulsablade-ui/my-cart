@@ -8,8 +8,8 @@ class Order extends Model
 {
     protected $table = 'orders';
     protected $fillable = [
-        'order_no', 
-        'user_id', 
+        'order_no',
+        'user_id',
         'subtotal',
         'discounted_price',
         'tax_amount',
@@ -17,9 +17,9 @@ class Order extends Model
         'grand_total',
         'payment_status',
         'order_status',
-        'notes', 
-        'payment_method'
-        ];
+        'payment_method',
+        'notes',
+    ];
 
     public function user()
     {

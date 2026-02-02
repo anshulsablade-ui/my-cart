@@ -13,16 +13,16 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->constrained()->restrictOnDelete();
-            $table->foreignId('brand_id')->constrained()->restrictOnDelete();
-            $table->foreignId('vendor_id')->constrained()->restrictOnDelete();
+            $table->bigInteger('category_id');
+            $table->bigInteger('brand_id');
             $table->string('name');
             $table->string('slug')->unique();
-            $table->decimal('price', 10, 2);
-            $table->decimal('compare_price', 10, 2)->nullable();
-            $table->integer('stock')->default(0);
-            $table->string('sku')->unique();
             $table->longText('description')->nullable();
+            $table->decimal('base_price', 10, 2);
+            $table->integer('discount_percentage')->nullable();
+            $table->decimal('discounted_price', 5, 2)->nullable();
+            $table->decimal('final_price', 10, 2)->nullable();
+            $table->integer('stock')->default(0);
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });

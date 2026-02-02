@@ -12,14 +12,14 @@ return new class extends Migration {
     {
         Schema::create('order_addresses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained()->restrictOnDelete();
+            $table->bigInteger('order_id');
             $table->enum('address_type', ['Shipping', 'Billing']);
             $table->string('name');
             $table->string('phone', 20);
             $table->text('address');
-            $table->foreignId('country_id')->constrained()->restrictOnDelete();
-            $table->foreignId('state_id')->constrained()->restrictOnDelete();
-            $table->foreignId('city_id')->constrained()->restrictOnDelete();
+            $table->bigInteger('country_id');
+            $table->bigInteger('state_id');
+            $table->bigInteger('city_id');
             $table->string('pincode', 10);
         });
 

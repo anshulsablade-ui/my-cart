@@ -14,14 +14,12 @@ class Product extends Model
         'brand_id',
         'name',
         'slug',
+        'description',
         'base_price',
         'discount_percentage',
         'discounted_price',
         'final_price',
-        'compare_price',
         'stock',
-        'sku',
-        'description',
         'status'
     ];
     protected $slugSourceColumn = 'name';

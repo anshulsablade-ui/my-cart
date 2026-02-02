@@ -12,11 +12,10 @@ return new class extends Migration {
     {
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained()->restrictOnDelete();
-            $table->foreignId('product_id')->constrained()->restrictOnDelete();
-            $table->foreignId('vendor_id')->constrained()->restrictOnDelete();
+            $table->bigInteger('order_id');
+            $table->bigInteger('product_id');
             $table->decimal('price', 10, 2);
-            $table->integer('qty');
+            $table->integer('quantity');
             $table->decimal('total', 10, 2);
             $table->timestamps();
         });

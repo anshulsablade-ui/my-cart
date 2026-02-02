@@ -146,10 +146,10 @@
             e.preventDefault();
             ajaxCall("{{ route('profile.update') }}", 'POST', new FormData(this), function (response) {
                 if (response.status === 'success') {
-                    $('.is-invalid').removeClass('is-invalid');
-                    $('.invalid-feedback').remove();
-            
-                    messageAlert(response.message, 'success');
+                    window.location.reload();      
+                    // $('.is-invalid').removeClass('is-invalid');
+                    // $('.invalid-feedback').remove();
+                    // messageAlert(response.message, 'success');
                 }
             }, function (error) {
                 $('.is-invalid').removeClass('is-invalid');

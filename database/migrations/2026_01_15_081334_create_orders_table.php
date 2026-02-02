@@ -14,16 +14,16 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('order_no')->unique();
-            $table->foreignId('user_id')->constrained()->restrictOnDelete();
-            $table->decimal('sub_total', 10, 2);
-            $table->decimal('discount_percentage', 5, 2)->default(0);
-            $table->decimal('discount_amount', 10, 2)->default(0);
-            $table->decimal('tax', 10, 2)->default(0);
-            $table->decimal('shipping', 10, 2)->default(0);
+            $table->bigInteger('user_id');
+            $table->decimal('subtotal', 10, 2);
+            $table->decimal('discounted_price', 10, 2)->default(0);
+            $table->decimal('tax_amount', 10, 2)->default(0);
+            $table->decimal('shipping_amount', 10, 2)->default(0);
             $table->decimal('grand_total', 10, 2);
             $table->enum('payment_status', ['pending','paid','failed'])->default('pending');
-            $table->enum('order_status', ['new','processing','shipped','delivered','cancelled'])->default('new');
-            $table->enum('payment_method', ['cod','online'])->default('cod');
+            $table->enum('order_status', ['pending','processing','completed','cancelled'])->default('panding');
+            $table->enum('payment_method', ['cod','razorpay'])->default('cod');
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
 

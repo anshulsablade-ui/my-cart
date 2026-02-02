@@ -236,6 +236,7 @@ $(document).ready(function () {
   // CATEGORY CLICK
   $('body').on('click', '.categoryFilter', function () {
     $('.categoryFilter').removeClass('active');
+    $('#search').val('');
     $(this).addClass('active');
     $('.brandFilter').prop('checked', false);
 

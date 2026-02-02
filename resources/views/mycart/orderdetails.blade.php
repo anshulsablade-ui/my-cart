@@ -25,11 +25,6 @@
             {{ $order->order_status }}
           </span>
         </div>
-        @if ($order->payment_status == 'pending' && $order->payment_method != 'cod')     
-          <div class="pt-3">
-            <button class="btn btn-lg btn-primary payment-button" id="paymant-button">Pay {{ Number::currency($order->grand_total, 'INR') }}</button>
-          </div>
-        @endif
 
         <div class="row">
 
@@ -61,7 +56,11 @@
                                 <h5 class="d-flex animate-underline mb-2">
                                   <a class="d-block fs-sm fw-medium text-truncate animate-target" href="{{ route('product.show', $item->product->slug) }}">{{ $item->product->name }}</a>
                                 </h5>
-                                <div class="h6 mb-2">{{ Number::currency($item->product->final_price, 'INR') }}</div>
+                                <div class="h6 mb-2">{{ Number::currency($item->product->final_price, 'INR') }}
+                                  @if ($item->product->base_price != $item->product->final_price)
+                                    <del class="text-body-tertiary fs-sm fw-normal">{{ Number::currency($item->product->base_price, 'INR') }}</del>
+                                  @endif
+                                </div>
                                 <div class="fs-xs">Qty: {{ $item->quantity }}</div>
                               </div>
                             </div>
@@ -130,84 +129,5 @@
     </main>
 @endsection
 @section('script')
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script>
-    $(document).ready(function () {
-      // razorpay payment
-      $('#paymant-button').on('click', function () {
 
-        $.ajax({
-          url: '{{ route("razorpay.order") }}',
-          method: 'POST',
-          data: {
-            amount: '{{ $order->grand_total }}',
-            order_id: '{{ $order->id }}'
-          },
-          success: function (response) {
-            if (response.success) {
-                initiateRazorpay(response);
-            }
-          },
-          error: function (xhr) {
-            alert('Error: ' + (xhr.responseJSON?.error || 'Something went wrong'));
-          }
-        });
-
-      });
-    });
-
-    function initiateRazorpay(data) {
-      const options = {
-        key: data.key,
-        amount: data.amount * 100,
-        currency: data.currency,
-        name: 'MyCart',
-        description: 'Order #' + data.order_no,
-        order_id: data.razorpay_order_id,
-        handler: function (response) {
-          verifyPayment(response, data.order_id);
-        },
-        prefill: {
-          name: data.user.name,
-          email: data.user.email,
-          contact: data.user.contact
-        },
-        theme: {
-          color: '#0d6efd'
-        },
-        modal: {
-          ondismiss: function () {
-            messageAlert('Payment cancelled', 'error');
-            window.location.href = response.redirect;
-          }
-        }
-      };
-
-      const rzp = new Razorpay(options);
-      rzp.open();
-    }
-
-    // Verify Payment
-    function verifyPayment(response, orderId) {
-      $.ajax({
-        url: '{{ route("order.verify-payment") }}',
-        method: 'POST',
-        data: {
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_order_id: response.razorpay_order_id,
-          razorpay_signature: response.razorpay_signature,
-          order_id: orderId
-        },
-        success: function (res) {
-          if (res.success) {
-            messageAlert(res.message, 'success');
-            window.location.reload();
-          }
-        },
-        error: function (xhr) {
-          alert('Payment verification failed: ' + (xhr.responseJSON?.error || 'Unknown error'));
-        }
-      });
-    }
-  </script>
 @endsection

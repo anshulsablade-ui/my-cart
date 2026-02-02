@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Mycart\AddressController;
 use App\Http\Controllers\Mycart\Auth\AuthController as MycartAuthController;
+use App\Http\Controllers\Mycart\Auth\ForgotPasswordController;
 use App\Http\Controllers\Mycart\Auth\SocialAuthController;
 use App\Http\Controllers\Mycart\CartController;
 use App\Http\Controllers\Mycart\CheckoutController;
@@ -21,9 +22,9 @@ use App\Http\Controllers\Mycart\ProfileController;
 use App\Http\Controllers\Mycart\WishlistController;
 use Illuminate\Support\Facades\Route;
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
+Route::get('/', function () {
+    return redirect()->route('home');
+});
 
 Route::prefix('admin')->name('admin.')->group(function () {
 
@@ -40,6 +41,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/dashboard/sales-chart', [DashboardController::class, 'salesChart']);
+        Route::get('/dashboard/order-status-chart', [DashboardController::class, 'orderStatusChart']);
 
         // Category Routes
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
@@ -65,9 +67,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Order Routes
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
-        Route::get('/orders/{id}', [AdminOrderController::class, 'show'])->name('order.show');
-        Route::put('/orders/update/{id}', [AdminOrderController::class, 'update'])->name('order.update');
-        Route::delete('/orders/delete/{id}', [AdminOrderController::class, 'destroy'])->name('order.destroy');
+        Route::get('/order/{id}', [AdminOrderController::class, 'show'])->name('order.show');
+        Route::put('/order/update/{id}', [AdminOrderController::class, 'update'])->name('order.update');
+        Route::delete('/order/delete/{id}', [AdminOrderController::class, 'destroy'])->name('order.destroy');
 
         // Customer Routes
         Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
@@ -116,11 +118,10 @@ Route::prefix('home')->group(function () {
         // Checkout Routes
         Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 
-        Route::post('/checkout', [CheckoutController::class, 'processOrder'])->name('order.process');
+        Route::post('/checkout', [CheckoutController::class, 'checkout'])->name('order.process');
         Route::post('/checkout/place-order', [CheckoutController::class, 'verifyPayment'])->name('order.verify-payment');
         Route::get('/checkout/success/{orderId}', [CheckoutController::class, 'orderSuccess'])->name('order.success');
     
-        Route::post('/razorpay/order', [CheckoutController::class, 'createOrder'])->name('razorpay.order');
 
 
         // User Address Routes
@@ -158,6 +159,14 @@ Route::prefix('home')->group(function () {
 Route::prefix('auth')->group(function () {
     Route::get('/login', [MycartAuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [MycartAuthController::class, 'login'])->name('login.post');
+
+    // forgot password routes
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'index'])->name('forgot-password');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('forgot-password.post');
+    Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetPasswordForm'])->name('reset-password');
+    Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('reset-password.post');
+
+    // register routes
     Route::get('/register', [MycartAuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [MycartAuthController::class, 'register'])->name('register.post');
 

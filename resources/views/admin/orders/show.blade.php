@@ -145,48 +145,78 @@
         </div>
       </div>
     </div> --}}
+    <div class="card mb-3">
+      <div class="card-header bg-light">
+          <h6 class="mb-0">Update Order Status</h6>
+      </div>
+      <div class="card-body">
+          <form id="updateOrderStatusForm">
+              @method('PUT')
+  
+              <div class="row g-3 align-items-end">
+                  <div class="col-md-6 col-lg-4">
+                      <label for="order_status" class="form-label">Order Status</label>
+                      <select class="form-select" name="order_status" id="order_status">
+                          <option value="pending"    {{ $order->order_status === 'pending'    ? 'selected' : '' }}>Pending</option>
+                          <option value="processing" {{ $order->order_status === 'processing' ? 'selected' : '' }}>Processing</option>
+                          <option value="completed"  {{ $order->order_status === 'completed'  ? 'selected' : '' }}>Completed</option>
+                          <option value="cancelled"  {{ $order->order_status === 'cancelled'  ? 'selected' : '' }}>Cancelled</option>
+                      </select>
+                  </div>
+  
+                  <div class="col-md-6 col-lg-4">
+                      <label for="payment_status" class="form-label">Payment Status</label>
+                      <select class="form-select" name="payment_status" id="payment_status">
+                          <option value="pending" {{ $order->payment_status === 'pending' ? 'selected' : '' }}>Pending</option>
+                          <option value="paid"    {{ $order->payment_status === 'paid'    ? 'selected' : '' }}>Paid</option>
+                          <option value="failed"  {{ $order->payment_status === 'failed'  ? 'selected' : '' }}>Failed</option>
+                      </select>
+                  </div>
+  
+                  <div class="col-md-12 col-lg-4 d-flex align-items-end">
+                      <button type="submit" class="btn btn-primary w-100">
+                          Update Status
+                      </button>
+                  </div>
+              </div>
+  
+              <!-- Optional: show current timestamps or last updated -->
+              @if($order->updated_at)
+                  <div class="mt-3 text-muted small">
+                      Last updated: {{ $order->updated_at->diffForHumans() }}
+                  </div>
+              @endif
+          </form>
+      </div>
+  </div>
 @endsection
 @section('script')
-{{-- <script>
+<script>
   $(document).ready(function () {
-    $('#order_status').on('change', function () {
-      let status = $(this).val();
-      let orderId = "{{ $order->id }}";
-      $.ajax({
-        url: "{{ route('admin.order.update', $order->id) }}",
-        type: "PUT",
-        data: {
-          'order_status': status
-        },
-        success: function (response) {
-          if (response.status === 'success') {
-            window.location.reload();
-          }
-        },
-        error: function (xhr, status, error) {
-          console.log(error);
+
+    $('#updateOrderStatusForm').submit(function (e) {
+      e.preventDefault(); 
+      var formData = new FormData(this);
+
+      ajaxCall("{{ route('admin.order.update', $order->id) }}", 'POST', formData, function (res) {
+        if (res.status == 'success') {
+          $('.is-invalid').removeClass('is-invalid');
+          $('.invalid-feedback').remove();
+          messageAlert(res.message, 'success');
+          // window.location.reload();
+        }
+      }, function (response) {
+        var response = JSON.parse(response.responseText);
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+        if (response.status == 'error') {
+          $.each(response.message, function (key, value) { 
+            $(`#${key}`).addClass('is-invalid').after(` <span class="invalid-feedback">${value}</span> `);
+          });
         }
       });
-    });
-    $('#paymant_status').on('change', function () {
-      let status = $(this).val();
-      let orderId = "{{ $order->id }}";
-      $.ajax({
-        url: "{{ route('admin.order.update', $order->id) }}",
-        type: "PUT",
-        data: {
-          'paymant_status': status
-        },
-        success: function (response) {
-          if (response.status === 'success') {
-            window.location.reload();
-          }
-        },
-        error: function (xhr, status, error) {
-          console.log(error);
-        }
-      });
+      
     });
   });
-</script> --}}
+</script>
 @endsection

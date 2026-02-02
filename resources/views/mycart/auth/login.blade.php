@@ -8,9 +8,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>MyCart | Account - Sign In</title>
 
-    <!-- Theme switcher (color modes) -->
-    <script src="{{ asset('web/assets/js/theme-switcher.js') }}"></script>
-
+    <link rel="icon" type="image/png" href="{{ asset('/assets/img/favicons/mycart_icon.png') }}" sizes="32x32">
     <!-- Preloaded local web font (Inter) -->
     <link rel="preload" href="{{ asset('web/assets/fonts/inter-variable-latin.woff2') }}" as="font" type="font/woff2" crossorigin="">
 
@@ -18,11 +16,7 @@
     <link rel="preload" href="{{ asset('web/assets/icons/cartzilla-icons.woff2') }}" as="font" type="font/woff2" crossorigin="">
     <link rel="stylesheet" href="{{ asset('web/assets/icons/cartzilla-icons.min.css') }}">
     <!-- Bootstrap + Theme styles -->
-    <link rel="preload" href="{{ asset('web/assets/css/theme.min.css') }}" as="style">
-    <link rel="stylesheet" href="{{ asset('web/assets/css/theme.min.css') }}" id="theme-styles">
-
-    <!-- Customizer -->
-    <script src="{{ asset('web/assets/js/customizer.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('web/assets/css/theme.min.css') }}">
 </head>
 
 
@@ -30,11 +24,11 @@
 <body>
 
     <!-- Page content -->
-    <main class="content-wrapper w-100 px-3 ps-lg-5 pe-lg-4 mx-auto" style="max-width: 1920px">
+    <main class="content-wrapper align-content-center w-100 px-3 ps-lg-5 pe-lg-4 mx-auto" style="max-width: 1920px">
       <div class="d-lg-flex">
 
         <!-- Login form + Footer -->
-        <div class="d-flex flex-column min-vh-100 w-100 py-4 mx-auto" style="max-width: 416px">
+        <div class="d-flex flex-column w-100 py-4 mx-auto" style="max-width: 416px">
 
           <!-- Logo -->
           <header class="navbar px-0 pb-4 mt-n2 mt-sm-0 mb-2 mb-md-3 mb-lg-4">
@@ -43,7 +37,7 @@
             </a>
           </header>
 
-          <h1 class="h2 mt-auto">Welcome back</h1>
+          <h1 class="h2">Welcome back</h1>
           <div class="nav fs-sm mb-4">
             Don't have an account?
             <a class="nav-link text-decoration-underline p-0 ms-2" href="{{ route('register') }}">Create an account</a>
@@ -66,7 +60,7 @@
             </div>
             <div class="d-flex align-items-center justify-content-end mb-4">
               <div class="nav">
-                <a class="nav-link animate-underline p-0" href="account-password-recovery.html">
+                <a class="nav-link animate-underline p-0" href="{{ route('forgot-password') }}">
                   <span class="animate-target">Forgot password?</span>
                 </a>
               </div>
