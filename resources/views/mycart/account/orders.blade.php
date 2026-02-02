@@ -23,7 +23,8 @@
 
 
               <!-- Sortable orders table -->
-              <div data-filter-list="{&quot;listClass&quot;: &quot;orders-list&quot;, &quot;sortClass&quot;: &quot;orders-sort&quot;, &quot;valueNames&quot;: [&quot;date&quot;, &quot;total&quot;]}">
+              <div class="table-responsive">
+                @if (count($orders) > 0)
                 <table class="table align-middle fs-sm text-nowrap">
                   <thead>
                     <tr>
@@ -47,7 +48,7 @@
                   </thead>
                   <tbody class="text-body-emphasis orders-list">
 
-                    @forelse ($orders as $order)  
+                    @foreach ($orders as $order)  
                         <!-- Item -->
                         <tr>
                           <td class="fw-medium pt-2 pb-3 py-md-2 ps-0">
@@ -91,14 +92,17 @@
                             </span>
                           </td>
                         </tr>
-                    @empty
-                      <div class="text-center py-5">
-                        <p class="text-muted mb-3">You haven’t made any orders yet.</p>
-                      </div>
-                    @endforelse
-
+                    @endforeach
+                    
                   </tbody>
                 </table>
+                @else
+                  <div class="text-center py-5">
+                    <h2 class="h4 mb-4">You have no orders</h2>
+                    <p class="mb-4">Explore our products and add them to your cart.</p>
+                    <a class="btn btn-primary" href="{{ route('products.list') }}">Continue Shopping</a>
+                  </div>
+                @endif
               </div>
 
               <!-- Pagination -->

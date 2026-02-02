@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -19,6 +20,21 @@ class DashboardController extends Controller
         $totalProducts = Product::count();
         $totalRevenue = Order::where('order_status', 'completed')->sum('grand_total');
         return view('admin.dashboard.index', compact('users', 'totalOrders', 'totatUsers', 'totalProducts', 'totalRevenue'));
+    }
+
+    public function orderStatusChart()
+    {
+        $statusData = Order::select(
+                'order_status',
+                DB::raw('COUNT(*) as total')
+            )
+            ->groupBy('order_status')
+            ->get();
+    
+        $labels = $statusData->pluck('order_status');
+        $totals = $statusData->pluck('total');
+    
+        return response()->json([ 'labels' => $labels, 'data' => $totals ]);
     }
 
     public function salesChart()
@@ -37,9 +53,6 @@ class DashboardController extends Controller
                 ->sum('grand_total');
         }
 
-        return response()->json([
-            'labels' => $months,
-            'data'   => $sales
-        ]);
+        return response()->json([ 'labels' => $months, 'data' => $sales ]);
     }
 }

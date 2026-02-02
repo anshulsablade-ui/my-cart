@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\DataTables;
 
 class OrderController extends Controller
@@ -44,13 +45,27 @@ class OrderController extends Controller
 
     public function update(Request $request, $id)
     {
+        $validator = Validator::make($request->all(), [
+            'payment_status' => 'required|in:pending,paid,failed',
+            'order_status' => 'required|in:pending,processing,shipped,completed,cancelled',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $validator->errors()
+            ], 422);
+        }
         $order = Order::where('id', $id)->first();
         if (!$order) {
-            return redirect()->route('admin.orders.index')->with('error', 'Order not found');
+            return redirect()->back()->with('error', 'Order not found');
         }
 
-        $order->payment_status = $request->payment_status;
-        $order->save();
+        $order->update([
+            'payment_status' => $request->payment_status,
+            'order_status' => $request->order_status
+        ]);
+        
         return response()->json([ 'status' => 'success', 'message' => 'Order status updated successfully']);
     }
     public function show($id)

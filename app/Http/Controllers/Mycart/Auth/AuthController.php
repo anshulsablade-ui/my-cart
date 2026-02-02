@@ -39,7 +39,6 @@ class AuthController extends Controller
             Session::put('user', $user);
             $this->gaustCartMerge();
             Session::put('cart_count', Cart::where('user_id', $user->id)->count());
-
             session()->flash('success', 'Login successful.');
             return response()->json([
                 'status' => 'success',
@@ -48,7 +47,7 @@ class AuthController extends Controller
         } else {
             return response()->json([
                 'status' => 'error',
-                'message' => ['email' => ['Invalid email or password.']]
+                'message' => ['password' => ['Wrong password.']]
             ], 422);
         }
     }
@@ -57,6 +56,8 @@ class AuthController extends Controller
     {
         if (Session::has('user')) {
             Session::forget('user');
+            Session::forget('cart_count');
+            Session::forget('cart_session_id');
             return redirect()->route('login')->with('success', 'Logout successful.');
         }
     }
@@ -113,7 +114,7 @@ class AuthController extends Controller
 
         foreach ($guestCarts as $guestCart) {
 
-            $userCart = Cart::where('user_id', session()->get('user.id'))
+            $userCart = Cart::where('session_id', session()->get('cart_session_id'))
                 ->where('product_id', $guestCart->product_id)
                 ->first();
 

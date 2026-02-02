@@ -132,40 +132,12 @@
                                 <span class="fas fa-ellipsis-h fs-10"></span>
                               </button>
                               <div class="dropdown-menu dropdown-menu-end border py-2" aria-labelledby="dropdown-simple-pagination-table-item-${row.DT_RowIndex}">
-                                <a class="dropdown-item status_update" data-status="completed" href="${data.editUrl}">Completed</a>
-                                <a class="dropdown-item status_update" data-status="processing" href="${data.editUrl}">Processing</a>
-                                <a class="dropdown-item status_update" data-status="cancelled" href="${data.editUrl}">Cancelled</a>
-                                <a class="dropdown-item status_update" data-status="pending" href="${data.editUrl}">Pending</a>
-                                <div class="dropdown-divider"></div>
                                 <a class="dropdown-item text-danger delete" href="${data.deleteUrl}">Delete</a>
                               </div>
                             </div>`;
                   }
                 }
             ]
-        });
-
-        $('body').on('click', '.status_update', function(e) {
-            e.preventDefault();
-            var url = $(this).attr('href');
-            var status = $(this).data('status');
-            $.ajax({
-                url: url,
-                type: 'PUT',
-                data: {
-                    status: status,
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                  if (response.status == 'success') {
-                    table.draw();
-                    messageAlert(response.message, 'success');
-                  }
-                },
-                error: function(error) {
-                    messageAlert('Something went wrong.', 'error');
-                }
-            });
         });
 
     });

@@ -248,7 +248,6 @@
                     success: function (response) {
                         // window.location.reload();
                         if(response.status == 'success') {
-                            console.log(response.message);
 
                             $('tr[data-cart-id="' + cartId + '"]').find('.total-price').text('₹' + response.cart.quantity * response.cart.product.final_price);
                             $('.order-summary').find('.subtotal').text(response.subtotal);

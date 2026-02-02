@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Mycart;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OrderSuccessMail;
 use App\Models\Cart;
 use App\Models\Country;
 use App\Models\Order;
@@ -12,107 +13,202 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\UserAddress;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Razorpay\Api\Api;
-use Stripe\Stripe;
-use Stripe\PaymentIntent;
 use Illuminate\Support\Facades\DB;
+use Razorpay\Api\Errors\SignatureVerificationError;
 
 class CheckoutController extends Controller
 {
-    // Show checkout page
     public function index(Request $request)
     {
         $cartItems = Cart::with('product.primaryImage')->where('user_id', session()->get('user.id'))->get();
-        // dd($cartItems->toArray());
+        
         if ($cartItems->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty');
         }
 
-        $subTotal = 0;
-        $discounted_price = 0;
-
-        foreach ($cartItems as $item) {
-            $price = $item->product->base_price;
-            $qty = $item->quantity;
-
-            $itemTotal = $price * $qty;
-            $itemDiscount = ($itemTotal * $item->product->discount_percentage) / 100;
-
-            $subTotal += $itemTotal;
-            $discounted_price += $itemDiscount;
-        }
-
-        $gstAmount = (($subTotal - $discounted_price) * 18) / 100;
-        $shippingAmount = 0;
-
-        $grandTotal = ($subTotal - $discounted_price) + $gstAmount + $shippingAmount;
-
+        $orderData = $this->calculateGrandTotal();
         $addresses = UserAddress::where('user_id', session()->get('user.id'))->with('country', 'state', 'city')->get();
         $countries = Country::all();
 
-        return view('mycart.checkout', compact(
-            'cartItems',
-            'subTotal',
-            'discounted_price',
-            'gstAmount',
-            'grandTotal',
-            'addresses',
-            'countries'
-        ));
+        return view('mycart.checkout', [
+            'cartItems' => $cartItems,
+            'subTotal' => $orderData['subTotal'],
+            'discounted_price' => $orderData['discountAmount'],
+            'gstAmount' => $orderData['gstAmount'],
+            'grandTotal' => $orderData['grandTotal'],
+            'addresses' => $addresses,
+            'countries' => $countries
+        ]);
     }
 
-    public function processOrder(Request $request)
+    public function orderSuccess($orderId)
     {
-        $request->validate([
-            'shipping_address_id' => 'required|exists:user_addresses,id',
-            'payment_method' => 'required|in:cod,razorpay',
-            'notes' => 'nullable|string',
-        ]);
+        $order = Order::with(['orderItems.product', 'orderAddresses', 'payment'])
+            ->where('id', $orderId)
+            ->where('user_id', session()->get('user.id'))
+            ->first();
+        if (!$order) {
+            return response()->json(['error' => 'Order not found'], 404);
+        }
 
+        return view('mycart.order-success', compact('order'));
+    }
+
+    public function checkout(Request $request)
+    {
         $userId = session()->get('user.id');
 
+        $cartItems = Cart::where('user_id', $userId)->get();
+        if ($cartItems->isEmpty()) {
+            return response()->json(['error' => 'Cart is empty'], 400);
+        }
+
+        $orderData = $this->calculateGrandTotal();
+
+        if ($request->payment_method === 'cod') {
+
+            $order = $this->order(
+                $request->shipping_address_id,
+                $request->payment_method,
+                $request->notes,
+                $orderData
+            );
+
+            Cart::where('user_id', $order->user_id)->delete();
+            session()->put('cart_count', 0);
+            Mail::to($order->user->email)->send(new OrderSuccessMail(Order::where('id', $order->id)->with('orderItems', 'user')->first()));
+            return response()->json([
+                'success' => true,
+                'order_id' => $order->id,
+                'order_no' => $order->order_no,
+                'redirect' => route('order.success', $order->id)
+            ]);
+        }
+
+        // Razorpay
+        $api = new Api(
+            config('services.razorpay.key'),
+            config('services.razorpay.secret')
+        );
+
+        $razorpayOrder = $api->order->create([
+            'receipt' => $userId . '_' . time(),
+            'amount' => (int) round($orderData['grandTotal'] * 100),
+            'currency' => 'INR',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'razorpay_order_id' => $razorpayOrder['id'],
+            'amount' => $orderData['grandTotal'],
+            'currency' => 'INR',
+            'key' => config('services.razorpay.key'),
+            'user' => [
+                'name' => session()->get('user.name'),
+                'email' => session()->get('user.email'),
+                'contact' => session()->get('user.phone') ?? ''
+            ],
+        ]);
+    }
+
+    public function verifyPayment(Request $request)
+    {
+        $request->validate([
+            'razorpay_payment_id' => 'required|string',
+            'razorpay_order_id' => 'required|string',
+            'razorpay_signature' => 'required|string'
+        ]);
+
+        $api = new Api(
+            config('services.razorpay.key'),
+            config('services.razorpay.secret')
+        );
+
+        DB::beginTransaction();
+
         try {
-            DB::beginTransaction();
+            $api->utility->verifyPaymentSignature([
+                'razorpay_payment_id' => $request->razorpay_payment_id,
+                'razorpay_order_id' => $request->razorpay_order_id,
+                'razorpay_signature' => $request->razorpay_signature,
+            ]);
 
-            // Get cart items
+            $payment = $api->payment->fetch($request->razorpay_payment_id);
+            // $order = Order::findOrFail($request->order_id);
+
+            $orderData = $this->calculateGrandTotal();
+            $order = $this->order(
+                $request->shipping_address_id,
+                $request->payment_method,
+                $request->notes,
+                $orderData
+            );
+
+            Payment::create([
+                'order_id' => $order->id,
+                'transaction_id' => $request->razorpay_payment_id,
+                'gateway' => 'razorpay',
+                'amount' => $payment->amount / 100,
+                'currency' => $payment->currency,
+                'status' => 'success',
+                'response' => json_encode($payment->toArray())
+            ]);
+
+            DB::commit();
+
+            Cart::where('user_id', $order->user_id)->delete();
+            session()->put('cart_count', 0);
+            Mail::to($order->user->email)->send(new OrderSuccessMail(Order::where('id', $order->id)->with('orderItems', 'user')->first()));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment verified successfully',
+                'redirect' => route('order.success', $order->id)
+            ]);
+
+        } catch (SignatureVerificationError $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment verification failed',
+                'error' => $e->getMessage()
+            ], 400);
+
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function order($address_id, $payment_method, $notes, array $orderData)
+    {
+        DB::beginTransaction();
+
+        try {
             $cartItems = Cart::with('product')->where('user_id', session()->get('user.id'))->get();
-
-            if ($cartItems->isEmpty()) {
-                return response()->json(['error' => 'Cart is empty'], 400);
-            }
-
-            $subTotal = 0;
-            $discountAmount = 0;
-
-            foreach ($cartItems as $item) {
-                $price = $item->product->base_price;
-                $qty = $item->quantity;
-
-                $itemTotal = $price * $qty;
-                $itemDiscount = ($itemTotal * $item->product->discount_percentage) / 100;
-
-                $subTotal += $itemTotal;
-                $discountAmount += $itemDiscount;
-            }
-
-            $gst = (($subTotal - $discountAmount) * 18) / 100;
-            $shippingAmount = 0;
-
-            $grandTotal = ($subTotal - $discountAmount) + $gst + $shippingAmount;
-
 
             $order = Order::create([
                 'order_no' => 'ORD-' . now()->format('Ymd') . '-' . rand(1000, 9999),
                 'user_id' => session()->get('user.id'),
-                'subtotal' => $subTotal,
-                'discounted_price' => $discountAmount,
-                'tax_amount' => $gst,
-                'shipping_amount' => $shippingAmount,
-                'grand_total' => $grandTotal,
-                'payment_status' => 'pending',
+                'subtotal' => $orderData['subTotal'],
+                'discounted_price' => $orderData['discountAmount'],
+                'tax_amount' => $orderData['gstAmount'],
+                'shipping_amount' => $orderData['shippingAmount'],
+                'grand_total' => $orderData['grandTotal'],
+                'payment_status' => $payment_method == 'cod' ? 'pending' : 'paid',
                 'order_status' => 'processing',
-                'payment_method' => $request->payment_method,
-                'notes' => $request->notes,
+                'payment_method' => $payment_method,
+                'notes' => $notes,
             ]);
 
             foreach ($cartItems as $item) {
@@ -121,15 +217,13 @@ class CheckoutController extends Controller
                     'product_id' => $item->product_id,
                     'price' => $item->product->final_price,
                     'quantity' => $item->quantity,
-                    'total' => $item->product->price * $item->quantity
+                    'total' => $item->product->final_price * $item->quantity,
                 ]);
+
                 Product::where('id', $item->product_id)->decrement('stock', $item->quantity);
             }
 
-            Cart::where('user_id', session()->get('user.id'))->delete();
-            session()->put('cart_count', 0);
-
-            $address = UserAddress::where('id', $request->shipping_address_id)->first();
+            $address = UserAddress::where('id', $address_id)->first();
 
             OrderAddress::create([
                 'order_id' => $order->id,
@@ -143,186 +237,38 @@ class CheckoutController extends Controller
                 'pincode' => $address->pincode
             ]);
 
-            // Handle payment method
-            if ($request->payment_method === 'cod') {
-                // For COD, mark as pending and complete order
-                Cart::where('user_id', $userId)->delete();
-
-                DB::commit();
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Order placed successfully',
-                    'order_id' => $order->id,
-                    'order_no' => $order->order_no,
-                    'redirect' => route('order.success', $order->id)
-                ]);
-            } else {
-                // For Razorpay, create payment order
-                $api = new Api(config('services.razorpay.key'), config('services.razorpay.secret'));
-
-                $razorpayOrder = $api->order->create([
-                    'receipt' => $order->order_no,
-                    'amount' => (int) round($grandTotal * 100),
-                    'currency' => 'INR',
-                    'notes' => [
-                        'order_id' => $order->id,
-                        'user_id' => $userId
-                    ]
-                ]);
-
-                DB::commit();
-
-                return response()->json([
-                    'success' => true,
-                    'razorpay_order_id' => $razorpayOrder['id'],
-                    'amount' => $grandTotal,
-                    'currency' => 'INR',
-                    'order_id' => $order->id,
-                    'order_no' => $order->order_no,
-                    'key' => config('services.razorpay.key'),
-                    'user' => [
-                        'name' => session()->get('user.name'),
-                        'email' => session()->get('user.email'),
-                        'contact' => session()->get('user.phone') ?? ''
-                    ],
-                    'redirect' => route('order.success', $order->id)
-                ]);
-            }
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
-    public function verifyPayment(Request $request)
-    {
-        $request->validate([
-            'razorpay_payment_id' => 'required',
-            'razorpay_order_id' => 'required',
-            'razorpay_signature' => 'required',
-            'order_id' => 'required|exists:orders,id'
-        ]);
-
-        try {
-            $api = new Api(config('services.razorpay.key'), config('services.razorpay.secret'));
-
-            // Verify signature
-            $attributes = [
-                'razorpay_order_id' => $request->razorpay_order_id,
-                'razorpay_payment_id' => $request->razorpay_payment_id,
-                'razorpay_signature' => $request->razorpay_signature
-            ];
-
-            $api->utility->verifyPaymentSignature($attributes);
-
-            // Fetch payment details
-            $payment = $api->payment->fetch($request->razorpay_payment_id);
-
-            DB::beginTransaction();
-
-            $order = Order::find($request->order_id);
-
-            // Update order payment status
-            $order->update([
-                'payment_status' => 'paid',
-                'order_status' => 'processing'
-            ]);
-
-            // Save payment details
-            Payment::create([
-                'order_id' => $order->id,
-                'transaction_id' => $request->razorpay_payment_id,
-                'gateway' => 'razorpay',
-                'amount' => $payment->amount / 100,
-                'currency' => $payment->currency,
-                'status' => 'success',
-                'response' => json_encode($payment->toArray())
-            ]);
-
-            // Clear cart
-            Cart::where('user_id', $order->user_id)->delete();
-            session()->put('cart_count', 0);
-
             DB::commit();
+            return $order;
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Payment verified successfully',
-                'redirect' => route('order.success', $order->id)
-            ]);
-
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
-
-            // Log failed payment
-            if ($request->order_id) {
-                $order = Order::find($request->order_id);
-                $order->update(['payment_status' => 'failed']);
-
-                Payment::create([
-                    'order_id' => $order->id,
-                    'transaction_id' => $request->razorpay_payment_id ?? null,
-                    'gateway' => 'razorpay',
-                    'amount' => $order->grand_total,
-                    'currency' => 'INR',
-                    'status' => 'failed',
-                    'response' => json_encode(['error' => $e->getMessage()])
-                ]);
-            }
-
-            return response()->json(['error' => 'Payment verification failed'], 400);
+            throw $e;
         }
     }
 
-    public function orderSuccess($orderId)
+    public function calculateGrandTotal(): array
     {
-        $order = Order::with(['orderItems.product', 'orderAddresses', 'payment'])
-            ->where('id', $orderId)
-            ->where('user_id', session()->get('user.id'))
-            ->first();
-        // dd($order->toArray());
-        if (!$order) {
-            return response()->json(['error' => 'Order not found'], 404);
+        $cartItems = Cart::with('product')->where('user_id', session()->get('user.id'))->get();
+
+        $subTotal = 0;
+        $discountAmount = 0;
+
+        foreach ($cartItems as $item) {
+            $itemTotal = $item->product->base_price * $item->quantity;
+            $itemDiscount = ($itemTotal * $item->product->discount_percentage) / 100;
+
+            $subTotal += $itemTotal;
+            $discountAmount += $itemDiscount;
         }
 
-        return view('mycart.order-success', compact('order'));
-    }
+        $gst = (($subTotal - $discountAmount) * 18) / 100;
 
-    public function createOrder(Request $request)
-    {
-        $api = new Api(config('services.razorpay.key'), config('services.razorpay.secret'));
-        $order = Order::where('id', $request->order_id)->first();
-
-        if (!$order) {
-            return response()->json(['error' => 'Order not found'], 404);
-        }
-
-        $razorpayOrder = $api->order->create([
-            'receipt' => 'order_' . time(),
-            'amount' => (int) round($request->amount * 100),
-            'currency' => 'INR',
-            'notes' => [
-                'order_id' => $request->order_id,
-                'user_id' => session()->get('user.id')
-            ]
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'razorpay_order_id' => $razorpayOrder['id'],
-            'amount' => $request->amount,
-            'currency' => 'INR',
-            'order_id' => $order->id,
-            'order_no' => $order->order_no,
-            'key' => config('services.razorpay.key'),
-            'user' => [
-                'name' => session()->get('user.name'),
-                'email' => session()->get('user.email'),
-                'contact' => session()->get('user.phone') ?? ''
-            ],
-            'redirect' => route('order.success', $order->id)
-        ]);
+        return [
+            'subTotal' => $subTotal,
+            'discountAmount' => $discountAmount,
+            'gstAmount' => $gst,
+            'shippingAmount' => 0,
+            'grandTotal' => ($subTotal - $discountAmount) + $gst,
+        ];
     }
 }

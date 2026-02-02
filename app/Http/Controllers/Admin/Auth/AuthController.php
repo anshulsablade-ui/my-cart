@@ -12,6 +12,9 @@ class AuthController extends Controller
 {
     public function showLoginForm()
     {
+        if (Auth::check()) {
+            return redirect()->route('admin.dashboard')->with('error', 'You are already logged in.');
+        }
         return view('admin.auth.login');
     }
 
@@ -29,6 +32,15 @@ class AuthController extends Controller
             ], 422);
         }
 
+        // chack role
+        $user = User::where('email', $request->email)->first();
+        if ($user->role != 'admin') {
+            return response()->json([
+                'status' => 'error',
+                'message' => ['email' => ['You are not admin.']]
+            ], 422);
+        }
+
         if (Auth::attempt($request->only('email', 'password'))) {
             $user = Auth::user();
             Auth::login($user);
@@ -41,14 +53,14 @@ class AuthController extends Controller
         }else{
             return response()->json([
                 'status' => 'error',
-                'message' => ['email' => ['Invalid email or password.']]
+                'message' => ['password' => ['Wrong password.']]
             ], 422);
         }
     }
 
     public function logout()
     {
-        if (Auth::check()) {
+        if (Auth::check() && Auth::user()->role == 'admin') {
             Auth::logout();
             return redirect()->route('admin.login');
         }
@@ -59,33 +71,33 @@ class AuthController extends Controller
         return view('admin.auth.register');
     }
 
-    public function register(Request $request)
-    {
-        $validator = validator(request()->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8|confirmed'
-        ]);
+    // public function register(Request $request)
+    // {
+    //     $validator = validator(request()->all(), [
+    //         'name' => 'required|string|max:255',
+    //         'email' => 'required|email|unique:users,email',
+    //         'password' => 'required|min:8|confirmed'
+    //     ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $validator->errors()
-            ], 422);
-        }
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => $validator->errors()
+    //         ], 422);
+    //     }
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'admin'
-        ]);
+    //     $user = User::create([
+    //         'name' => $request->name,
+    //         'email' => $request->email,
+    //         'password' => Hash::make($request->password),
+    //         'role' => 'admin'
+    //     ]);
 
-        Auth::login($user);
-        session()->flash('success', 'Registration successful.');
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Registration successful.'
-        ], 200);
-    }
+    //     Auth::login($user);
+    //     session()->flash('success', 'Registration successful.');
+    //     return response()->json([
+    //         'status' => 'success',
+    //         'message' => 'Registration successful.'
+    //     ], 200);
+    // }
 }

@@ -61,6 +61,7 @@ class SocialAuthController extends Controller
     public function gaustCartMerge()
     {
         if (!session()->has('cart_session_id')) {
+            dd('No guest cart found');
             return;
         }
 
@@ -70,7 +71,7 @@ class SocialAuthController extends Controller
 
         foreach ($guestCarts as $guestCart) {
 
-            $userCart = Cart::where('user_id', session()->get('user.id'))
+            $userCart = Cart::where('session_id', session()->get('cart_session_id'))
                 ->where('product_id', $guestCart->product_id)
                 ->first();
 
