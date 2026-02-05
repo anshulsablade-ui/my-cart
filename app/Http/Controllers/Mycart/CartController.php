@@ -95,12 +95,13 @@ class CartController extends Controller
                 }
             })->get();
 
-        $subtotal = $carts->sum(fn ($item) => $item->product->base_price * $item->quantity);
-        $discounted_price = $carts->sum(fn ($item) => $item->product->base_price * $item->quantity * $item->product->discount_percentage / 100 );
-        $gstAmount = (($subtotal - $discounted_price) * 18) / 100;
-        $grandTotal = $subtotal + $gstAmount;
+        $data = $this->calculateGrandTotal();
+
+        $subtotal = Number::currency($data['subTotal'], 'INR');
+        $discounted_price = Number::currency($data['discountAmount'], 'INR');
+        $gstAmount = Number::currency($data['gstAmount'], 'INR');
+        $grandTotal = Number::currency($data['grandTotal'], 'INR');
         session()->put('cart_count', $carts->count());
-        // dd($carts->toArray());
 
         return view('mycart.cart', compact('carts', 'subtotal', 'discounted_price', 'gstAmount', 'grandTotal'));
     }
@@ -117,25 +118,20 @@ class CartController extends Controller
             'quantity' => $request->quantity
         ]);
 
-        $carts = Cart::with('product')
-            ->where(function ($q) {
-                if (session()->get('user')) {
-                    $q->where('user_id', session()->get('user.id'));
-                } else {
-                    $q->where('session_id', $this->getSessionId());
-                }
-            })->get();
-
         $data = $this->calculateGrandTotal();
         $cart = Cart::with('product')->where('id', $request->cart_id)->first();
         return response()->json([
             'status' => 'success',
             'message' => 'Cart updated successfully.',
-            'cart' => $cart,
+            'cart' => [
+                'base_price_total' => Number::currency($cart->product->base_price*$cart->quantity, 'INR'),
+                'final_price_total' => Number::currency($cart->product->final_price*$cart->quantity, 'INR')
+            ],
+            // 'cart' => $cart,
             'subtotal' => Number::currency($data['subTotal'], 'INR'),
             'discounted_price' => Number::currency($data['discountAmount'], 'INR'),
             'gstAmount' => Number::currency($data['gstAmount'], 'INR'),
-            'grand_total' => Number::currency($data['grandTotal'] , 'INR')
+            'grand_total' => Number::currency($data['grandTotal'], 'INR')
         ]);
     }
 
@@ -176,9 +172,16 @@ class CartController extends Controller
         ]);
     }
 
-        public function calculateGrandTotal(): array
+    public function calculateGrandTotal(): array
     {
-        $cartItems = Cart::with('product')->where('user_id', session()->get('user.id'))->get();
+        $cartItems = Cart::with('product.primaryImage')
+            ->where(function ($q) {
+                if (session()->get('user')) {
+                    $q->where('user_id', session()->get('user.id'));
+                } else {
+                    $q->where('session_id', $this->getSessionId());
+                }
+            })->get();
 
         $subTotal = 0;
         $discountAmount = 0;

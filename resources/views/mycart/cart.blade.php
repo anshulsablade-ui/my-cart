@@ -99,7 +99,12 @@
                               </button>
                             </div>
                           </td>
-                          <td class="h6 py-3 d-none d-md-table-cell total-price">{{ Number::currency($item->product->final_price * $item->quantity, 'INR') }}</td>
+                          <td class="h6 py-3 d-none d-md-table-cell total-price">
+                            {{ Number::currency($item->product->final_price * $item->quantity, 'INR') }}
+                            @if ($item->product->base_price != $item->product->final_price)
+                              <del class="text-body-tertiary fs-sm fw-normal">{{ Number::currency($item->product->base_price * $item->quantity, 'INR') }}</del>
+                            @endif
+                          </td>
                           <td class="text-end py-3 px-0">
                             <button type="button" class="btn-close fs-sm cart-remove-btn" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-sm" data-bs-title="Remove" aria-label="Remove from cart"></button>
                           </td>
@@ -128,15 +133,15 @@
                   <ul class="list-unstyled fs-sm gap-3 mb-0">
                     <li class="d-flex justify-content-between">
                       Subtotal ({{ count($carts) }} items):
-                      <span class="text-dark-emphasis fw-medium subtotal">{{ Number::currency($subtotal, 'INR') }}</span>
+                      <span class="text-dark-emphasis fw-medium subtotal">{{ $subtotal }}</span>
                     </li>
                     <li class="d-flex justify-content-between">
                       Discount:
-                      <span class="text-danger fw-medium discount">{{ Number::currency($discounted_price, 'INR') }}</span>
+                      <span class="text-danger fw-medium discount">{{ $discounted_price }}</span>
                     </li>
                     <li class="d-flex justify-content-between">
                       Gst tax (18%):
-                      <span class="text-dark-emphasis fw-medium gst-amount">{{ Number::currency($gstAmount, 'INR') }}</span>
+                      <span class="text-dark-emphasis fw-medium gst-amount">{{ $gstAmount }}</span>
                     </li>
                     <li class="d-flex justify-content-between">
                       Shipping:
@@ -146,7 +151,7 @@
                   <div class="border-top pt-4 mt-4">
                     <div class="d-flex justify-content-between mb-3">
                       <span class="fs-sm">Grand total:</span>
-                      <span class="h5 mb-0 grand-total">{{ Number::currency($grandTotal, 'INR') }}</span>
+                      <span class="h5 mb-0 grand-total">{{ $grandTotal }}</span>
                     </div>
                     <a class="btn btn-lg btn-primary w-100" href="{{ route('checkout.index') }}">
                       Proceed to checkout
@@ -248,8 +253,8 @@
                     success: function (response) {
                         // window.location.reload();
                         if(response.status == 'success') {
-
-                            $('tr[data-cart-id="' + cartId + '"]').find('.total-price').text('₹' + response.cart.quantity * response.cart.product.final_price);
+                            $('tr[data-cart-id="' + cartId + '"]').find('.total-price').html(
+                              response.cart.final_price_total + ' ' + (response.cart.base_price_total != response.cart.final_price_total ? `<del class="text-body-tertiary fs-sm fw-normal">${response.cart.base_price_total}</del>` : ''));
                             $('.order-summary').find('.subtotal').text(response.subtotal);
                             $('.order-summary').find('.discount').text(response.discounted_price);
                             $('.order-summary').find('.gst-amount').text(response.gstAmount);
