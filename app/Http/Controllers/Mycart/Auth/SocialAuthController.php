@@ -28,6 +28,7 @@ class SocialAuthController extends Controller
 
         if ($user) {
             session()->put('user', $user);
+            $this->gaustCartMerge();
             session()->flash('success', 'Login successful!');
             return redirect()->route('home');
         }
@@ -61,7 +62,6 @@ class SocialAuthController extends Controller
     public function gaustCartMerge()
     {
         if (!session()->has('cart_session_id')) {
-            dd('No guest cart found');
             return;
         }
 

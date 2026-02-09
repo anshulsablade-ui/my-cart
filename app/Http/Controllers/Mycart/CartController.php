@@ -113,13 +113,28 @@ class CartController extends Controller
             'cart_id' => 'required|exists:carts,id',
             'quantity' => 'required|integer|min:1'
         ]);
-
+        
+        $cart = Cart::with('product')->where('id', $request->cart_id)->first();
+        if (!$cart) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Cart not found'
+            ]);
+        }
+        $product = $cart->product;
+        if ($product->stock < $request->quantity) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $product->stock . ' stock available.'
+            ]);
+        }
         $cart = Cart::where('id', $request->cart_id)->update([
             'quantity' => $request->quantity
         ]);
 
+        $cart = Cart::where('id', $request->cart_id)->first();
         $data = $this->calculateGrandTotal();
-        $cart = Cart::with('product')->where('id', $request->cart_id)->first();
+
         return response()->json([
             'status' => 'success',
             'message' => 'Cart updated successfully.',
