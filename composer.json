@@ -14,6 +14,7 @@
         "laravel/framework": "^12.0",
         "laravel/socialite": "^5.24",
         "laravel/tinker": "^2.10.1",
+        "prism-php/prism": "^0.99.19",
         "razorpay/razorpay": "2.*",
         "stripe/stripe-php": "^19.2",
         "yajra/laravel-datatables": "^12.0"

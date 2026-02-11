@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\AIChatController;
 use App\Http\Controllers\Mycart\AddressController;
 use App\Http\Controllers\Mycart\Auth\AuthController as MycartAuthController;
 use App\Http\Controllers\Mycart\Auth\ForgotPasswordController;
@@ -106,6 +107,9 @@ Route::prefix('home')->group(function () {
     Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
     Route::delete('/cart/clear', [CartController::class, 'removeAll'])->name('cart.clear');
+
+
+    Route::post('/ai/generate', [AIChatController::class, 'generate'])->name('ai.generate');
 
     
     Route::middleware('userLogin')->group(function () {
