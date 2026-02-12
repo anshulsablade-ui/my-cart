@@ -83,7 +83,7 @@
                                     ${avatar}
                                 </div>
                                 <div class="ms-2">
-                                    <h6 class="mb-0">${data}</h6>
+                                    <a href="/admin/customers/${row.id}"><h6 class="mb-0">${data}</h6></a>
                                     <a href="javascript:void(0);">${row.email}</a>
                                 </div>
                             </div>`;

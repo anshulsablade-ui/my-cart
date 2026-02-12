@@ -114,15 +114,17 @@ class AuthController extends Controller
 
         foreach ($guestCarts as $guestCart) {
 
-            $userCart = Cart::where('session_id', session()->get('cart_session_id'))
+            $userCart = Cart::where('user_id', session()->get('user.id'))
                 ->where('product_id', $guestCart->product_id)
                 ->first();
 
-            if ($userCart) {
-                $userCart->update([
+            if (!$userCart) {
+                Cart::where('id', $guestCart->id)->update([
                     'user_id' => session()->get('user.id'),
                     'session_id' => null,
                 ]);
+            }else {
+                Cart::where('id', $guestCart->id)->delete();
             }
         }
 

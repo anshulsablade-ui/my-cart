@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\AIChatController;
 use App\Http\Controllers\Mycart\AddressController;
 use App\Http\Controllers\Mycart\Auth\AuthController as MycartAuthController;
 use App\Http\Controllers\Mycart\Auth\ForgotPasswordController;
@@ -73,6 +74,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Customer Routes
         Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
+        Route::get('/customers/{id}', [CustomerController::class, 'show'])->name('customer.show');
         Route::delete('/customers/{id}', [CustomerController::class, 'destroy'])->name('customer.destroy');
 
     });
@@ -106,6 +108,10 @@ Route::prefix('home')->group(function () {
     Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
     Route::delete('/cart/clear', [CartController::class, 'removeAll'])->name('cart.clear');
+
+    // AI Chat Routes
+    Route::get('/ai', [AIChatController::class, 'index'])->name('ai.index');
+    Route::post('/ai/generate', [AIChatController::class, 'chat'])->name('ai.generate');
 
     
     Route::middleware('userLogin')->group(function () {
