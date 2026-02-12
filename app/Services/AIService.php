@@ -2,50 +2,61 @@
 
 namespace App\Services;
 
-use Prism\Prism\Prism;
-use Prism\Prism\Enums\Provider;
-use Prism\Prism\ValueObjects\Messages\UserMessage;
-use Prism\Prism\ValueObjects\Messages\AssistantMessage;
-use Prism\Prism\ValueObjects\Messages\SystemMessage;
+use Auth;
+use Illuminate\Support\Facades\Http;
 
 class AIService
 {
-    public function reply(array $messages): string
+    public function ask(string $message, string $context, string $userDetails)
     {
-        $prismMessages = [];
-
-        // System instruction for your chatbot
-        $prismMessages[] = new SystemMessage(
-            "You are an AI shopping assistant for an ecommerce website.
-
-            Rules:
-            - Only use the data provided by the system.
-            - Never guess prices, stock, delivery time or policies.
-            - If information is missing, say you do not have that information.
-            - Be short, friendly and clear.
-            - You can help with:
-              - product questions
-              - order status
-              - delivery
-              - returns
-              - recommendations
-            "
-        );
-
-        foreach ($messages as $m) {
-
-            if ($m['role'] === 'assistant') {
-                $prismMessages[] = new AssistantMessage($m['content']);
-            } else {
-                $prismMessages[] = new UserMessage($m['content']);
-            }
+        $user = "";
+        if (Auth::check()) {
+            $user .= "Login user email is " . auth()->user()->email . ".";
         }
+        $systemPrompt = "You are Selvia, an AI shopping assistant for an ecommerce website.
 
-        $response = Prism::text()
-            ->using(Provider::OpenAI, 'gpt-4o-mini')
-            ->withMessages($prismMessages)
-            ->generate();
+                        Your name is Selvia.
+                        My ecommerce website name is " . config('app.name') . ".
+                        You are chatting with the user: " . $user . "
+                        
+                        Rules:
+                        - Only use the data provided by the system.
+                        - Never guess prices, stock, delivery time or policies.
+                        - If information is missing, say you do not have that information.
+                        - Be short, friendly and clear.
+                        - You can help with:
+                          - product questions
+                          - order status
+                          - delivery
+                          - returns
+                          - recommendations
+                        ";
 
-        return trim($response->text);
+
+        return Http::withToken(config('services.openrouter.key'))
+            ->acceptJson()
+            ->post('https://openrouter.ai/api/v1/chat/completions', [
+                'model' => 'openai/gpt-oss-20b:free',
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => $systemPrompt,
+                    ],
+                    [
+                        'role' => 'system',
+                        'content' => "Store data:\n" . $context,
+                    ],
+                    [
+                        'role' => 'system',
+                        'content' => "User data:\n" . $userDetails,
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => $message,
+                    ],
+                ],
+                'temperature' => 0.2,
+            ])
+            ->json();
     }
 }

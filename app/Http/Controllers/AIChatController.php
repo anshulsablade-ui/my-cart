@@ -2,71 +2,130 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
+use App\Models\User;
+use App\Services\AIService;
 use Illuminate\Http\Request;
-use Prism\Prism\Facades\Prism;
-use Prism\Prism\Enums\Provider;
-use Prism\Prism\ValueObjects\ProviderTool;
-use Prism\Prism\Exceptions\PrismRateLimitedException;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class AIChatController extends Controller
 {
-    // public function chat(Request $request)
-    // {
-    //     $user = $request->user();
-    //     $message = $request->message;
-
-    //     // Build ecommerce context (products / orders etc)
-    //     $context = app(\App\Services\EcommerceAIContext::class)
-    //                     ->build($user, $message);
-
-    //     $reply = app(\App\Services\AIService::class)
-    //                 ->ecommerceReply([
-    //                     [
-    //                         'role'    => 'user',
-    //                         'content' => $message
-    //                     ]
-    //                 ], $context);
-
-    //     return response()->json([
-    //         'reply' => $reply
-    //     ]);
-    // }
-
+    public function index()
+    {
+        return view('mycart.chatbot.index');
+    }
     public function generate(Request $request)
     {
-        $response = Prism::text()
-            ->using(Provider::Gemini, 'gemini-2.0-flash')
-            ->withPrompt('What is the stock price of Google right now?')
-            ->withProviderTools([
-                    new ProviderTool('google_search')
-                ])
-            ->asText();
-            return response()->json(['data' => $response]);
+        // dd(env('OPENAI_API_KEY'));
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . config('services.openrouter.key'),
+            'Content-Type' => 'application/json',
+        ])->post('https://openrouter.ai/api/v1/chat/completions', [
+                    'model' => 'openai/gpt-oss-20b:free',
+                    'messages' => [
+                        [
+                            'role' => 'user',
+                            'content' => 'What is new laravel version?',
+                        ],
+                    ],
+                    'reasoning' => [
+                        'enabled' => true
+                    ]
+                ]);
+
+        return $response->json();
+    }
+
+    public function chat(Request $request, AIService $bot)
+    {
+        $user = User::where('id', session()->get('user.id'))->first();
+        $wishlists_products = $user->wishlists()->with('product')->get()
+            ->map(function ($wishlist) {
+                return [
+                    'product_name' => $wishlist->product->name,
+                    'product_brand_name' => $wishlist->product->brand->name,
+                    'base_price' => $wishlist->product->base_price,
+                    'discount_percentage' => $wishlist->product->discount_percentage,
+                    'discounted_price' => $wishlist->product->discounted_price,
+                    'final_price' => $wishlist->product->final_price,
+                    'stock' => $wishlist->product->stock,
+                ];
+            });
+        $cartItems = $user->carts()->with('product')->get()
+            ->map(function ($cartItem) {
+                return [
+                    'product_name' => $cartItem->product->name,
+                    'product_brand_name' => $cartItem->product->brand->name,
+                    'base_price' => $cartItem->product->base_price,
+                    'discount_percentage' => $cartItem->product->discount_percentage,
+                    'discounted_price' => $cartItem->product->discounted_price,
+                    'final_price' => $cartItem->product->final_price,
+                    'stock' => $cartItem->product->stock,
+                    'user_cart_quantity' => $cartItem->quantity
+                ];
+            });
+        $orders = $user->orders()->with('orderItems.product.brand')->get()
+            ->map(function ($order) {
+
+                return [
+                    'order_id' => $order->order_no,
+                    'order_date' => $order->created_at->format('Y-m-d h:i A'),
+                    'payment_method' => $order->payment_method == 'cod' ? 'Cash on Delivery' : 'Online Payment',
+                    'payment_status' => $order->payment_status,
+                    'order_status' => $order->order_status,
+                    'order_subtotal' => $order->subtotal,
+                    'order_discounted_price' => $order->discounted_price,
+                    'tax_amount' => $order->tax_amount,
+                    'grand_total' => $order->grand_total,
+                    'totat_items' => $order->orderItems()->count(),
+
+                    'order_items' => $order->orderItems->map(function ($item) {
+
+                        return [
+                            'order_item_price' => $item->price,
+                            'order_item_quantity' => $item->quantity,
+                            'order_item_total' => $item->total,
+
+                            'product_name' => $item->product?->name,
+                            'product_brand_name' => $item->product?->brand?->name,
+                            'base_price' => $item->product?->base_price,
+                            'discount_percentage' => $item->product?->discount_percentage,
+                            'discounted_price' => $item->product?->discounted_price,
+                            'final_price' => $item->product?->final_price,
+                        ];
+
+                    })->values(),
+                ];
+            });
 
 
-        try {
-            $response = Prism::text()
-                ->using('openai', 'gpt-5')
-                ->withPrompt('Write a PHP function to implement a binary search algorithm with proper error handling')
-                ->asText();
+        // dd($orders);
+        $userDetails = [
+            'wishlists_products' => $wishlists_products,
+            'cart_items' => $cartItems,
+            'orders' => $orders
+        ];
 
-            // success
-            return response()->json(['ai' => $response]);
-        } catch (PrismRateLimitedException $e) {
-            Log::warning('AI rate limit hit', [
-                'provider' => 'openai',
-                'message' => $e->getMessage(),
-                'rateLimits' => $e->rateLimits,
-                'retryAfter' => $e->retryAfter,
-            ]);
+        $context = Product::where('name', 'like', '%' . $request->message . '%')->limit(5)->get();
+        // $context = $this->buildContext();
+        $result = $bot->ask($request->message, $context, json_encode($userDetails));
 
-            // Option A: User-friendly message
-            return response()->json(['ai' => 'AI is busy right now (rate limit). Please try again in 1–2 minutes.', 'error' => $e]);
-        } catch (\Exception $e) {
-            Log::error('AI request failed', ['error' => $e->getMessage()]);
-            return response()->json(['ai' => 'Something went wrong with AI. Please try later.']);
+        return response()->json($result['choices'][0]['message']['content'] ?? 'No response');
+    }
+
+    private function buildContext()
+    {
+        $products = Product::select('name', 'final_price', 'stock', 'description')
+            ->limit(30)
+            ->get();
+
+        $text = "";
+
+        foreach ($products as $p) {
+            $text .= "Product: {$p->name}, price: {$p->final_price}, stock: {$p->stock}, info: {$p->description}\n";
         }
 
+        return $text;
     }
+
 }

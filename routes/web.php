@@ -74,6 +74,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Customer Routes
         Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
+        Route::get('/customers/{id}', [CustomerController::class, 'show'])->name('customer.show');
         Route::delete('/customers/{id}', [CustomerController::class, 'destroy'])->name('customer.destroy');
 
     });
@@ -108,8 +109,9 @@ Route::prefix('home')->group(function () {
     Route::delete('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
     Route::delete('/cart/clear', [CartController::class, 'removeAll'])->name('cart.clear');
 
-
-    Route::post('/ai/generate', [AIChatController::class, 'generate'])->name('ai.generate');
+    // AI Chat Routes
+    Route::get('/ai', [AIChatController::class, 'index'])->name('ai.index');
+    Route::post('/ai/generate', [AIChatController::class, 'chat'])->name('ai.generate');
 
     
     Route::middleware('userLogin')->group(function () {

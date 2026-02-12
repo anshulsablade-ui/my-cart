@@ -32,6 +32,18 @@ class CustomerController extends Controller
         return view('admin.customers.index');
     }
 
+    public function show($id)
+    {
+        $user = User::where('id', $id)->first();
+        if (!$user) {
+            return response()->json(['success' => 'error', 'message' => 'User not found'], 404);
+        }
+        $wishlists = $user->wishlists()->with('product.primaryImage')->get();
+        $cartItems = $user->carts()->with('product.primaryImage')->get();
+        $orders = $user->orders()->get();
+
+        return view('admin.customers.show', compact('user', 'wishlists', 'cartItems', 'orders'));
+    }
     public function destroy($id)
     {
         $user = User::where('id', $id)->first();

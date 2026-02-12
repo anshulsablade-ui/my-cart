@@ -38,6 +38,7 @@
       margin: 10px 0;
       padding: 12px 16px;
       border-radius: 20px;
+      min-width: 40%;
       max-width: 78%;
       line-height: 1.4;
       word-wrap: break-word;
@@ -50,8 +51,8 @@
     }
 
     .received {
-      background: #f8f7f7;
-      color: black
+      background: black;
+      color: white;
       margin-right: auto;
     }
   </style>
@@ -65,39 +66,34 @@
   @yield('content')
   @include('mycart.layouts.footer')
 
-  <!-- Chat Bot -->
-  <div class="position-fixed bottom-0 end-0 z-sticky me-3 me-xl-4 pb-4">
-    <!-- Card with header and footer -->
-    <div class="card" id="chat-content" style="display: none; width: 500px;">
-      <h6 class="card-header">MyCart</h6>
-      <div class="card-body" id="chatMessages" style="height:320px;overflow-y:auto;">
-
-        <div class="mb-2 d-flex flex-column">
-          <div class="message received">
-            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-          </div>
-          <div class="message sent">
-            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-          </div>
+  @if (!request()->routeIs('ai.index'))
+    <!-- Chat Bot -->
+    <div class="position-fixed bottom-0 end-0 z-sticky me-3 me-xl-4 pb-4">
+      <!-- Card with header and footer -->
+      <div class="card" id="chat-content" style="display: none; width: 500px;">
+        <div class="card-header d-flex justify-content-between">
+          <h6 class="m-0">MyCart</h6>
+          <a href="{{ route('ai.index') }}"><i class="ci-maximize"></i></a>
         </div>
+        <div class="card-body" id="chatMessages" style="height:320px;overflow-y:auto;"></div>
 
+        <div class="card-footer fs-sm text-body-secondary px-2">
+          <form id="chatForm" class="d-flex align-items-center">
+            <input type="text" class="form-control" id="chatInput" name="message" placeholder="Type your message">
+            <button type="submit" id="messageSubmit" class="ms-2 btn btn-icon btn-secondary fs-lg rounded-circle">
+              <i class="ci-send"></i>
+            </button>
+          </form>
+        </div>
       </div>
-      <div class="card-footer fs-sm text-body-secondary px-2">
-        <form id="chatForm" class="d-flex align-items-center">
-          <input type="text" class="form-control" id="chatInput" name="message" placeholder="Type your message">
-          <button type="submit" id="messageSubmit" class="ms-2 btn btn-icon btn-secondary fs-lg rounded-circle">
-            <i class="ci-send"></i>
-          </button>
-        </form>
+
+      <div class="d-flex justify-content-end mt-2">
+        <button class="btn btn-xl bg-body border border-3 border-info rounded-pill shadow" id="chatBtn">
+          Chat <i class="ci-arrow-right fs-base ms-1 me-n1"></i>
+        </button>
       </div>
     </div>
-
-    <div class="d-flex justify-content-end mt-2">
-      <button class="btn btn-xl bg-body border border-3 border-info rounded-pill shadow" id="chatBtn">
-        Chat <i class="ci-arrow-right fs-base ms-1 me-n1"></i>
-      </button>
-    </div>
-  </div>
+  @endif
 
   <!-- Back to top button -->
   <div class="floating-buttons position-fixed top-50 end-0 z-sticky me-3 me-xl-4 pb-4">
@@ -144,7 +140,7 @@
         });
       @endif
 
-
+      @if (!request()->routeIs('ai.index'))
       $("#chatBtn").click(function () {
         $("#chat-content").slideToggle();
         const icon = $(this).find("i");
@@ -153,19 +149,24 @@
 
       $("#chatForm").submit(function (e) { 
         e.preventDefault();
-        
+        let con = $("#chatMessages");
+        con.append(`<div class="message sent"><p class="card-text">${ $("#chatInput").val() }</p></div>`);
+
         $.ajax({
           type: "post",
           url: "{{ route('ai.generate') }}",
           data: {
-            prompt: $("#chatInput").val(),
+            message: $("#chatInput").val(),
             _token: "{{ csrf_token() }}"
           },
           success: function (response) {
             console.log(response);
+            con.append(`<div class="message received"><p class="card-text">${ response }</p></div>`);
+            $("#chatInput").val('');
           }
         });
       });
+      @endif
 
     });
 
