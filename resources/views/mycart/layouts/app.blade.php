@@ -33,29 +33,78 @@
   <!-- Bootstrap + Theme styles -->
   <link rel="stylesheet" href="{{ asset('web/assets/css/theme.min.css') }}">
 
-  <style>
-    .message {
-      margin: 10px 0;
-      padding: 12px 16px;
-      border-radius: 20px;
-      min-width: 40%;
-      max-width: 78%;
-      line-height: 1.4;
-      word-wrap: break-word;
-    }
+<style>
+  #messages-content {
+    height: 400px;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 
-    .sent {
-      background: #2563eb;
-      color: white;
-      margin-left: auto;
-    }
+  .message {
+    max-width: 80%;
+    margin-bottom: 4px;
+    display: flex;
+    flex-direction: column;
+  }
 
-    .received {
-      background: black;
-      color: white;
-      margin-right: auto;
-    }
-  </style>
+  .message.sent {
+    align-self: flex-end;
+    align-items: flex-end;
+  }
+
+  .message.received {
+    align-self: flex-start;
+    align-items: flex-start;
+  }
+
+  .message .card-text {
+    margin: 0;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 15px;
+    line-height: 1.4;
+    white-space: pre-wrap; /* important for line breaks */
+    word-wrap: break-word;
+  }
+
+  .message.sent .card-text {
+    background: #007bff;
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  .message.received .card-text {
+    background: #e9ecef;
+    color: #212529;
+    border-bottom-left-radius: 4px;
+  }
+
+  .received p {
+    margin: 0;
+  }
+
+  #chatInput {
+    border-radius: 24px !important;
+    padding: 12px 20px !important;
+    border: 1px solid #ced4da !important;
+  }
+
+  #messageSubmit {
+    width: 48px;
+    height: 48px;
+    border-radius: 50% !important;
+    background: #007bff !important;
+    border: none;
+  }
+
+  #messageSubmit:disabled {
+    background: #adb5bd !important;
+    cursor: not-allowed;
+  }
+</style>
   @yield('style')
 </head>
 
@@ -75,14 +124,14 @@
           <h6 class="m-0">MyCart</h6>
           <a href="{{ route('ai.index') }}"><i class="ci-maximize"></i></a>
         </div>
-        <div class="card-body" id="chatMessages" style="height:320px;overflow-y:auto;"></div>
+        <div class="card-body" id="messages-content" style="height:320px;overflow-y:auto;"></div>
 
         <div class="card-footer fs-sm text-body-secondary px-2">
-          <form id="chatForm" class="d-flex align-items-center">
-            <input type="text" class="form-control" id="chatInput" name="message" placeholder="Type your message">
-            <button type="submit" id="messageSubmit" class="ms-2 btn btn-icon btn-secondary fs-lg rounded-circle">
-              <i class="ci-send"></i>
-            </button>
+          <form id="chatForm" class="d-flex align-items-center gap-2">
+              <input type="text" class="form-control" id="chatInput" name="message" placeholder="Type your message..." autocomplete="off">
+              <button type="submit" id="messageSubmit" class="btn btn-primary btn-icon rounded-circle" disabled>
+                  <i class="ci-send"></i>
+              </button>
           </form>
         </div>
       </div>
@@ -93,6 +142,7 @@
         </button>
       </div>
     </div>
+
   @endif
 
   <!-- Back to top button -->
@@ -120,6 +170,84 @@
   <!-- Bootstrap + Theme scripts -->
   <script src="{{ asset('web/assets/js/theme.min.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.min.js"></script>
+  <script>
+    $(document).ready(function () {
+
+      const $messages = $("#messages-content");
+      const $input = $("#chatInput");
+      const $form = $("#chatForm");
+      const $submit = $("#messageSubmit");
+
+      // Auto-disable button
+      $input.on('input change keyup', function () {
+        $submit.prop('disabled', this.value.trim().length === 0);
+      });
+
+      // Submit
+      $form.submit(function (e) {
+        e.preventDefault();
+
+        const message = $input.val().trim();
+        if (!message) return;
+
+        // Add user message
+        appendMessage('sent', message);
+        $input.val('').focus();
+
+        $.ajax({
+          type: "POST",
+          url: "{{ route('ai.generate') }}",
+          data: {
+            message: message,
+            _token: "{{ csrf_token() }}"
+          },
+          beforeSend: function () {
+            $submit.prop('disabled', true);
+            appendMessage('received', '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading...');
+            scrollToBottom(true);
+          },
+          success: function (response) {
+            let html = marked.parse(response);
+            $('.spinner-border').parent('div').remove();
+            appendMessage('received', html);
+            scrollToBottom();
+          },
+          error: function (xhr) {
+            $('.spinner-border').parent('div').remove();
+            appendMessage('received', 'Sorry, something went wrong...');
+            console.error(xhr);
+          }
+        });
+      });
+
+      function appendMessage(type, text) {
+        const $msg = $(`<div class="message ${type}"><div class="card-text">${text}</div></div>`);
+        $messages.append($msg);
+        scrollToBottom();
+      }
+
+      function scrollToBottom(force = false) {
+        const el = $messages[0];
+        if (!el) return;
+
+        const distanceToBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+
+        if (force || distanceToBottom < 150) {
+          el.scrollTo({
+            top: el.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      }
+
+      // Initial scroll
+      setTimeout(() => scrollToBottom(true), 100);
+
+      // Optional: auto-scroll when window resizes (mobile keyboard)
+      $(window).on('resize', () => scrollToBottom());
+    });
+  </script>
   <script>
     $(document).ready(function () {
       @if (session('success'))
@@ -147,25 +275,6 @@
         icon.hasClass("ci-arrow-right") ? icon.removeClass("ci-arrow-right").addClass("ci-arrow-up") : icon.removeClass("ci-arrow-up").addClass("ci-arrow-right");
       });
 
-      $("#chatForm").submit(function (e) { 
-        e.preventDefault();
-        let con = $("#chatMessages");
-        con.append(`<div class="message sent"><p class="card-text">${ $("#chatInput").val() }</p></div>`);
-
-        $.ajax({
-          type: "post",
-          url: "{{ route('ai.generate') }}",
-          data: {
-            message: $("#chatInput").val(),
-            _token: "{{ csrf_token() }}"
-          },
-          success: function (response) {
-            console.log(response);
-            con.append(`<div class="message received"><p class="card-text">${ response }</p></div>`);
-            $("#chatInput").val('');
-          }
-        });
-      });
       @endif
 
     });

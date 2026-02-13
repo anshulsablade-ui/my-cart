@@ -24,7 +24,20 @@ use App\Http\Controllers\Mycart\WishlistController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('home');
+        $client = new Twilio\Rest\Client(
+        config('services.twilio.sid'),
+        config('services.twilio.token')
+    );
+
+    $data = $client->messages->create(
+        '+919313834718',
+        [
+            'from' => config('services.twilio.from'),
+            'body' => "Hi {session()->get('user.name')}, your order placed successfully."
+        ]
+    );
+    return $data;
+    // return redirect()->route('home');
 });
 
 Route::prefix('admin')->name('admin.')->group(function () {

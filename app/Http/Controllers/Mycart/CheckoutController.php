@@ -17,13 +17,14 @@ use Illuminate\Support\Facades\Mail;
 use Razorpay\Api\Api;
 use Illuminate\Support\Facades\DB;
 use Razorpay\Api\Errors\SignatureVerificationError;
+use Twilio\Rest\Client;
 
 class CheckoutController extends Controller
 {
     public function index(Request $request)
     {
         $cartItems = Cart::with('product.primaryImage')->where('user_id', session()->get('user.id'))->get();
-        
+
         if ($cartItems->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty');
         }
@@ -69,22 +70,48 @@ class CheckoutController extends Controller
 
         if ($request->payment_method === 'cod') {
 
-            $order = $this->order(
-                $request->shipping_address_id,
-                $request->payment_method,
-                $request->notes,
-                $orderData
-            );
+            DB::beginTransaction();
+            try {
+                $order = $this->order(
+                    $request->shipping_address_id,
+                    $request->payment_method,
+                    $request->notes,
+                    $orderData
+                );
+    
+                Cart::where('user_id', $order->user_id)->delete();
+                session()->put('cart_count', 0);
+    
+                $client = new Client(
+                    config('services.twilio.sid'),
+                    config('services.twilio.token')
+                );
+    
+                $client->messages->create(
+                    // $order->user->phone ?? $order->orderAddresses->phone,
+                    '+919313834718',
+                    [
+                        'from' => config('services.twilio.from'),
+                        'body' => "Hi {$order->user->name}, your order #{$order->order_no} is placed successfully.
+                                    Total amount: {$order->grand_total}
+                                    Thank you for shopping with us."
+                    ]
+                );
+    
+                Mail::to($order->user->email)->send(new OrderSuccessMail(Order::where('id', $order->id)->with('orderItems', 'user')->first()));
+    
+                DB::commit();
 
-            Cart::where('user_id', $order->user_id)->delete();
-            session()->put('cart_count', 0);
-            Mail::to($order->user->email)->send(new OrderSuccessMail(Order::where('id', $order->id)->with('orderItems', 'user')->first()));
-            return response()->json([
-                'success' => true,
-                'order_id' => $order->id,
-                'order_no' => $order->order_no,
-                'redirect' => route('order.success', $order->id)
-            ]);
+                return response()->json([
+                    'success' => true,
+                    'order_id' => $order->id,
+                    'order_no' => $order->order_no,
+                    'redirect' => route('order.success', $order->id)
+                ]);
+            } catch (\Throwable $th) {
+                DB::rollBack();
+                return response()->json(['error' => $th->getMessage()], 500);
+            }
         }
 
         // Razorpay
@@ -160,6 +187,22 @@ class CheckoutController extends Controller
 
             Cart::where('user_id', $order->user_id)->delete();
             session()->put('cart_count', 0);
+
+            $client = new Client(
+                config('services.twilio.sid'),
+                config('services.twilio.token')
+            );
+
+            $client->messages->create(
+                $order->user->phone ?? $order->orderAddresses->phone,
+                [
+                    'from' => config('services.twilio.from'),
+                    'body' => "Hi {$order->user->name}, your order #{$order->order_no} is placed successfully.
+                                Total amount: {$order->grand_total}
+                                Thank you for shopping with us."
+                ]
+            );
+
             Mail::to($order->user->email)->send(new OrderSuccessMail(Order::where('id', $order->id)->with('orderItems', 'user')->first()));
 
             return response()->json([
