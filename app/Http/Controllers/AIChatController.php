@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Mycart\CartController;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\AIService;
@@ -14,27 +15,6 @@ class AIChatController extends Controller
     {
         return view('mycart.chatbot.index');
     }
-    public function generate(Request $request)
-    {
-        // dd(env('OPENAI_API_KEY'));
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . config('services.openrouter.key'),
-            'Content-Type' => 'application/json',
-        ])->post('https://openrouter.ai/api/v1/chat/completions', [
-                    'model' => 'openai/gpt-oss-20b:free',
-                    'messages' => [
-                        [
-                            'role' => 'user',
-                            'content' => 'What is new laravel version?',
-                        ],
-                    ],
-                    'reasoning' => [
-                        'enabled' => true
-                    ]
-                ]);
-
-        return $response->json();
-    }
 
     public function chat(Request $request, AIService $bot)
     {
@@ -43,6 +23,8 @@ class AIChatController extends Controller
             ->map(function ($wishlist) {
                 return [
                     'product_name' => $wishlist->product->name,
+                    'product_slug' => $wishlist->product->slug,
+                    'product_image' => asset('images/products/thumb/' . ($wishlist->product->primaryImage->image ?? 'no-image.png')),
                     'product_brand_name' => $wishlist->product->brand->name,
                     'base_price' => $wishlist->product->base_price,
                     'discount_percentage' => $wishlist->product->discount_percentage,
@@ -54,7 +36,10 @@ class AIChatController extends Controller
         $cartItems = $user->carts()->with('product')->get()
             ->map(function ($cartItem) {
                 return [
+                    'cart_id' => $cartItem->id,
                     'product_name' => $cartItem->product->name,
+                    'product_slug' => $cartItem->product->slug,
+                    'product_image' => asset('images/products/thumb/' . ($cartItem->product->primaryImage->image ?? 'no-image.png')),
                     'product_brand_name' => $cartItem->product->brand->name,
                     'base_price' => $cartItem->product->base_price,
                     'discount_percentage' => $cartItem->product->discount_percentage,
@@ -87,6 +72,8 @@ class AIChatController extends Controller
                             'order_item_total' => $item->total,
 
                             'product_name' => $item->product?->name,
+                            'product_slug' => $item->product?->slug,
+                            'product_image' => asset('images/products/thumb/' . ($item->product?->primaryImage->image ?? 'no-image.png')),
                             'product_brand_name' => $item->product?->brand?->name,
                             'base_price' => $item->product?->base_price,
                             'discount_percentage' => $item->product?->discount_percentage,
@@ -98,8 +85,6 @@ class AIChatController extends Controller
                 ];
             });
 
-
-        // dd($orders);
         $userDetails = [
             'wishlists_products' => $wishlists_products,
             'cart_items' => $cartItems,
@@ -109,8 +94,31 @@ class AIChatController extends Controller
         $context = Product::where('name', 'like', '%' . $request->message . '%')->limit(5)->get();
         // $context = $this->buildContext();
         $result = $bot->ask($request->message, $context, json_encode($userDetails));
+        // dd($result);
+        $data = json_decode($result['choices'][0]['message']['content'] ?? $result['error']['message'], true);
 
-        return response()->json($result['choices'][0]['message']['content'] ?? 'No response');
+        if (($data['action'] ?? null) === 'update_cart') {
+
+            // 1. update cart
+            $cartResponse = app(CartController::class)->update(
+                new Request($data)
+            );
+
+            $cartData = $cartResponse->getData(true);
+            $data = [
+                'subtotal' => $cartData['subtotal'],
+                'discounted_price' => $cartData['discounted_price'],
+                'gstAmount' => $cartData['gstAmount'],
+                'grandTotal' => $cartData['grand_total']
+            ];
+
+            // 2. send result back to Selvia
+            $followup = $bot->ask(json_encode($cartData['message']), 'update_cart', json_encode($data));
+
+            return response()->json($followup['choices'][0]['message']['content']);
+        }
+
+        return response()->json($result['choices'][0]['message']['content'] ?? $result['error']['message']);
     }
 
     private function buildContext()
