@@ -13,6 +13,12 @@
                 </a>
               </h4>
             </div>
+
+            <div class="col-md-8">
+              <div class="row row-cols-1 row-cols-sm-3 gx-3 gx-md-4">
+                <a class="p-0" href="{{ route('map') }}">Map</a>
+              </div>
+            </div>
           </div>
         </div>
 

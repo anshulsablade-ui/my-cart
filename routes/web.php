@@ -16,6 +16,7 @@ use App\Http\Controllers\Mycart\Auth\SocialAuthController;
 use App\Http\Controllers\Mycart\CartController;
 use App\Http\Controllers\Mycart\CheckoutController;
 use App\Http\Controllers\Mycart\HomeController;
+use App\Http\Controllers\Mycart\MapWeatherController;
 use App\Http\Controllers\Mycart\OrderController;
 use App\Http\Controllers\Mycart\ProductController as MycartProductController;
 use App\Http\Controllers\Mycart\ProductReviewController;
@@ -23,22 +24,11 @@ use App\Http\Controllers\Mycart\ProfileController;
 use App\Http\Controllers\Mycart\WishlistController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-        $client = new Twilio\Rest\Client(
-        config('services.twilio.sid'),
-        config('services.twilio.token')
-    );
 
-    $data = $client->messages->create(
-        '+919313834718',
-        [
-            'from' => config('services.twilio.from'),
-            'body' => "Hi {session()->get('user.name')}, your order placed successfully."
-        ]
-    );
-    return $data;
-    // return redirect()->route('home');
+Route::get('/', function () {
+    return redirect()->route('home');
 });
+
 
 Route::prefix('admin')->name('admin.')->group(function () {
 
@@ -78,6 +68,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/products/edit/{id}', [ProductController::class, 'edit'])->name('products.edit');
         Route::put('/products/{id}', [ProductController::class, 'update'])->name('products.update');
         Route::delete('/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+        // Product Scrape
+        Route::post('/products/scrape', [ProductController::class, 'scrape'])->name('products.scrape');
 
         // Order Routes
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
@@ -123,11 +116,12 @@ Route::prefix('home')->group(function () {
     Route::delete('/cart/clear', [CartController::class, 'removeAll'])->name('cart.clear');
 
     // AI Chat Routes
-    Route::get('/ai', [AIChatController::class, 'index'])->name('ai.index');
     Route::post('/ai/generate', [AIChatController::class, 'chat'])->name('ai.generate');
 
-    
+
     Route::middleware('userLogin')->group(function () {
+
+        Route::get('/ai', [AIChatController::class, 'index'])->name('ai.index');
 
         // Wishlist Routes
         Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
@@ -140,7 +134,7 @@ Route::prefix('home')->group(function () {
         Route::post('/checkout', [CheckoutController::class, 'checkout'])->name('order.process');
         Route::post('/checkout/place-order', [CheckoutController::class, 'verifyPayment'])->name('order.verify-payment');
         Route::get('/checkout/success/{orderId}', [CheckoutController::class, 'orderSuccess'])->name('order.success');
-    
+
 
 
         // User Address Routes
@@ -151,6 +145,7 @@ Route::prefix('home')->group(function () {
         Route::delete('/address/{id}', [AddressController::class, 'delete'])->name('address.delete');
 
         // review Routes
+        Route::get('/review', [ProductReviewController::class, 'index'])->name('review.index');
         Route::post('/review', [ProductReviewController::class, 'store'])->name('review.store');
         Route::get('/review/edit/{id}', [ProductReviewController::class, 'edit'])->name('review.edit');
         Route::put('/review/{id}', [ProductReviewController::class, 'update'])->name('review.update');
@@ -167,10 +162,15 @@ Route::prefix('home')->group(function () {
 
         // logout
         Route::get('/logout', [MycartAuthController::class, 'logout'])->name('logout');
-        
+
         // password change
         Route::post('/password-change', [MycartAuthController::class, 'passwordUpdate'])->name('password.update');
 
+        Route::get('/map', function () {
+            return view('mycart.map');
+        })->name('map');
+
+        Route::get('/map-weather', [MapWeatherController::class, 'getWeather'])->name('map.weather');
     });
 });
 

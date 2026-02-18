@@ -403,7 +403,7 @@
 
       $("#place-order-btn .spinner-border").removeClass("d-none");
       
-      if (confirm("Are you sure you want to place this order?")) {
+      if (!confirm("Are you sure you want to place this order?")) {
         return;
       }
       $.ajax({
@@ -429,6 +429,7 @@
         },
         error: function (xhr) {
           alert('Error: ' + (xhr.responseJSON?.error || 'Something went wrong'));
+          $("#place-order-btn .spinner-border").addClass("d-none");
         }
       });
     });
@@ -487,6 +488,7 @@
         },
         error: function (xhr) {
           alert('Payment verification failed: ' + (xhr.responseJSON?.error || 'Unknown error'));
+          $("#place-order-btn .spinner-border").addClass("d-none");
         }
       });
     }

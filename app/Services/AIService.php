@@ -28,6 +28,9 @@ class AIService
 
                         all product image show.
                         product show with images: " . route('product.show', 'slug') . "
+                        show product image. product image url = product_image
+
+                        use links with target='_blank' to open new tab.
 
                         Your name is Selvia.
                         My ecommerce website name is " . config('app.name') . ".

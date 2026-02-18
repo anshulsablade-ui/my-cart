@@ -35,7 +35,7 @@
           <i class="ci-heart fs-base opacity-75 me-2"></i>
           Wishlist
         </a>
-        <a class="list-group-item list-group-item-action d-flex align-items-center" href="account-reviews.html">
+        <a class="list-group-item list-group-item-action d-flex align-items-center @if (request()->routeIs('review.index')) pe-none active @endif" href="{{ route('review.index') }}">
           <i class="ci-star fs-base opacity-75 me-2"></i>
           My reviews
         </a>
