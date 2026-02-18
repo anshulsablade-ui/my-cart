@@ -18,6 +18,10 @@ class AIChatController extends Controller
 
     public function chat(Request $request, AIService $bot)
     {
+        if (!session()->has('user')) {
+            return response()->json('Please login to use the chatbot.');
+        }
+
         $user = User::where('id', session()->get('user.id'))->first();
         $wishlists_products = $user->wishlists()->with('product')->get()
             ->map(function ($wishlist) {
@@ -91,8 +95,26 @@ class AIChatController extends Controller
             'orders' => $orders
         ];
 
-        $context = Product::where('name', 'like', '%' . $request->message . '%')->limit(5)->get();
-        // $context = $this->buildContext();
+        $products = Product::with('primaryImage')
+            ->where('status', 'active')
+            ->where('stock', '>', 0);
+
+        // search filter
+        if ($request->filled('message')) {
+            $search = $request->message;
+
+            $products->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhereHas('category', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('brand', function ($q3) use ($search) {
+                        $q3->where('name', 'like', "%{$search}%");
+                    });
+            });
+            $context = $products->limit(10)->get();
+        }
+
         $result = $bot->ask($request->message, $context, json_encode($userDetails));
         // dd($result);
         $data = json_decode($result['choices'][0]['message']['content'] ?? $result['error']['message'], true);
@@ -119,21 +141,6 @@ class AIChatController extends Controller
         }
 
         return response()->json($result['choices'][0]['message']['content'] ?? $result['error']['message']);
-    }
-
-    private function buildContext()
-    {
-        $products = Product::select('name', 'final_price', 'stock', 'description')
-            ->limit(30)
-            ->get();
-
-        $text = "";
-
-        foreach ($products as $p) {
-            $text .= "Product: {$p->name}, price: {$p->final_price}, stock: {$p->stock}, info: {$p->description}\n";
-        }
-
-        return $text;
     }
 
 }

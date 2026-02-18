@@ -170,103 +170,141 @@
     </main>
 @endsection
 @section('script')
-    <script>
-        $(document).ready(function () {
+  <script>
+      $(document).ready(function () {
 
-            // Clear cart
-            $('body').on('click', '#clearCart', function () {
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, delete it!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            type: "delete",
-                            url: "{{ route('cart.clear') }}",
-                            success: function (response) {
-                                window.location.reload();
-                            }
-                        });
-                    }
-                })
-            })
+          // Clear cart
+          $('body').on('click', '#clearCart', function () {
+              Swal.fire({
+                  title: 'Are you sure?',
+                  text: "",
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonColor: '#3085d6',
+                  cancelButtonColor: '#d33',
+                  confirmButtonText: 'Yes, delete it!'
+              }).then((result) => {
+                  if (result.isConfirmed) {
+                      $.ajax({
+                          type: "delete",
+                          url: "{{ route('cart.clear') }}",
+                          success: function (response) {
+                              window.location.reload();
+                          }
+                      });
+                  }
+              })
+          })
 
-            // Remove item from cart
-            $('body').on('click', '.cart-remove-btn', function () {
-                let cartId = $(this).closest('tr').data('cart-id');
-                
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "You won't be able to revert this!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, delete it!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            type: "delete",
-                            url: "{{ route('cart.remove') }}",
-                            data: {
-                                cart_id: cartId
-                            },
-                            success: function (response) {
-                                window.location.reload();
-                            }
-                        });
-                    }
-                })
-            });
+          // Remove item from cart
+          $('body').on('click', '.cart-remove-btn', function () {
+              let cartId = $(this).closest('tr').data('cart-id');
 
-            $('body').on('click', '.increment-btn', function () {
-                let cartId = $(this).closest('tr').data('cart-id');
-                let quantity = $(this).closest('.count-input').find('.cart-quantity').val();
-                quantity++;
-                $(this).closest('tr').find('.cart-quantity').val(quantity);
-                updateCartQuantity(cartId, quantity);
-            });
+              Swal.fire({
+                  title: 'Are you sure?',
+                  text: "You won't be able to revert this!",
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonColor: '#3085d6',
+                  cancelButtonColor: '#d33',
+                  confirmButtonText: 'Yes, delete it!'
+              }).then((result) => {
+                  if (result.isConfirmed) {
+                      $.ajax({
+                          type: "delete",
+                          url: "{{ route('cart.remove') }}",
+                          data: {
+                              cart_id: cartId
+                          },
+                          success: function (response) {
+                              window.location.reload();
+                          }
+                      });
+                  }
+              })
+          });
 
-            $('body').on('click', '.decrement-btn', function () {
-                let cartId = $(this).closest('tr').data('cart-id');
-                let quantity = $(this).closest('.count-input').find('.cart-quantity').val();
-                if (quantity > 1) {
-                    quantity--;
-                    $(this).closest('tr').find('.cart-quantity').val(quantity);
-                    updateCartQuantity(cartId, quantity);
-                }
-            });
+        $('body').on('click', '.increment-btn', function () {
 
-            function updateCartQuantity(cartId, quantity) {
-                $.ajax({
-                    type: "post",
-                    url: "{{ route('cart.update') }}",
-                    data: {
-                        cart_id: cartId,
-                        quantity: quantity
-                    },
-                    success: function (response) {
-                        // window.location.reload();
-                        if(response.status == 'success') {
-                            $('tr[data-cart-id="' + cartId + '"]').find('.total-price').html(
-                              response.cart.final_price_total + ' ' + (response.cart.base_price_total != response.cart.final_price_total ? `<del class="text-body-tertiary fs-sm fw-normal">${response.cart.base_price_total}</del>` : ''));
-                            $('.order-summary').find('.subtotal').text(response.subtotal);
-                            $('.order-summary').find('.discount').text(response.discounted_price);
-                            $('.order-summary').find('.gst-amount').text(response.gstAmount);
-                            $('.order-summary').find('.grand-total').text(response.grand_total);
-                            
-                            messageAlert(response.message, 'success');
-                            
-                        }
-                    }
-                });
-            }
+          let row = $(this).closest('tr');
+          let cartId = row.data('cart-id');
 
+          let input = row.find('.cart-quantity');
+          let currentQty = parseInt(input.val());
+
+          if (currentQty >= 5) {
+            messageAlert('You can not add more than 5 items', 'error');
+            return;
+          }
+
+          let newQty = currentQty + 1;
+
+          updateCartQuantity(cartId, newQty, row, input);
         });
-    </script>
+
+        $('body').on('click', '.decrement-btn', function () {
+
+          let row = $(this).closest('tr');
+          let cartId = row.data('cart-id');
+
+          let input = row.find('.cart-quantity');
+          let currentQty = parseInt(input.val());
+
+          if (currentQty <= 1) return;
+
+          let newQty = currentQty - 1;
+
+          updateCartQuantity(cartId, newQty, row, input);
+        });
+
+        function updateCartQuantity(cartId, quantity, row, input) {
+
+          row.find('.increment-btn, .decrement-btn').prop('disabled', true);
+
+          $.ajax({
+            type: "POST",
+            url: "{{ route('cart.update') }}",
+            data: {
+              _token: "{{ csrf_token() }}",
+              cart_id: cartId,
+              quantity: quantity
+            },
+            success: function (response) {
+
+              if (response.status === 'success') {
+
+                input.val(quantity);
+
+                row.find('.total-price').html(
+                  response.cart.final_price_total + ' ' +
+                  (
+                    response.cart.base_price_total != response.cart.final_price_total
+                      ? `<del class="text-body-tertiary fs-sm fw-normal">${response.cart.base_price_total}</del>`
+                      : ''
+                  )
+                );
+
+                $('.order-summary .subtotal').text(response.subtotal);
+                $('.order-summary .discount').text(response.discounted_price);
+                $('.order-summary .gst-amount').text(response.gstAmount);
+                $('.order-summary .grand-total').text(response.grand_total);
+
+                messageAlert(response.message, 'success');
+              }
+
+              if (response.status === 'error') {
+                messageAlert(response.message, 'error');
+              }
+            },
+            error: function () {
+              messageAlert('Something went wrong', 'error');
+            },
+            complete: function () {
+              row.find('.increment-btn, .decrement-btn').prop('disabled', false);
+            }
+          });
+        }
+
+      });
+  </script>
 @endsection

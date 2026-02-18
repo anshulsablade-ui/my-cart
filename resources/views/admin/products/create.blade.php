@@ -24,6 +24,15 @@
             </div>
         </div>
         <div class="card-body">
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <label class="form-label" for="url">Product URL:</label>
+                    <input type="url" class="form-control" name="url" id="url" placeholder="Url">
+                </div>
+                <div class="col-auto justify-content-end mb-3 d-flex">
+                    <button class="btn btn-success" id="submitBtn" type="submit">Fetch Product</button>
+                </div>
+            </div>
             <form class="row" id="productForm">
                 <div class="col-12 mb-3">
                     <label class="form-label" for="name">Name:</label>
@@ -214,6 +223,33 @@
                 }
             });
 
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#submitBtn").click(function (e) { 
+                e.preventDefault();
+                let url = $("input[name='url']").val();
+                $.ajax({
+                    type: "post",
+                    url: "{{ route('admin.products.scrape') }}",
+                    data: { url: url },
+                    dataType: "json",
+                    success: function (response) {
+                        $("#name").val(response.name);
+                        $("#base_price").val(response.price);
+                        $("#discount_percentage").val(response.discount);
+                        $("#discounted_price").val((response.price*response.discount)/100);
+                        $("#final_price").val(response.price-((response.price*response.discount)/100));
+                        $("#description").val(response.description);
+                    },
+                    error: function (error) {
+                        $('.is-invalid').removeClass('is-invalid');
+                        $('.invalid-feedback').remove();
+                        $('#url').addClass('is-invalid').after(`<span class="invalid-feedback">${error.responseJSON.errors}</span> `);
+                    }
+                });
+            });
         });
     </script>
 @endsection

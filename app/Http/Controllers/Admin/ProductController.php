@@ -8,9 +8,12 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Str;
 use Yajra\DataTables\DataTables;
+use Symfony\Component\DomCrawler\Crawler;
+use GuzzleHttp\Client;
 
 class ProductController extends Controller
 {
@@ -52,7 +55,7 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         $request->validated();
-        
+
         $product = Product::create([
             'category_id' => $request->category,
             'brand_id' => $request->brand,
@@ -207,5 +210,65 @@ class ProductController extends Controller
 
         session()->flash('success', 'Product deleted successfully');
         return response()->json(['status' => 'success', 'message' => 'Product deleted successfully'], 200);
+    }
+
+
+    public function scrape(Request $request)
+    {
+        $validator = Validator::make(request()->all(), [
+            'url' => 'required|url'
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'errors' => $validator->errors()->first()], 422);
+        }
+
+        $client = new Client([
+            'headers' => [
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language' => 'en-US,en;q=0.5',
+            ],
+            'timeout' => 30,
+            'connect_timeout' => 10,
+            'verify' => false,
+        ]);
+
+            $url = $request->url;
+
+        // $url = 'https://www.flipkart.com/motorola-g06-power-pantone-tapestry-64-gb/p/itmf590d83ca72c5?pid=MOBHFSCEW8DQVKDZ&lid=LSTMOBHFSCEW8DQVKDZ2CWXCB&marketplace=FLIPKART&q=mobiles&store=tyy%2F4io&srno=s_1_1&otracker=AS_Query_TrendingAutoSuggest_1_0_na_na_na&otracker1=AS_Query_TrendingAutoSuggest_1_0_na_na_na&fm=organic&iid=3123dae8-7f5a-42cf-afde-29b71ea9a3eb.MOBHFSCEW8DQVKDZ.SEARCH&ppt=hp&ppn=homepage&ssid=52ww9q9jf40000001771232334682&qH=eb4af0bf07c16429&ov_redirect=true';
+        $response = $client->get($url);
+        $html = (string) $response->getBody();
+        $crawler = new Crawler($html);
+
+        $name = $crawler->filter('._1psv1ze2i div.v1zwn26')->count() 
+        ? trim($crawler->filter('._1psv1ze2i div.v1zwn26')->text()) 
+        : 'Not found';
+
+        $price = $crawler->filter('.asbjxx div div div  [style="height:100%;width:100%"] div div a div div.v1zwn21k')->count() 
+        ? trim($crawler->filter('.asbjxx div div div  [style="height:100%;width:100%"] div div a div div.v1zwn21k')->text()) 
+        : 'Not found';
+
+        $discount = $crawler->filter('.ltwm06 div div div div div div div .asbjxx a div div div div[font="default-fk-font-m"]')->count() 
+        ? trim($crawler->filter('.ltwm06 div div div div div div div .asbjxx a div div div div[font="default-fk-font-m"]')->text()) 
+        : 'Not found';
+
+        // get meta description content
+        $description = $crawler->filter('meta[name="Description"]')->count() 
+        ? trim($crawler->filter('meta[name="Description"]')->attr('content'))
+        : 'Not found';
+
+        $finalprice = $crawler->filter('.asbjxx div div div  [style="height:100%;width:100%"] div div a div.v1zwn21j')->count() 
+        ? trim($crawler->filter('.asbjxx div div div  [style="height:100%;width:100%"] div div a div.v1zwn21j')->text()) 
+        : 'Not found';
+
+        $products = [
+            'name' => $name,
+            'price' => str_replace([',', '₹'], ['', ''], $price),
+            'discount' => str_replace('%', '', $discount),
+            // 'finalprice' => str_replace([',', '₹'], ['', ''], $finalprice),
+            'description' => $description,
+        ];
+
+        return response()->json($products);
     }
 }

@@ -176,8 +176,9 @@
 <script>
 $(document).ready(function () {
 
+    // CLEAR FILTERS
     $('#clearFilters').on('click', function () {
-
+      $('#search').val('');
     $.ajax({
       url: "{{ route('products.filter') }}",
       type: "GET",

@@ -112,13 +112,13 @@
                   </td>
                 </tr>
               @endforeach
-              @if (empty($cartItems))
-                <div class="d-flex justify-content-center">
-                  <p class="mb-3">cart is empty.</p>
-                </div>
-              @endif
             </tbody>
           </table>
+          @if ($cartItems->isEmpty())
+            <div class="d-flex justify-content-center">
+              <p class="mb-3">cart is empty.</p>
+            </div>
+          @endif
         </div>
       </div>
     </div>

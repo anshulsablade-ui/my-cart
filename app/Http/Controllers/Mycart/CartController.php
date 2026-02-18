@@ -125,7 +125,7 @@ class CartController extends Controller
         if ($product->stock < $request->quantity) {
             return response()->json([
                 'status' => 'error',
-                'message' => $product->stock . ' stock available.'
+                'message' => $cart->product->name . ' only ' . $product->stock . ' stock available.'
             ]);
         }
         $cart = Cart::where('id', $request->cart_id)->update([
