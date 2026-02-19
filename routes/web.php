@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\Auth\AuthController;
-use App\Http\Controllers\Admin\CalendarController;
+use App\Http\Controllers\Admin\CalendarEventController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -44,6 +44,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::middleware('adminLogin')->group(function () {
 
+        // Dashboard Search Routes
+        Route::post('/dashboard/search', [DashboardController::class, 'search'])->name('dashboard.search');
+
+        // Dashboard Routes
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/dashboard/sales-chart', [DashboardController::class, 'salesChart']);
         Route::get('/dashboard/order-status-chart', [DashboardController::class, 'orderStatusChart']);
@@ -85,12 +89,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/customers/{id}', [CustomerController::class, 'destroy'])->name('customer.destroy');
 
         // Calendar Route
-        Route::get('/calendar', [CalendarController::class, 'calendar'])->name('calendar');
-        Route::get('/calendar/events', [CalendarController::class, 'events'])->name('calendar.events');
-        Route::post('/calendar/events', [CalendarController::class, 'storeEvent'])->name('calendar.events.store');
-        Route::get('/calendar/events/{id}', [CalendarController::class, 'editEvent'])->name('calendar.events.edit');
-        Route::put('/calendar/events/{id}', [CalendarController::class, 'updateEvent'])->name('calendar.events.update');
-        Route::delete('/calendar/events/{id}', [CalendarController::class, 'deleteEvent'])->name('calendar.events.delete');
+        Route::get('/calendar', [CalendarEventController::class, 'calendar'])->name('calendar');
+        Route::get('/calendar/events', [CalendarEventController::class, 'events'])->name('calendar.events');
+
+        Route::get('/events', [CalendarEventController::class, 'index'])->name('events.index');
+        Route::get('/events/create', [CalendarEventController::class, 'create'])->name('events.create');
+        Route::post('/events', [CalendarEventController::class, 'store'])->name('events.store');
+        Route::get('/events/{id}', [CalendarEventController::class, 'edit'])->name('events.edit');
+        Route::put('/events/update/{id}', [CalendarEventController::class, 'update'])->name('events.update');
+        Route::delete('/events/delete/{id}', [CalendarEventController::class, 'destroy'])->name('events.delete');
 
     });
 });

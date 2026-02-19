@@ -59,7 +59,7 @@
               </div>
             </div>
           @endforeach
-          @if (empty($wishlists))
+          @if ($wishlists->isEmpty())
           <div class="d-flex justify-content-center">
             <p class="mb-3">wishlist is empty.</p>
           </div>
@@ -183,13 +183,13 @@
                   </td>
                 </tr>
               @endforeach
-              @if (empty($orders))
-                <div class="d-flex justify-content-center">
-                  <p class="mb-3">Orders is empty.</p>
-                </div>
-              @endif
             </tbody>
           </table>
+          @if ($orders->isEmpty())
+            <div class="d-flex justify-content-center">
+              <p class="mb-3">Orders is empty.</p>
+            </div>
+          @endif
         </div>
       </div>
     </div>

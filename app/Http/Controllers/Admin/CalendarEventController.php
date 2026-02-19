@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\CalendarEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Yajra\DataTables\DataTables;
 
-class CalendarController extends Controller
+class CalendarEventController extends Controller
 {
     public function calendar()
     {
@@ -20,7 +21,38 @@ class CalendarController extends Controller
         return response()->json($events);
     }
 
-    public function storeEvent(Request $request){
+    public function index()
+    {
+        $events = CalendarEvent::all();
+        if (request()->ajax()) {
+            return Datatables::of($events)
+                ->addIndexColumn()
+                ->addColumn(
+                    'start_date',
+                    function ($event) {
+                        return date('Y-m-d H:i A', strtotime($event->start_date));
+                    }
+                )->addColumn('end_date', function ($event) {
+                    return date('Y-m-d H:i A', strtotime($event->end_date));
+                })
+                ->addColumn('actions', function ($event) {
+                    $editUrl = route('admin.events.edit', $event->id);
+                    $deleteUrl = route('admin.events.delete', $event->id);
+                    return compact('editUrl', 'deleteUrl');
+                })
+                ->rawColumns(['actions'])
+                ->make(true);
+        }
+        return view('admin.events.index');
+    }
+
+    public function create()
+    {
+        return view('admin.events.create');
+    }
+
+    public function store(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'startDate' => 'required|date',
@@ -43,15 +75,17 @@ class CalendarController extends Controller
         return response()->json(['status' => 'success', 'message' => 'Event created successfully'], 201);
     }
 
-    public function editEvent($id){
+    public function edit($id)
+    {
         $event = CalendarEvent::where('id', $id)->first();
-        if(!$event){
+        if (!$event) {
             return response()->json(['status' => 'error', 'message' => 'Event not found'], 404);
         }
-        return response()->json($event);
+        return view('admin.events.edit', compact('event'));
     }
 
-    public function updateEvent(Request $request, $id){
+    public function update(Request $request, $id)
+    {
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'startDate' => 'required|date',
@@ -64,7 +98,7 @@ class CalendarController extends Controller
         }
 
         $event = CalendarEvent::where('id', $id)->first();
-        if(!$event){
+        if (!$event) {
             return response()->json(['status' => 'error', 'message' => 'Event not found'], 404);
         }
 
@@ -77,5 +111,16 @@ class CalendarController extends Controller
 
         session()->flash('success', 'Event updated successfully');
         return response()->json(['status' => 'success', 'message' => 'Event updated successfully'], 200);
+    }
+
+    public function destroy($id)
+    {
+        $event = CalendarEvent::where('id', $id)->first();
+        if (!$event) {
+            return response()->json(['status' => 'error', 'message' => 'Event not found'], 404);
+        }
+        $event->delete();
+        session()->flash('success', 'Event deleted successfully');
+        return response()->json(['status' => 'success', 'message' => 'Event deleted successfully'], 200);
     }
 }

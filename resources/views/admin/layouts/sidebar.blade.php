@@ -7,7 +7,6 @@
       <a class="navbar-brand" href="{{ route('admin.dashboard') }}">
         <div class="d-flex align-items-center py-3">
           <img class="me-2" src="{{ asset('/assets/img/favicons/mycart.png') }}" alt="" width="110" />
-          {{-- <span class="font-sans-serif text-primary">MyCart</span> --}}
         </div>
       </a>
   </div>
@@ -55,6 +54,12 @@
             <div class="d-flex align-items-center">
               <span class="nav-link-icon"><span class="fas fa-calendar-alt"></span></span>
               <span class="nav-link-text ps-1">Calendar</span>
+            </div>
+          </a>                                                   
+          <a class="nav-link @if (request()->routeIs('admin.events.index')) active @endif" href="{{ route('admin.events.index') }}">
+            <div class="d-flex align-items-center">
+              <span class="nav-link-icon"><span class="fas fa-calendar-day"></span></span>
+              <span class="nav-link-text ps-1">Events</span>
             </div>
           </a>                                                   
           </ul>

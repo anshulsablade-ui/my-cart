@@ -1,5 +1,5 @@
 @extends('admin.layouts.app')
-@section('title', 'Product List')
+@section('title', 'Events List')
 
 @section('style')
     <link href="{{ asset('vendors/datatables.net-bs5/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
@@ -18,13 +18,13 @@
     <div class="card-header">
       <div class="row flex-between-center">
         <div class="col-4 col-sm-auto d-flex align-items-center pe-0">
-          <h5 class="fs-9 mb-0 text-nowrap py-2 py-xl-0">Product List</h5>
+          <h5 class="fs-9 mb-0 text-nowrap py-2 py-xl-0">Events List</h5>
         </div>
         <div class="col-8 col-sm-auto ms-auto text-end ps-0">
           <div>
-            <button class="btn btn-falcon-default btn-sm" type="button" onclick="window.location='{{ route('admin.products.create') }}'">
+            <button class="btn btn-falcon-default btn-sm" type="button" onclick="window.location='{{ route('admin.events.create') }}'">
                 <span class="fas fa-plus" data-fa-transform="shrink-3 down-2"></span>
-                <span>Add New Product</span>
+                <span>Add New Event</span>
             </button>
           </div>
         </div>
@@ -32,15 +32,12 @@
     </div>
     <div class="card-body px-0">
       <!-- data table -->
-      <table class="table mb-0 data-table fs-10" id="productsTable">
+      <table class="table mb-0 data-table fs-10" id="eventsTable">
         <thead class="bg-200">
           <tr>
             <th class="text-900 text-nowrap py-1">Name</th>
-            <th class="text-900 text-nowrap py-1">Price</th>
-            <th class="text-900 text-nowrap py-1">Category</th>
-            <th class="text-900 text-nowrap py-1">Brand</th>
-            <th class="text-900 text-nowrap py-1">Stock</th>
-            <th class="text-900 text-nowrap py-1">Status</th>
+            <th class="text-900 text-nowrap py-1">Start Date</th>
+            <th class="text-900 text-nowrap py-1">End Date</th>
             <th class="text-900 text-nowrap py-1">Actions</th>
           </tr>
         </thead>
@@ -54,55 +51,30 @@
 @section('script')
 <script src="{{ asset('vendors/datatables.net/dataTables.min.js') }}"></script>
 <script src="{{ asset('vendors/datatables.net-bs5/dataTables.bootstrap5.min.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     $(document).ready(function() {
 
-        // Product DataTable
-        let table = $('#productsTable').DataTable({
+        // Event DataTable
+        let table = $('#eventsTable').DataTable({
             processing: true,
             serverSide: true,
-            ajax: "{{ route('admin.products.index') }}",
+            ajax: "{{ route('admin.events.index') }}",
             dom: "<'row mx-0'<'col-md-6'l><'col-md-6'f>>" + "<'table-responsive scrollbar'tr>" + "<'row g-0 align-items-center justify-content-center justify-content-sm-between'<'col-auto mb-2 mb-sm-0 px-3'i><'col-auto px-3'p>>",
             "createdRow": function (row, data, dataIndex) {
               $(row).addClass('btn-reveal-trigger');
             },
             language: {
                 lengthMenu:     "_MENU_ Show entries",
-                zeroRecords:    "No products found",
-                info:           "Showing _START_ to _END_ of _TOTAL_ products",
-                infoEmpty:      "No products available",
-                infoFiltered:   "(filtered from _MAX_ total products)",
+                zeroRecords:    "No events found",
+                info:           "Showing _START_ to _END_ of _TOTAL_ events",
+                infoEmpty:      "No events available",
+                infoFiltered:   "(filtered from _MAX_ total events)",
                 search:         "Search:",
             },
             columns: [
-                { data: 'name',
-                  render: function(data, type, row) {
-                     if (type !== 'display') return data;
-
-                     let image = `<img src="${row.image.imageUrl}" alt="${data}" width="40">`;
-                     return `<div class="d-flex"><div class="me-2">${image}</div><div>${data}</div></div>`;
-                  }
-                 },
-                { data: 'final_price',
-                  render: function(data, type, row) {
-                     if (type !== 'display') return data;
-
-                     return `₹${data}`;
-                  }
-                 },
-                { data: 'category' },
-                { data: 'brand' },
-                { data: 'stock' },
-                { data: 'status',
-                  render: function(data, type, row) {
-                     if (type !== 'display') return data;
-
-                     return data === 'active' ?
-                         '<span class="badge bg-success add">Active</span>' :
-                         '<span class="badge bg-danger">Inactive</span>';
-                  }
-                },
+                { data: 'title' },
+                { data: 'start_date' },
+                { data: 'end_date' },
                 { data: 'actions', orderable: false, searchable: false,
                   render: function(data, type, row) {
                     if (type !== 'display') return data;
@@ -123,6 +95,7 @@
                 }
             ]
         });
+
     });
 </script>
 @endsection

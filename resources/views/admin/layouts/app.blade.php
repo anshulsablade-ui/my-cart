@@ -52,7 +52,7 @@
     @yield('script')
 
     <script>
-      $(document).ready(function() {
+      $(document).ready(function () {
         @if (session('success'))
           const Toast = Swal.mixin({
             toast: true,
@@ -70,6 +70,106 @@
             title: "{{ session('success') }}"
           });
         @endif
+
+        let searchXHR = null;
+        let searchTimer = null;
+
+        $("#searchInput").on('input', function () {
+
+          let query = $(this).val().trim();
+
+          // clear previous debounce
+          clearTimeout(searchTimer);
+
+          searchTimer = setTimeout(function () {
+
+            // if empty input
+            if (query === '') {
+              $("#previewData").html('');
+              return;
+            }
+
+            // abort previous request
+            if (searchXHR !== null) {
+              searchXHR.abort();
+            }
+
+            searchXHR = $.ajax({
+              type: "POST",
+              url: "{{ route('admin.dashboard.search') }}",
+              data: { query: query },
+              dataType: "json",
+              beforeSend: function () {
+                $("#previewData").html(`<div class="text-center py-3"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div></div>`);
+              },
+              success: function (response) {
+
+                let html = '';
+                let products = '<h6 class="dropdown-header fw-medium text-uppercase px-x1 fs-11 pt-0 pb-2">Product</h6>';
+                let users = '<h6 class="dropdown-header fw-medium text-uppercase px-x1 fs-11 pt-0 pb-2">User</h6>';
+
+                if (response.products && response.products.length) {
+
+                  response.products.forEach(function (item) {
+
+                    products += `<a class="dropdown-item px-x1 py-2" href="/home/product/${item.url}" target="_blank">
+                                    <div class="d-flex align-items-center">
+                                        <div class="file-thumbnail me-2">
+                                            <img class="border h-100 w-100 object-fit-cover rounded-3" src="${item.image}">
+                                        </div>
+                                        <div class="flex-1">
+                                            <h6 class="mb-0 title text-truncate">${item.name}</h6>
+                                            <p class="fs-11 mb-0 d-flex">
+                                                <span class="fw-semi-bold">${item.final_price}</span>
+                                                ${item.discount_percentage == 0 ? '' : `<del class="ms-2">${item.base_price}</del><span class="fw-medium text-success ms-2">${item.discount_percentage}% off</span>`}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>`;
+                  });
+
+                  html += products;
+                }
+                if (response.products.length && response.users.length) {
+                  html += '<hr class="text-200 dark__text-900" />';
+                }
+
+                if (response.users && response.users.length) {
+
+                  response.users.forEach(function (item) {
+
+                    let avatar = item.image
+                      ? `<img class="rounded-circle" src="${item.image}" alt="${item.name}">`
+                      : `<div class="avatar-name rounded-circle"><span>${item.name.charAt(0)}</span></div>`;
+
+                    users += `<a class="dropdown-item px-x1 py-2" href="/admin/customers/${item.id}">
+                                  <div class="d-flex align-items-center">
+                                      <div class="avatar avatar-l me-2">${avatar}</div>
+                                      <div class="flex-1">
+                                          <h6 class="mb-0 title text-truncate">${item.name}</h6>
+                                          <p class="fs-11 mb-0 d-flex">${item.email}</p>
+                                      </div>
+                                  </div>
+                              </a>`;
+                  });
+
+                  html += users;
+                }
+
+                if (!html) {
+                  $("#previewData").html(`<div class="text-center py-3"><p class="fw-bold fs-8">No Result Found.</p></div>`);
+                  return;
+                }
+
+                $("#previewData").html(`<div class="scrollbar list py-3" style="max-height:24rem;">${html}</div>`);
+              }
+            });
+
+          }, 500);
+
+        });
+
+
       });
     </script>
   </body>

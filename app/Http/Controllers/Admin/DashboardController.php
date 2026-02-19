@@ -9,6 +9,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Number;
 
 class DashboardController extends Controller
 {
@@ -54,5 +55,41 @@ class DashboardController extends Controller
         }
 
         return response()->json([ 'labels' => $months, 'data' => $sales ]);
+    }
+
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+
+        $users = User::where('name', 'like', "%$query%")
+            ->orWhere('email', 'like', "%$query%")
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'image' => $user->image ? asset('images/users/' . $user->image) : null,
+                ];
+            });
+
+        $products = Product::with('primaryImage')->where('name', 'like', "%$query%")
+        ->limit(5)
+            ->get()
+            ->map(function ($product) {
+                return [
+                    'name' => $product->name,
+                    'url' => route('product.show', $product->slug),
+                    'base_price' => Number::currency($product->base_price, 'INR'),
+                    'final_price' => Number::currency($product->final_price, 'INR'),
+                    'discount_percentage' => $product->discount_percentage,
+                    'image' => asset('images/products/thumb/' . ($product->primaryImage ? $product->primaryImage->image : 'no-image.png')),
+                ];
+            });
+
+        return response()->json([
+            'users' => $users,
+            'products' => $products,
+        ]);
     }
 }

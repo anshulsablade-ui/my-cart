@@ -3,6 +3,14 @@
 
 @section('style')
     <link href="{{ asset('vendors/datatables.net-bs5/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
+    <style>
+      .pagination {
+        --falcon-pagination-padding-x: 0.5rem;
+        --falcon-pagination-padding-y: 0.25rem;
+        --falcon-pagination-font-size: 0.875rem;
+        --falcon-pagination-border-radius: var(--falcon-border-radius-sm);
+      }
+    </style>
 @endsection
 @section('content')
 
