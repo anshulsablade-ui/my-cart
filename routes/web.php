@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\Auth\AuthController;
+use App\Http\Controllers\Admin\CalendarController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -82,6 +83,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
         Route::get('/customers/{id}', [CustomerController::class, 'show'])->name('customer.show');
         Route::delete('/customers/{id}', [CustomerController::class, 'destroy'])->name('customer.destroy');
+
+        // Calendar Route
+        Route::get('/calendar', [CalendarController::class, 'calendar'])->name('calendar');
+        Route::get('/calendar/events', [CalendarController::class, 'events'])->name('calendar.events');
+        Route::post('/calendar/events', [CalendarController::class, 'storeEvent'])->name('calendar.events.store');
+        Route::get('/calendar/events/{id}', [CalendarController::class, 'editEvent'])->name('calendar.events.edit');
+        Route::put('/calendar/events/{id}', [CalendarController::class, 'updateEvent'])->name('calendar.events.update');
+        Route::delete('/calendar/events/{id}', [CalendarController::class, 'deleteEvent'])->name('calendar.events.delete');
 
     });
 });

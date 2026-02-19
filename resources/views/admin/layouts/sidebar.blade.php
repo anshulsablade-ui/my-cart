@@ -51,6 +51,12 @@
               <span class="nav-link-text ps-1">Customers</span>
             </div>
           </a>                                                   
+          <a class="nav-link @if (request()->routeIs('admin.calendar')) active @endif" href="{{ route('admin.calendar') }}">
+            <div class="d-flex align-items-center">
+              <span class="nav-link-icon"><span class="fas fa-calendar-alt"></span></span>
+              <span class="nav-link-text ps-1">Calendar</span>
+            </div>
+          </a>                                                   
           </ul>
         </li>
       </ul>

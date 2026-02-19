@@ -146,13 +146,11 @@
             e.preventDefault();
             ajaxCall("{{ route('profile.update') }}", 'POST', new FormData(this), function (response) {
                 if (response.status === 'success') {
-                    window.location.reload();      
-                    // $('.is-invalid').removeClass('is-invalid');
-                    // $('.invalid-feedback').remove();
-                    // messageAlert(response.message, 'success');
+                    window.location.reload();
                 }
             }, function (error) {
                 $('.is-invalid').removeClass('is-invalid');
+                  $('.invalid-feedback').remove();
                 var error = JSON.parse(error.responseText);
                 $.each(error.message, function (key, value) {
                     $(`#${key}`).addClass('is-invalid').after(`<div class="invalid-feedback">${value}</div>`);
@@ -176,7 +174,6 @@
                 $.each(error.message, function (key, value) {
                     $(`.${key}`).removeClass('border-danger');
                     $(`.${key}_error`).text('');
-                    // console.log(error, key, value);
                     $(`#${key}`).addClass('border-danger');
                     $(`.${key}_error`).text(value);
                 });

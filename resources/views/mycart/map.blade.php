@@ -5,23 +5,27 @@
 @section('content')
 
 <main class="content-wrapper">
-    <div class="row justify-content-center">
-        <div class="col-12 py-4">
+    <section class="container">
 
-            <div id="map" style="height:400px;width:100%;"></div>
-
-            <div class="card mt-3">
-                <div class="card-body">
-                    <h6>Weather at selected location</h6>
-
-                    <div id="weatherResult">
-                        Drag the marker to load weather...
+        <div class="row justify-content-center">
+            <div class="col-12 py-4">
+    
+                <div id="map" style="height:400px;width:100%;"></div>
+    
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h6>Weather at selected location</h6>
+    
+                        <div id="weatherResult">
+                            Drag the marker to load weather...
+                        </div>
                     </div>
                 </div>
+    
             </div>
-
         </div>
-    </div>
+
+    </section>
 </main>
 
 @endsection
@@ -56,6 +60,7 @@ $(function () {
         // When marker drag ends
         marker.addListener('dragend', function (e) {
 
+            console.log('Marker dragged to: ', e.latLng.lat(), e.latLng.lng());
             let lat = e.latLng.lat();
             let lng = e.latLng.lng();
 
@@ -79,6 +84,7 @@ $(function () {
                 if (res.data.main) {
 
                     let html = `
+                        <b>City:</b> ${res.data.name}<br>
                         <b>Temperature:</b> ${res.data.main.temp} °C<br>
                         <b>Feels like:</b> ${res.data.main.feels_like} °C<br>
                         <b>Humidity:</b> ${res.data.main.humidity}%<br>

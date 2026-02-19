@@ -92,7 +92,7 @@ class CheckoutController extends Controller
                     );
 
                     $client->messages->create(
-                        $order->user->phone ,
+                        '+91' . $order->user->phone ,
                         [
                             'from' => config('services.twilio.from'),
                             'body' => "Hi {$order->user->name}, your order #{$order->order_no} is placed successfully.
@@ -199,7 +199,7 @@ class CheckoutController extends Controller
                 );
 
                 $client->messages->create(
-                    $order->user->phone ?? $order->orderAddresses->phone,
+                    '+91' . $order->user->phone,
                     [
                         'from' => config('services.twilio.from'),
                         'body' => "Hi {$order->user->name}, your order #{$order->order_no} is placed successfully.

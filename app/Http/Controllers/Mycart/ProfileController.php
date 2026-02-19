@@ -23,7 +23,7 @@ class ProfileController extends Controller
             'mobile_number' => 'nullable|numeric',
             'profile_image' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
         ]);
-        
+
         if ($validator->fails()) {
             return response()->json(['status' => 'error', 'message' => $validator->errors()], 422);
         }
@@ -35,12 +35,14 @@ class ProfileController extends Controller
 
         if ($request->hasFile('profile_image')) {
             $user = User::where('id', session()->get('user.id'))->first();
-            if (file_exists('images/users/' . $user->image)) {
-                unlink('images/users/' . $user->image);
+            
+            if (!empty($user->image) && file_exists(public_path('images/users/' . $user->image))) {
+                unlink(public_path('images/users/' . $user->image));
             }
+
             $profile_image = $request->file('profile_image');
             $profile_image_name = Str::uuid() . '.png';
-            
+
             if (!file_exists($path = 'images/users/')) {
                 mkdir($path, 0755, true);
             }
