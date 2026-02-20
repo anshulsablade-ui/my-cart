@@ -25,23 +25,20 @@ class DashboardController extends Controller
 
     public function orderStatusChart()
     {
-        $statusData = Order::select(
-                'order_status',
-                DB::raw('COUNT(*) as total')
-            )
+        $statusData = Order::select( 'order_status', DB::raw('COUNT(*) as total') )
             ->groupBy('order_status')
             ->get();
-    
+
         $labels = $statusData->pluck('order_status');
         $totals = $statusData->pluck('total');
-    
-        return response()->json([ 'labels' => $labels, 'data' => $totals ]);
+
+        return response()->json(['labels' => $labels, 'data' => $totals]);
     }
 
     public function salesChart()
     {
         $months = [];
-        $sales  = [];
+        $sales = [];
 
         for ($i = 11; $i >= 0; $i--) {
             $date = Carbon::now()->subMonths($i);
@@ -54,15 +51,18 @@ class DashboardController extends Controller
                 ->sum('grand_total');
         }
 
-        return response()->json([ 'labels' => $months, 'data' => $sales ]);
+        return response()->json(['labels' => $months, 'data' => $sales]);
     }
 
     public function search(Request $request)
     {
         $query = $request->input('query');
 
-        $users = User::where('name', 'like', "%$query%")
-            ->orWhere('email', 'like', "%$query%")
+        $users = User::where('role', '!=', 'admin')
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")->orWhere('email', 'like', "%{$query}%");
+            })
+            ->limit(5)
             ->get()
             ->map(function ($user) {
                 return [
@@ -74,7 +74,7 @@ class DashboardController extends Controller
             });
 
         $products = Product::with('primaryImage')->where('name', 'like', "%$query%")
-        ->limit(5)
+            ->limit(5)
             ->get()
             ->map(function ($product) {
                 return [
@@ -87,9 +87,6 @@ class DashboardController extends Controller
                 ];
             });
 
-        return response()->json([
-            'users' => $users,
-            'products' => $products,
-        ]);
+        return response()->json([ 'users' => $users, 'products' => $products ]);
     }
 }

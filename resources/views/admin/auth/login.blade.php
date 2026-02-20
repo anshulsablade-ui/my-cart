@@ -29,7 +29,6 @@
           <div class="col-sm-10 col-md-8 col-lg-6 col-xl-5 col-xxl-4">
             <a class="d-flex flex-center mb-4" href="{{ route('admin.dashboard') }}">
               <img class="me-2" src="{{ asset('/assets/img/favicons/mycart.png') }}" alt="" width="200" />
-              {{-- <span class="font-sans-serif text-primary fw-bolder fs-4 d-inline-block">MyCart</span> --}}
             </a>
             <div class="card">
               <div class="card-body p-4 p-sm-5">

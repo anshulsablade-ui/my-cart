@@ -164,6 +164,7 @@
               </div>
           </div>
           <div class="modal-footer d-flex justify-content-end bg-body-tertiary px-card border-top-0">
+            <a type="button" class="btn btn-falcon-default btn-sm" href="/admin/events/${event.id}">Edit</a>
             <button type="button" class="btn btn-falcon-default btn-sm" data-bs-dismiss="modal">Close</button>
           </div>`;
       };

@@ -157,7 +157,7 @@
                                                 ${avatar}
                                             </div>
                                             <div class="ms-2">
-                                                <h6 class="mb-0">${data}</h6>
+                                                <a href="/admin/customers/${row.id}"><h6 class="mb-0">${data}</h6></a>
                                                 <a href="javascript:void(0);">${row.email}</a>
                                             </div>
                                         </div>`;
@@ -179,74 +179,6 @@
                 ]
             });
 
-            // Status Chart
-            // $('#statusChartLoader').show();
-            // $.ajax({
-            //     url: "{{ url('admin/dashboard/order-status-chart') }}",
-            //     type: "GET",
-            //     success: function (res) {
-
-            //         const ctx = document.getElementById('statusChart').getContext('2d');
-
-            //         new Chart(ctx, {
-            //             type: 'pie',
-            //             data: {
-            //                 labels: res.labels,
-            //                 datasets: [{
-            //                     data: res.data,
-            //                     borderWidth: 1
-            //                 }]
-            //             },
-            //             options: {
-            //                 responsive: true,
-            //                 plugins: {
-            //                     legend: {
-            //                         position: 'bottom'
-            //                     }
-            //                 }
-            //             }
-            //         });
-            //         $('#statusChartLoader').hide();
-            //     }
-            // });
-
-            // // sales chart
-            // $('#revenueChartLoader').show();
-            // $.ajax({
-            //     url: "{{ url('admin/dashboard/sales-chart') }}",
-            //     type: "GET",
-            //     success: function (res) {
-
-            //         const ctx = document.getElementById('salesChart').getContext('2d');
-
-            //         new Chart(ctx, {
-            //             type: 'line',
-            //             data: {
-            //                 labels: res.labels,
-            //                 datasets: [{
-            //                     label: 'Revenue (₹)',
-            //                     data: res.data,
-            //                     borderWidth: 3,
-            //                     tension: 0.4
-            //                 }]
-            //             },
-            //             options: {
-            //                 responsive: true,
-            //                 plugins: {
-            //                     legend: {
-            //                         display: true
-            //                     }
-            //                 },
-            //                 scales: {
-            //                     y: {
-            //                         beginAtZero: true
-            //                     }
-            //                 }
-            //             }
-            //         });
-            //         $('#revenueChartLoader').hide();
-            //     }
-            // });
         });
     </script>
 

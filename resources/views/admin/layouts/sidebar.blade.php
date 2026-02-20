@@ -62,6 +62,12 @@
               <span class="nav-link-text ps-1">Events</span>
             </div>
           </a>                                                   
+          <a class="nav-link @if (request()->routeIs('admin.scrape')) active @endif" href="{{ route('admin.scrape') }}">
+            <div class="d-flex align-items-center">
+              <span class="nav-link-icon"><span class="fas fa-globe"></span></span>
+              <span class="nav-link-text ps-1">Scraper</span>
+            </div>
+          </a>                                                   
           </ul>
         </li>
       </ul>

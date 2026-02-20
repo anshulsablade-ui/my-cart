@@ -75,6 +75,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
 
         // Product Scrape
+        Route::get('/scrape', [ProductController::class, 'scrapeindex'])->name('scrape');
         Route::post('/products/scrape', [ProductController::class, 'scrape'])->name('products.scrape');
 
         // Order Routes
@@ -99,6 +100,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/events/update/{id}', [CalendarEventController::class, 'update'])->name('events.update');
         Route::delete('/events/delete/{id}', [CalendarEventController::class, 'destroy'])->name('events.delete');
 
+    });
+
+    Route::fallback(function () {
+        return response()->view('admin.error.404', [], 404);
     });
 });
 
@@ -187,6 +192,10 @@ Route::prefix('home')->group(function () {
         })->name('map');
 
         Route::get('/map-weather', [MapWeatherController::class, 'getWeather'])->name('map.weather');
+    });
+
+    Route::fallback(function () {
+        return response()->view('mycart.error.404', [], 404);
     });
 });
 

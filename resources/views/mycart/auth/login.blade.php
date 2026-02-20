@@ -33,7 +33,7 @@
           <!-- Logo -->
           <header class="navbar px-0 pb-4 mt-n2 mt-sm-0 mb-2 mb-md-3 mb-lg-4">
             <a href="{{ route('home') }}" class="navbar-brand pt-0">
-                <img src="{{ asset('assets/img/favicons/mycart.png') }}" alt="MyCart" width="200" />
+              <img src="{{ asset('assets/img/favicons/mycart.png') }}" alt="MyCart" width="200" />
             </a>
           </header>
 
@@ -98,7 +98,12 @@
                 let formData = new FormData(this);
                 ajaxCall('{{ route('login.post') }}', 'POST', formData, function (response) {
                     if (response.status === 'success') {
-                        window.location.href = '{{ route('home') }}';
+                        let lastUrl = "{{ URL::previous() }}";
+                        if (lastUrl && lastUrl !== window.location.href) {
+                            window.location.href = lastUrl;
+                        } else {
+                            window.location.href = "{{ route('home') }}";
+                        }
                     }
                 }, function (error) {
                     $('.is-invalid').removeClass('is-invalid');
