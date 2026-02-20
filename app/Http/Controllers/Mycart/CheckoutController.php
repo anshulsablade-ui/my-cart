@@ -79,33 +79,12 @@ class CheckoutController extends Controller
                     $request->notes,
                     $orderData
                 );
-    
+
                 Cart::where('user_id', $order->user_id)->delete();
                 session()->put('cart_count', 0);
-    
-                
-                if ($order->user->phone) { 
 
-                    $client = new Client(
-                        config('services.twilio.sid'),
-                        config('services.twilio.token')
-                    );
-
-                    $client->messages->create(
-                        '+91' . $order->user->phone ,
-                        [
-                            'from' => config('services.twilio.from'),
-                            'body' => "Hi {$order->user->name}, your order #{$order->order_no} is placed successfully.
-                                Total amount: " . Number::currency($order->grand_total, 'INR') . "
-                                Thank you for shopping with us."
-                        ]
-                    );
-                }
-    
-                Mail::to($order->user->email)->send(new OrderSuccessMail(Order::where('id', $order->id)->with('orderItems', 'user')->first()));
-    
+                $this->sendOrderNotification($order);
                 DB::commit();
-
                 return response()->json([
                     'success' => true,
                     'order_id' => $order->id,
@@ -192,24 +171,7 @@ class CheckoutController extends Controller
             Cart::where('user_id', $order->user_id)->delete();
             session()->put('cart_count', 0);
 
-            if ($order->user->phone) {
-                $client = new Client(
-                    config('services.twilio.sid'),
-                    config('services.twilio.token')
-                );
-
-                $client->messages->create(
-                    '+91' . $order->user->phone,
-                    [
-                        'from' => config('services.twilio.from'),
-                        'body' => "Hi {$order->user->name}, your order #{$order->order_no} is placed successfully.
-                            Total amount: {$order->grand_total}
-                            Thank you for shopping with us."
-                    ]
-                );
-            }
-
-            Mail::to($order->user->email)->send(new OrderSuccessMail(Order::where('id', $order->id)->with('orderItems', 'user')->first()));
+            $this->sendOrderNotification($order);
 
             return response()->json([
                 'success' => true,
@@ -319,5 +281,31 @@ class CheckoutController extends Controller
             'shippingAmount' => 0,
             'grandTotal' => ($subTotal - $discountAmount) + $gst,
         ];
+    }
+
+    private function sendOrderNotification(Order $order)
+    {
+        $user = $order->user;
+
+        if ($user && $user->phone) {
+
+            $client = new Client(
+                config('services.twilio.sid'),
+                config('services.twilio.token')
+            );
+
+            $client->messages->create(
+                '+91' . $user->phone,
+                [
+                    'from' => config('services.twilio.from'),
+                    'body' => "Hi {$user->name}, your order #{$order->order_no} placed. Amount: ".
+          Number::currency($order->grand_total, 'INR').". MyCart"
+                ]
+            );
+        }
+
+        if ($user && $user->email) {
+            Mail::to($user->email)->send(new OrderSuccessMail($order));
+        }
     }
 }

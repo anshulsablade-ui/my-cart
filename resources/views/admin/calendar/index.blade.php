@@ -90,6 +90,7 @@
           $("#addEventModal").modal('show');
           calendar.unselect();
         },
+        // eventColor: '#378006',
 
         eventClick: function (info) {
           var eventObj = info.event;

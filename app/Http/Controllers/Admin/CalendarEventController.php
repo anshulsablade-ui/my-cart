@@ -17,7 +17,17 @@ class CalendarEventController extends Controller
 
     public function events()
     {
-        $events = CalendarEvent::select('id', 'title', 'start_date as start', 'end_date as end', 'description')->get();
+        $events = CalendarEvent::orderBy('start_date')->get()
+        ->map(function ($event) {
+            return [
+                'id' => $event->id,
+                'title' => $event->title,
+                'start' => $event->start_date,
+                'end' => $event->end_date,
+                'description' => $event->description,
+                'color' => ''
+            ];
+        });
         return response()->json($events);
     }
 

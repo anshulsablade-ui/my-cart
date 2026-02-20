@@ -92,6 +92,7 @@
             <tr>
                 <th>Product</th>
                 <th>Price</th>
+                <th>Discount</th>
                 <th>Qty</th>
                 <th>Subtotal</th>
             </tr>
@@ -100,14 +101,35 @@
             @foreach ($order->orderItems as $item)
                 <tr>
                     <td>{{ $item->product->name }}</td>
-                    <td>₹{{ number_format($item->unit_price ?? $item->product->final_price ?? 0, 2) }}</td>
+                    <td>₹{{ number_format($item->product->base_price, 2) }}</td>
+                    <td>{{ $item->product->discount_percentage ? $item->product->discount_percentage . '%' : '-' }}</td>
                     <td>{{ $item->quantity }}</td>
-                    <td>₹{{ number_format($item->subtotal ?? ($item->quantity * ($item->unit_price ?? $item->product->final_price ?? 0)), 2) }}</td>
+                    <td>₹{{ number_format($item->product->base_price * $item->quantity, 2) }}</td>
                 </tr>
             @endforeach
 
+            <tr>
+                <td colspan="4" style="text-align:right">Subtotal</td>
+                <td>₹{{ number_format($order->subtotal, 2) }}</td>
+            </tr>
+
+            <tr>
+                <td colspan="4" style="text-align:right">Discount :</td>
+                <td>₹{{ number_format($order->discounted_price, 2) }}</td>
+            </tr>
+            
+            <tr>
+                <td colspan="4" style="text-align:right">GST Amount :</td>
+                <td>₹{{ number_format($order->tax_amount, 2) }}</td>
+            </tr>
+
+            <tr>
+                <td colspan="4" style="text-align:right">Shipping Charges :</td>
+                <td>₹{{ number_format($order->shipping_amount, 2) }}</td>
+            </tr>
+
             <tr class="total-row">
-                <td colspan="3" style="text-align:right">Grand Total</td>
+                <td colspan="4" style="text-align:right">Grand Total :</td>
                 <td>₹{{ number_format($order->grand_total, 2) }}</td>
             </tr>
         </tbody>

@@ -46,7 +46,7 @@
                         success: function (response) {
                             $('#result').empty();
                             response.forEach(function (item) {
-                                $('#result').append(`<div class="d-flex align-items-center mb-3"><img src="${item.image}" alt="${item.name}"><div class="ps-2"><h5>${item.title}</h5><p>${item.price}</p><p>${item.description}</p></div></div>`);
+                                $('#result').append(`<div class="d-flex align-items-center mb-3 p-2 border shadow rounded"><img src="${item.image}" alt="${item.name}"><div class="ps-2"><h5>${item.title}</h5><p>${item.price}</p><p>${item.description}</p></div></div>`);
                             });
                         },
                         error: function (xhr, status, error) {
