@@ -30,31 +30,40 @@ class ForgotPasswordController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([ 'status' => 'error', 'message' => $validator->errors() ], 422);
+            return response()->json([
+                'status' => 'error',
+                'message' => $validator->errors()->first()
+            ], 422);
         }
-        $passwordReset = PasswordResets::where('email', $request->email)->first();
-        if ($passwordReset) {
-            return response()->json([ 'status' => 'success', 'message' => 'Please check your email for password reset link.' ], 200);
-        }
+
         try {
-            DB::beginTransaction();
+
             $user = User::where('email', $request->email)->first();
+
             $token = \Str::random(60);
-            PasswordResets::Create([
-                'email' => $user->email,
-                'token' => $token,
-                'created_at' => now()
-            ]);
-    
+
+            PasswordResets::updateOrCreate(
+                ['email' => $user->email],
+                [
+                    'token' => $token,
+                    'created_at' => now()
+                ]
+            );
+
             Mail::to($user->email)->send(new PasswordResetMail($token, $user->name));
-            DB::commit();
-            return response()->json([ 'status' => 'success', 'message' => 'Please check your email for password reset link.' ], 200);
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return response()->json([ 'status' => 'error', 'message' => $th->getMessage() ], 500);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Please check your email for password reset link.'
+            ], 200);
+
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage() ?? 'Something went wrong. Please try again later.'
+            ], 500);
         }
-
-
     }
 
     public function showResetPasswordForm($token)
@@ -78,18 +87,18 @@ class ForgotPasswordController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([ 'status' => 'error', 'message' => $validator->errors() ], 422);
+            return response()->json(['status' => 'error', 'message' => $validator->errors()], 422);
         }
-        
+
         $user = User::where('email', $request->email)->first();
         $passwordReset = PasswordResets::where('token', $request->token)->first();
         if (!$passwordReset) {
-            return response()->json([ 'status' => 'error', 'message' => ['token' => ['Invalid token.']] ], 422);
+            return response()->json(['status' => 'error', 'message' => ['token' => ['Invalid token.']]], 422);
         }
         $user->update([
             'password' => Hash::make($request->password)
         ]);
         $passwordReset->delete();
-        return response()->json([ 'status' => 'success', 'message' => 'Password updated successfully.' ]);
+        return response()->json(['status' => 'success', 'message' => 'Password updated successfully.']);
     }
 }

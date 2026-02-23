@@ -35,10 +35,8 @@ $('body').on('click', '.delete', function (e) {
             $.ajax({
                 type: "delete",
                 url: url,
-                // global: false,
                 success: function (response) {
-                    // table.ajax.reload();
-                    window.location.reload();
+                    table.ajax.reload(null, false);
                 }
             });
         }

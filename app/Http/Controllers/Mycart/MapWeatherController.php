@@ -10,11 +10,9 @@ class MapWeatherController extends Controller
 {
     public function getWeather(Request $request)
     {
-        // dd($request->lat);
         $key = config('services.openweather.key');
 
-        $response = Http::get(
-            'https://api.openweathermap.org/data/2.5/weather',
+        $response = Http::get('https://api.openweathermap.org/data/2.5/weather',
             [
                 'lat' => $request->lat,
                 'lon' => $request->lng,
@@ -23,13 +21,9 @@ class MapWeatherController extends Controller
             ]
         );
 
-
-
         return response()->json([
             'status' => 'success',
             'data' => $response->json()
         ]);
-
-
     }
 }

@@ -15,19 +15,34 @@ class CalendarEventController extends Controller
         return view('admin.calendar.index');
     }
 
-    public function events()
+    public function events(Request $request)
     {
-        $events = CalendarEvent::orderBy('start_date')->get()
-        ->map(function ($event) {
-            return [
-                'id' => $event->id,
-                'title' => $event->title,
-                'start' => $event->start_date,
-                'end' => $event->end_date,
-                'description' => $event->description,
-                'color' => ''
-            ];
-        });
+        $start = $request->start;
+        $end = $request->end;
+
+        $events = CalendarEvent::where(function ($q) use ($start, $end) {
+            $q->whereBetween('start_date', [$start, $end])->orWhereBetween('end_date', [$start, $end]);
+            })
+            ->get()
+            ->map(function ($event) {
+
+                $colors = [
+                    '#fad9d9',
+                    '#d9f0fa',
+                    '#d9f9d9',
+                    '#f9f0d9',
+                    '#f0d9fa',
+                ];
+
+                return [
+                    'id' => $event->id,
+                    'title' => $event->title,
+                    'start' => $event->start_date,
+                    'end' => $event->end_date,
+                    'color' => $colors[array_rand($colors)],
+                ];
+            });
+
         return response()->json($events);
     }
 

@@ -65,33 +65,35 @@ class OrderController extends Controller
             'payment_status' => $request->payment_status,
             'order_status' => $request->order_status
         ]);
-        
-        return response()->json([ 'status' => 'success', 'message' => 'Order status updated successfully']);
+
+        return response()->json(['status' => 'success', 'message' => 'Order status updated successfully']);
     }
     public function show($id)
     {
         $order = Order::with(['orderItems.product', 'orderAddresses', 'user'])->find($id);
-        // dd($order->toArray());
         return view('admin.orders.show', compact('order'));
     }
 
     public function destroy($id)
     {
         $order = Order::where('id', $id)->first();
-    
-        if (!$order) {
-            return redirect()->route('admin.orders.index')->with('error', 'Order not found');
-        }
-    
-        $orderItems = $order->orderItems;
-        foreach ($orderItems as $orderItem) {
-            $orderItem->delete();
-        }
-        $order->orderAddresses->delete();
-        $order->payment->delete();
 
-        $order->delete();
+        if (!$order) {
+            return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
+        }
+
+        \DB::transaction(function () use ($order) {
+            $order->orderItems()->delete();
+            $order->orderAddresses()->delete();
+
+            if ($order->payment) {
+                $order->payment()->delete();
+            }
+
+            $order->delete();
+        });
+
         session()->flash('success', 'Order deleted successfully');
-        return response()->json(['status' => 'success', 'message' => 'Order deleted successfully']);
+        return response()->json(['status' => 'success', 'message' => 'Order deleted successfully.', 200]);
     }
 }

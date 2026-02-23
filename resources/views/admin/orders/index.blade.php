@@ -58,7 +58,7 @@
     $(document).ready(function() {
 
         // Order DataTable
-        let table = $('#ordersTable').DataTable({
+         window.table = $('#ordersTable').DataTable({
             processing: true,
             serverSide: true,
             ajax: "{{ route('admin.orders.index') }}",

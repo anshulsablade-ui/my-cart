@@ -54,7 +54,7 @@
     $(document).ready(function() {
 
         // Customers DataTable
-        let table = $('#customersTable').DataTable({
+        window.table = $('#customersTable').DataTable({
             processing: true,
             serverSide: true,
             ajax: "{{ route('admin.customers.index') }}",

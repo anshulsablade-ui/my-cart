@@ -90,7 +90,7 @@
 <script>
     $(document).ready(function() {
 
-        let table = $('#categoriesTable').DataTable({
+        window.table = $('#categoriesTable').DataTable({
             processing: true,
             serverSide: true,
             ajax: "{{ route('admin.categories.index') }}",

@@ -146,7 +146,6 @@ class CheckoutController extends Controller
             ]);
 
             $payment = $api->payment->fetch($request->razorpay_payment_id);
-            // $order = Order::findOrFail($request->order_id);
 
             $orderData = $this->calculateGrandTotal();
             $order = $this->order(

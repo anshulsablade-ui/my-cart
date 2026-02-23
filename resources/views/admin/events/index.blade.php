@@ -55,7 +55,7 @@
     $(document).ready(function() {
 
         // Event DataTable
-        let table = $('#eventsTable').DataTable({
+        window.table = $('#eventsTable').DataTable({
             processing: true,
             serverSide: true,
             ajax: "{{ route('admin.events.index') }}",

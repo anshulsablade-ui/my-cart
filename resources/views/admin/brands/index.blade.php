@@ -93,7 +93,7 @@
     $(document).ready(function() {
 
         // brand datatable
-        let table = $('#brandsTable').DataTable({
+        window.table = $('#brandsTable').DataTable({
             processing: true,
             serverSide: true,
             ajax: "{{ route('admin.brands.index') }}",

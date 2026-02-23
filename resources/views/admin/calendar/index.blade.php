@@ -85,12 +85,23 @@
         dayMaxEvents: true,
 
         select: function (info) {
-          $("#addEventModal #startDate").flatpickr().setDate(info.start);
-          $("#addEventModal #endDate").flatpickr().setDate(info.end);
+
+          const fpStart = $("#addEventModal #startDate").flatpickr({
+              enableTime: true,
+              dateFormat: "Y-m-d H:i",
+          });
+
+          const fpEnd = $("#addEventModal #endDate").flatpickr({
+              enableTime: true,
+              dateFormat: "Y-m-d H:i",
+          });
+
+          fpStart.setDate(info.start, true);
+          fpEnd.setDate(info.end, true);
+
           $("#addEventModal").modal('show');
           calendar.unselect();
         },
-        // eventColor: '#378006',
 
         eventClick: function (info) {
           var eventObj = info.event;
@@ -128,7 +139,7 @@
             $('.invalid-feedback').remove();
             if (response.status == 'error') {
               $.each(response.errors, function (key, value) {
-                $(`#${key}`).addClass('is-invalid').after(` <span class="invalid-feedback">${value}</span> `);
+                $(`#${key}`).addClass('is-invalid').after(`<span class="invalid-feedback">${value}</span>`);
               });
             }
           }

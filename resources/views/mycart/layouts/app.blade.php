@@ -117,7 +117,7 @@
 
   @if (!request()->routeIs('ai.index'))
     <!-- Chat Bot -->
-    <div class="position-fixed bottom-0 end-0 z-sticky me-3 me-xl-4 pb-4">
+    <div class="position-fixed bottom-0 end-0 z-sticky me-3 me-xl-5 pb-4">
       <!-- Card with header and footer -->
       <div class="card" id="chat-content" style="display: none; width: 500px;">
         <div class="card-header d-flex justify-content-between">
@@ -130,7 +130,7 @@
           <form id="chatForm" class="d-flex align-items-center gap-2">
               <input type="text" class="form-control" id="chatInput" name="message" placeholder="Type your message..." autocomplete="off">
               <button type="submit" id="messageSubmit" class="btn btn-primary btn-icon rounded-circle" disabled>
-                  <i class="ci-send"></i>
+                  <i class="ci-send fs-5"></i>
               </button>
           </form>
         </div>
@@ -146,7 +146,7 @@
   @endif
 
   <!-- Back to top button -->
-  <div class="floating-buttons position-fixed top-50 end-0 z-sticky me-3 me-xl-4 pb-4">
+  <div class="floating-buttons position-fixed top-50 end-0 z-sticky me-3 me-xl-4">
     <a class="btn-scroll-top btn btn-sm bg-body border-0 rounded-pill shadow animate-slide-end" href="#top">
       Top
       <i class="ci-arrow-right fs-base ms-1 me-n1 animate-target"></i>

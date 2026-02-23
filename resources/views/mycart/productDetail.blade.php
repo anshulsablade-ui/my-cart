@@ -89,7 +89,7 @@
       <nav class="container pt-3 my-3 my-md-4" aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-          <li class="breadcrumb-item"><a href="shop-catalog-electronics.html">{{ $product->category->name }}</a></li>
+          <li class="breadcrumb-item">{{ $product->category->name }}</li>
           <li class="breadcrumb-item active" aria-current="page">{{ $product->name }}</li>
         </ol>
       </nav>
@@ -196,11 +196,10 @@
             </div>
           </div>
 
-
           <!-- Product options -->
           <div class="col-md-6 col-xl-5 offset-xl-1 pt-4">
             <div class="ps-md-4 ps-xl-0">
-              <div class="position-relative" id="zoomPane" style="height: 400px">
+              <div class="position-relative" id="zoomPane" style="/* height: 400px */">
 
                 <!-- Page title -->
                 <h1 class="h3 mb-4">{{ $product->name }}</h1>

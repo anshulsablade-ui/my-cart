@@ -79,8 +79,9 @@
             <thead class="bg-200">
               <tr>
                 <th class="text-900 border-0">Products</th>
+                <th class="text-900 border-0 text-end">Price</th>
+                <th class="text-900 border-0 text-end">Discount</th>
                 <th class="text-900 border-0 text-center">Quantity</th>
-                <th class="text-900 border-0 text-end">Rate</th>
                 <th class="text-900 border-0 text-end">Amount</th>
               </tr>
             </thead>
@@ -96,8 +97,9 @@
                         </div>
                     </div>
                   </td>
-                  <td class="align-middle text-center">{{ $item->quantity }}</td>
                   <td class="align-middle text-end">{{ Number::currency($item->product->final_price, 'INR') }}</td>
+                  <td class="align-middle text-end">{{ $item->product->discount_percentage . '%' }}</td>
+                  <td class="align-middle text-center">{{ $item->quantity }}</td>
                   <td class="align-middle text-end">{{ Number::currency($item->product->final_price * $item->quantity, 'INR') }}</td>
                 </tr>
               @endforeach
@@ -110,6 +112,10 @@
               <tr>
                 <th class="text-900">Subtotal:</th>
                 <td class="fw-semi-bold">{{ Number::currency($order->subtotal, 'INR') }}</td>
+              </tr>
+              <tr>
+                <th class="text-900">Discount:</th>
+                <td class="fw-semi-bold">{{ Number::currency($order->discounted_price, 'INR') }}</td>
               </tr>
               <tr>
                 <th class="text-900">Tax 18%:</th>
