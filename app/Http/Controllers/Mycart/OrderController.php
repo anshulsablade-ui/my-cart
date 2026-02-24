@@ -10,7 +10,7 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $orders = Order::with('orderItems.product')->where('user_id', session()->get('user.id'))->paginate(8);      
+        $orders = Order::with('orderItems.product')->where('user_id', session()->get('user.id'))->orderBy('id', 'desc')->paginate(8);      
         return view('mycart.account.orders', compact('orders'));
     }
 

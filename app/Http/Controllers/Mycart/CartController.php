@@ -44,6 +44,20 @@ class CartController extends Controller
             ]);
         }
 
+        if ($product->stock == 0) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $product->name . ' is out of stock.'
+            ]);
+        }
+
+        if ($product->stock < $request->quantity) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $product->name . ' only ' . $product->stock . ' stock available.'
+            ]);
+        }
+
         $cart = Cart::where('product_id', $product->id)
             ->where(function ($q) {
                 if (session()->get('user')) {
@@ -93,7 +107,29 @@ class CartController extends Controller
                 } else {
                     $q->where('session_id', $this->getSessionId());
                 }
-            })->get();
+            })
+            ->whereHas('product', function ($q) {
+                $q->where('status', 'active')->where('stock', '>', 0);
+            })
+            ->get();
+
+        foreach ($carts as $cart) {
+
+            $newQty = $cart->quantity;
+
+            if ($cart->product->stock == 0) {
+                $newQty = 0;
+            } elseif ($cart->quantity > $cart->product->stock) {
+                $newQty = $cart->product->stock;
+            }
+
+            // save only if changed
+            if ($newQty != $cart->quantity) {
+                Cart::where('id', $cart->id)->update([
+                    'quantity' => $newQty
+                ]);
+            }
+        }
 
         $data = $this->calculateGrandTotal();
 
@@ -113,7 +149,7 @@ class CartController extends Controller
             'cart_id' => 'required|exists:carts,id',
             'quantity' => 'required|integer|min:1'
         ]);
-        
+
         $cart = Cart::with('product')->where('id', $request->cart_id)->first();
         if (!$cart) {
             return response()->json([
@@ -139,8 +175,8 @@ class CartController extends Controller
             'status' => 'success',
             'message' => 'Cart updated successfully.',
             'cart' => [
-                'base_price_total' => Number::currency($cart->product->base_price*$cart->quantity, 'INR'),
-                'final_price_total' => Number::currency($cart->product->final_price*$cart->quantity, 'INR')
+                'base_price_total' => Number::currency($cart->product->base_price * $cart->quantity, 'INR'),
+                'final_price_total' => Number::currency($cart->product->final_price * $cart->quantity, 'INR')
             ],
             // 'cart' => $cart,
             'subtotal' => Number::currency($data['subTotal'], 'INR'),
@@ -196,7 +232,11 @@ class CartController extends Controller
                 } else {
                     $q->where('session_id', $this->getSessionId());
                 }
-            })->get();
+            })
+            ->whereHas('product', function ($q) {
+                $q->where('status', 'active')->where('stock', '>', 0);
+            })
+            ->get();
 
         $subTotal = 0;
         $discountAmount = 0;

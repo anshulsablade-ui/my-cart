@@ -25,11 +25,6 @@
             <!-- Button group -->
             <div class="d-flex align-items-center">
 
-              <!-- Navbar stuck nav toggler -->
-              <button type="button" class="navbar-toggler d-none navbar-stuck-show me-3" data-bs-toggle="collapse" data-bs-target="#stuckNav" aria-controls="stuckNav" aria-expanded="false" aria-label="Toggle navigation in navbar stuck state">
-                <span class="navbar-toggler-icon"></span>
-              </button>
-
               <!-- Theme switcher (light/dark/auto) -->
               <div class="dropdown">
                 <button type="button" class="theme-switcher btn btn-icon btn-lg btn-outline-secondary fs-lg border-0 rounded-circle animate-scale" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Toggle theme (light)">

@@ -22,38 +22,106 @@ class AIChatController extends Controller
             return response()->json('Please login to use the chatbot.');
         }
 
-        $user = User::where('id', session()->get('user.id'))->first();
-        $wishlists_products = $user->wishlists()->with('product')->get()
+        $user = User::findOrFail(session()->get('user.id'));
+
+        $userDetails = [
+            'wishlists_products' => $this->wishlistPayload($user),
+            'cart_items' => $this->cartPayload($user),
+            'orders' => $this->orderPayload($user),
+        ];
+
+        $context = Product::where('name', 'like', '%' . $request->message . '%')->limit(5)->get();
+
+        $result = $bot->ask($request->message, $context, json_encode($userDetails));
+
+        $content = $result['choices'][0]['message']['content'] ?? $result['error']['message'] ?? null;
+
+        if (!$content) {
+            return response()->json('AI response error', 500);
+        }
+
+        $data = json_decode($content, true);
+
+        if (($data['action'] ?? null) === 'update_cart') {
+
+            $cartResponse = app(CartController::class)
+                ->update(new Request($data));
+
+            $cartData = $cartResponse->getData(true);
+
+            $summary = [
+                'subtotal' => $cartData['subtotal'],
+                'discounted_price' => $cartData['discounted_price'],
+                'gstAmount' => $cartData['gstAmount'],
+                'grandTotal' => $cartData['grand_total'],
+            ];
+
+            $followup = $bot->ask( json_encode($cartData['message']), 'update_cart', json_encode($summary) );
+
+            return response()->json( $followup['choices'][0]['message']['content'] ?? null );
+        }
+
+        return response()->json($content);
+    }
+
+    private function wishlistPayload(User $user)
+    {
+        return $user->wishlists()
+            ->with(['product.primaryImage', 'product.brand'])
+            ->get()
             ->map(function ($wishlist) {
+
+                $product = $wishlist->product;
+
                 return [
-                    'product_name' => $wishlist->product->name,
-                    'product_slug' => $wishlist->product->slug,
-                    'product_image' => asset('images/products/thumb/' . ($wishlist->product->primaryImage->image ?? 'no-image.png')),
-                    'product_brand_name' => $wishlist->product->brand->name,
-                    'base_price' => $wishlist->product->base_price,
-                    'discount_percentage' => $wishlist->product->discount_percentage,
-                    'discounted_price' => $wishlist->product->discounted_price,
-                    'final_price' => $wishlist->product->final_price,
-                    'stock' => $wishlist->product->stock,
+                    'product_name' => $product->name,
+                    'product_slug' => $product->slug,
+                    'product_image' => asset('images/products/thumb/' . ($product->primaryImage->image ?? 'no-image.png')),
+                    'product_brand_name' => $product->brand->name,
+                    'base_price' => $product->base_price,
+                    'discount_percentage' => $product->discount_percentage,
+                    'discounted_price' => $product->discounted_price,
+                    'final_price' => $product->final_price,
+                    'stock' => $product->stock,
                 ];
-            });
-        $cartItems = $user->carts()->with('product')->get()
+            })
+            ->values();
+    }
+
+    private function cartPayload(User $user)
+    {
+        return $user->carts()
+            ->with(['product.primaryImage', 'product.brand'])
+            ->whereHas('product', function ($q) {
+                $q->where('status', 'active')->where('stock', '>', 0);
+            })
+            ->get()
             ->map(function ($cartItem) {
+
+                $product = $cartItem->product;
+
                 return [
                     'cart_id' => $cartItem->id,
-                    'product_name' => $cartItem->product->name,
-                    'product_slug' => $cartItem->product->slug,
-                    'product_image' => asset('images/products/thumb/' . ($cartItem->product->primaryImage->image ?? 'no-image.png')),
-                    'product_brand_name' => $cartItem->product->brand->name,
-                    'base_price' => $cartItem->product->base_price,
-                    'discount_percentage' => $cartItem->product->discount_percentage,
-                    'discounted_price' => $cartItem->product->discounted_price,
-                    'final_price' => $cartItem->product->final_price,
-                    'stock' => $cartItem->product->stock,
-                    'user_cart_quantity' => $cartItem->quantity
+                    'product_name' => $product->name,
+                    'product_slug' => $product->slug,
+                    'product_image' => asset('images/products/thumb/' . ($product->primaryImage->image ?? 'no-image.png')),
+                    'product_brand_name' => $product->brand->name,
+                    'base_price' => $product->base_price,
+                    'discount_percentage' => $product->discount_percentage,
+                    'discounted_price' => $product->discounted_price,
+                    'final_price' => $product->final_price,
+                    'stock' => $product->stock,
+                    'user_cart_quantity' => $cartItem->quantity,
                 ];
-            });
-        $orders = $user->orders()->with('orderItems.product.brand')->get()
+            })
+            ->values();
+    }
+
+    private function orderPayload(User $user)
+    {
+        return $user->orders()
+            ->with('orderItems.product.brand', 'orderItems.product.primaryImage')
+            ->get()
             ->map(function ($order) {
 
                 return [
@@ -66,81 +134,29 @@ class AIChatController extends Controller
                     'order_discounted_price' => $order->discounted_price,
                     'tax_amount' => $order->tax_amount,
                     'grand_total' => $order->grand_total,
-                    'totat_items' => $order->orderItems()->count(),
+                    'totat_items' => $order->orderItems->count(),
 
                     'order_items' => $order->orderItems->map(function ($item) {
+
+                        $product = $item->product;
 
                         return [
                             'order_item_price' => $item->price,
                             'order_item_quantity' => $item->quantity,
                             'order_item_total' => $item->total,
 
-                            'product_name' => $item->product?->name,
-                            'product_slug' => $item->product?->slug,
-                            'product_image' => asset('images/products/thumb/' . ($item->product?->primaryImage->image ?? 'no-image.png')),
-                            'product_brand_name' => $item->product?->brand?->name,
-                            'base_price' => $item->product?->base_price,
-                            'discount_percentage' => $item->product?->discount_percentage,
-                            'discounted_price' => $item->product?->discounted_price,
-                            'final_price' => $item->product?->final_price,
+                            'product_name' => $product?->name,
+                            'product_slug' => $product?->slug,
+                            'product_image' => asset('images/products/thumb/' . ($product?->primaryImage->image ?? 'no-image.png')),
+                            'product_brand_name' => $product?->brand?->name,
+                            'base_price' => $product?->base_price,
+                            'discount_percentage' => $product?->discount_percentage,
+                            'discounted_price' => $product?->discounted_price,
+                            'final_price' => $product?->final_price,
                         ];
-
                     })->values(),
                 ];
-            });
-
-        $userDetails = [
-            'wishlists_products' => $wishlists_products,
-            'cart_items' => $cartItems,
-            'orders' => $orders
-        ];
-
-        $products = Product::with('primaryImage')
-            ->where('status', 'active')
-            ->where('stock', '>', 0);
-
-        // search filter
-        if ($request->filled('message')) {
-            $search = $request->message;
-
-            $products->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhereHas('category', function ($q2) use ($search) {
-                        $q2->where('name', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('brand', function ($q3) use ($search) {
-                        $q3->where('name', 'like', "%{$search}%");
-                    });
-            });
-            $context = $products->limit(10)->get();
-        }
-
-        $result = $bot->ask($request->message, $context, json_encode($userDetails));
-        // dd($result);
-        $data = json_decode($result['choices'][0]['message']['content'] ?? $result['error']['message'], true);
-
-        if (($data['action'] ?? null) === 'update_cart') {
-
-            // 1. update cart
-            $cartResponse = app(CartController::class)->update(
-                new Request($data)
-            );
-
-            $cartData = $cartResponse->getData(true);
-            $data = [
-                'subtotal' => $cartData['subtotal'],
-                'discounted_price' => $cartData['discounted_price'],
-                'gstAmount' => $cartData['gstAmount'],
-                'grandTotal' => $cartData['grand_total']
-            ];
-
-            // 2. send result back to Selvia
-            $followup = $bot->ask(json_encode($cartData['message']), 'update_cart', json_encode($data));
-
-            return response()->json($followup['choices'][0]['message']['content']);
-        }
-
-        return response()->json($result['choices'][0]['message']['content'] ?? $result['error']['message']);
+            })
+            ->values();
     }
-
 }

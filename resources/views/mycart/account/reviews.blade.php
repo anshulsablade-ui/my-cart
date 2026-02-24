@@ -29,11 +29,22 @@
                       <!-- Item -->
                       <div class="d-md-flex align-items-center justify-content-between gap-4 py-3">
                         <div class="nav flex-nowrap position-relative align-items-center">
-                          <img src="{{ asset('images/products/thumb/' . ($review->product->primaryImage->image ?? 'no-image.png')) }}" class="d-block my-xl-1" width="64" alt="Product thumb">
-                          <a class="nav-link stretched-link hover-effect-underline ps-3 p-0" href="{{ route('product.show', $review->product->slug) }}">{{ $review->product->name }}</a>
+
                           <div>
-                            <div class="h6 mb-0">{{ Number::currency($review->product->final_price, 'INR') }}</div>
+                            @if ($review->product->discount_percentage)
+                              <span class="badge bg-danger position-absolute top-0 start-0">-{{ $review->product->discount_percentage }}%</span>
+                            @endif
+                            <img src="{{ asset('images/products/thumb/' . ($review->product->primaryImage->image ?? 'no-image.png')) }}" class="d-block my-xl-1" width="64" alt="Product thumb">
                           </div>
+
+                          <div class="ps-3">
+                            <a class="nav-link stretched-link hover-effect-underline p-0" href="{{ route('product.show', $review->product->slug) }}">{{ $review->product->name }}</a>
+                            <div class="h6 mb-0">{{ Number::currency($review->product->final_price, 'INR') }}</div>
+                            @if ($review->product->base_price != $review->product->final_price)
+                              <del class="text-body-tertiary fs-sm fw-normal">{{ Number::currency($review->product->base_price, 'INR') }}</del>
+                            @endif
+                          </div>
+                          
                         </div>
                         <div class="position-relative d-flex align-items-center text-decoration-none min-w-0 pt-1 pt-md-0 ps-3 ps-md-0 mb-2 mb-md-0">
                           <div class="flex-shrink-0 d-md-none" style="width: 64px"></div>

@@ -24,7 +24,12 @@ class CheckoutController extends Controller
 {
     public function index(Request $request)
     {
-        $cartItems = Cart::with('product.primaryImage')->where('user_id', session()->get('user.id'))->get();
+        $cartItems = Cart::with('product.primaryImage')
+            ->where('user_id', session()->get('user.id'))
+            ->whereHas('product', function ($q) {
+                $q->where('status', 'active')->where('stock', '>', 0);
+            })
+            ->get();
 
         if ($cartItems->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty');
@@ -80,7 +85,11 @@ class CheckoutController extends Controller
                     $orderData
                 );
 
-                Cart::where('user_id', $order->user_id)->delete();
+                Cart::where('user_id', $order->user_id)
+                    ->whereHas('product', function ($q) {
+                        $q->where('status', 'active')->where('stock', '>', 0);
+                    })
+                    ->delete();
                 session()->put('cart_count', 0);
 
                 $this->sendOrderNotification($order);
@@ -167,7 +176,11 @@ class CheckoutController extends Controller
 
             DB::commit();
 
-            Cart::where('user_id', $order->user_id)->delete();
+            Cart::where('user_id', $order->user_id)
+                ->whereHas('product', function ($q) {
+                    $q->where('status', 'active')->where('stock', '>', 0);
+                })
+                ->delete();
             session()->put('cart_count', 0);
 
             $this->sendOrderNotification($order);
@@ -205,7 +218,12 @@ class CheckoutController extends Controller
         DB::beginTransaction();
 
         try {
-            $cartItems = Cart::with('product')->where('user_id', session()->get('user.id'))->get();
+            $cartItems = Cart::with('product')
+                ->where('user_id', session()->get('user.id'))
+                ->whereHas('product', function ($q) {
+                    $q->where('status', 'active')->where('stock', '>', 0);
+                })
+                ->get();
 
             $order = Order::create([
                 'order_no' => 'ORD-' . now()->format('Ymd') . '-' . rand(1000, 9999),
@@ -258,7 +276,12 @@ class CheckoutController extends Controller
 
     public function calculateGrandTotal(): array
     {
-        $cartItems = Cart::with('product')->where('user_id', session()->get('user.id'))->get();
+        $cartItems = Cart::with('product')
+            ->where('user_id', session()->get('user.id'))
+            ->whereHas('product', function ($q) {
+                $q->where('status', 'active')->where('stock', '>', 0);
+            })
+            ->get();
 
         $subTotal = 0;
         $discountAmount = 0;
@@ -297,8 +320,8 @@ class CheckoutController extends Controller
                 '+91' . $user->phone,
                 [
                     'from' => config('services.twilio.from'),
-                    'body' => "Hi {$user->name}, your order #{$order->order_no} placed. Amount: ".
-          Number::currency($order->grand_total, 'INR').". MyCart"
+                    'body' => "Hi {$user->name}, your order #{$order->order_no} placed. Amount: " .
+                        Number::currency($order->grand_total, 'INR') . ". MyCart"
                 ]
             );
         }

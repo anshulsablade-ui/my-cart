@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductRequest;
 use App\Models\Brand;
+use App\Models\Cart;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Str;
@@ -53,6 +55,7 @@ class ProductController extends Controller
 
     public function store(ProductRequest $request)
     {
+        dd($request->all());
         $request->validated();
 
         $product = Product::create([
@@ -118,7 +121,6 @@ class ProductController extends Controller
 
     public function update(ProductRequest $request, $id)
     {
-        // dd($request->all(), $id);
         $product = Product::where('id', $id)->first();
 
         $request->validated();
@@ -141,16 +143,21 @@ class ProductController extends Controller
 
             // delete old images
             if ($product->images) {
+                
                 foreach ($product->images as $image) {
-                    if (file_exists(public_path('images/products/large/' . $image->image))) {
-                        unlink(public_path('images/products/large/' . $image->image));
+
+                    $paths = [
+                        public_path('images/products/large/' . $image->image),
+                        public_path('images/products/medium/' . $image->image),
+                        public_path('images/products/thumb/' . $image->image),
+                    ];
+
+                    foreach ($paths as $path) {
+                        if (is_file($path)) {
+                            @unlink($path);
+                        }
                     }
-                    if (file_exists(public_path('images/products/medium/' . $image->image))) {
-                        unlink(public_path('images/products/medium/' . $image->image));
-                    }
-                    if (file_exists(public_path('images/products/thumb/' . $image->image))) {
-                        unlink(public_path('images/products/thumb/' . $image->image));
-                    }
+
                     $image->delete();
                 }
             }
@@ -187,24 +194,39 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
-        $product = Product::find($id);
+        $product = Product::with('images')->find($id);
+
         if (!$product) {
-            return response()->json(['errors' => 'Product not found.', 'status' => 'errors']);
+            return response()->json(['status' => 'error', 'message' => 'Product not found.'], 404);
         }
-        $images = $product->images;
-        foreach ($images as $image) {
-            if (file_exists(public_path('images/products/large/' . $image->image))) {
-                unlink(public_path('images/products/large/' . $image->image));
+
+        \DB::transaction(function () use ($product) {
+
+            // Delete images (files + db)
+            foreach ($product->images as $image) {
+
+                $paths = [
+                    public_path('images/products/large/' . $image->image),
+                    public_path('images/products/medium/' . $image->image),
+                    public_path('images/products/thumb/' . $image->image),
+                ];
+
+                foreach ($paths as $path) {
+                    if (is_file($path)) {
+                        @unlink($path);
+                    }
+                }
+
+                $image->delete();
             }
-            if (file_exists(public_path('images/products/medium/' . $image->image))) {
-                unlink(public_path('images/products/medium/' . $image->image));
-            }
-            if (file_exists(public_path('images/products/thumb/' . $image->image))) {
-                unlink(public_path('images/products/thumb/' . $image->image));
-            }
-            $image->delete();
-        }
-        $product->delete();
+
+            // Remove related records
+            Wishlist::where('product_id', $product->id)->delete();
+            Cart::where('product_id', $product->id)->delete();
+
+            // Finally delete product
+            $product->delete();
+        });
 
         session()->flash('success', 'Product deleted successfully');
         return response()->json(['status' => 'success', 'message' => 'Product deleted successfully'], 200);

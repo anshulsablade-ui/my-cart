@@ -209,12 +209,12 @@
           },
           success: function (response) {
             let html = marked.parse(response);
-            $('.spinner-border').parent('div').remove();
+            $('.spinner-border').parent('div').parent('div').remove();
             appendMessage('received', html);
             scrollToBottom();
           },
           error: function (xhr) {
-            $('.spinner-border').parent('div').remove();
+            $('.spinner-border').parent('div').parent('div').remove();
             appendMessage('received', 'Sorry, something went wrong...');
             console.error(xhr);
           }

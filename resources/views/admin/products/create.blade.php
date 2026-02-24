@@ -2,7 +2,7 @@
 @section('title', 'Product Create')
 
 @section('style')
-    <link href="{{ asset('/vendors/dropzone/dropzone.css') }}" rel="stylesheet" />
+
 @endsection
 @section('content')
 
@@ -103,7 +103,6 @@
 
 @endsection
 @section('script')
-    <script src="{{ asset('/vendors/dropzone/dropzone-min.js') }}"></script>
     <script>
         $(document).ready(function () {
 
@@ -111,60 +110,60 @@
                 let val = parseFloat($(selector).val());
                 return isNaN(val) ? 0 : val;
             }
-        
+
             // Base Price
             $("#base_price").on("input", function () {
                 let basePrice = parseVal("#base_price");
-            
+
                 if (basePrice <= 0) {
                     $("#final_price, #discounted_price, #discount_percentage").val("");
                     return;
                 }
-            
+
                 $("#final_price").val(basePrice.toFixed(2));
                 $("#discounted_price").val("0.00");
                 $("#discount_percentage").val("0");
             });
-        
+
             // Discount Percentage
             $("#discount_percentage").on("input", function () {
                 let basePrice = parseVal("#base_price");
                 let discountPercentage = parseVal("#discount_percentage");
-            
+
                 if (basePrice <= 0) return;
-            
+
                 if (discountPercentage > 100) {
                     discountPercentage = 100;
                     $(this).val(100);
                 }
-            
+
                 let discountAmount = (basePrice * discountPercentage) / 100;
                 let finalPrice = basePrice - discountAmount;
-            
+
                 $("#discounted_price").val(discountAmount.toFixed(2));
                 $("#final_price").val(finalPrice.toFixed(2));
             });
-        
+
             // Discount Amount
             $("#discounted_price").on("input", function () {
                 let basePrice = parseVal("#base_price");
                 let discountAmount = parseVal("#discounted_price");
-            
+
                 if (basePrice <= 0) return;
-            
+
                 if (discountAmount > basePrice) {
                     discountAmount = basePrice;
                     $(this).val(basePrice.toFixed(2));
                 }
-            
+
                 let finalPrice = basePrice - discountAmount;
                 let discountPercentage = (discountAmount / basePrice) * 100;
-            
+
                 $("#final_price").val(finalPrice.toFixed(2));
                 $("#discount_percentage").val(discountPercentage);
             });
 
-
+            // Form submit
             $('#productForm').on('submit', function (e) {
                 e.preventDefault();
                 let formData = new FormData(this);
@@ -183,37 +182,85 @@
                 });
             });
 
+            // Image input change and preview
+            // $('#images').change(function () {
+            //     var files = $(this)[0].files; // 'this' refers to $('#images')
+            //     var previewContainer = $('#imagePreview');
 
-            $('#images').change(function () {
-                var files = $(this)[0].files; // 'this' refers to $('#images')
-                var previewContainer = $('#imagePreview');
+            //     // Clear previous previews
+            //     previewContainer.empty();
 
-                // Clear previous previews
-                previewContainer.empty();
+            //     // Check if files are selected
+            //     if (files) {
+            //         $.each(files, function (i, file) {
+            //             // Ensure the file is an image
+            //             if (/\.(jpe?g|png|gif|webp)$/i.test(file.name)) {
+            //                 var reader = new FileReader();
 
-                // Check if files are selected
-                if (files) {
-                    $.each(files, function (i, file) {
-                        // Ensure the file is an image
-                        if (/\.(jpe?g|png|gif|webp)$/i.test(file.name)) {
-                            var reader = new FileReader();
+            //                 reader.onload = function (e) {
+            //                     // Append each image
+            //                     previewContainer.append(
+            //                         `<div class="col-2 mb-2">
+            //                     <img src="${e.target.result}" class="img-fluid img-thumbnail border" />
+            //                     <small class="text-muted text-truncate d-block">${file.name}</small>
+            //                 </div>`
+            //                     );
+            //                 }
 
-                            reader.onload = function (e) {
-                                // Append each image
-                                previewContainer.append(
-                                    `<div class="col-2 mb-2">
-                                <img src="${e.target.result}" class="img-fluid img-thumbnail border" />
-                                <small class="text-muted text-truncate d-block">${file.name}</small>
-                            </div>`
-                                );
-                            }
+            //                 reader.readAsDataURL(file);
+            //             }
+            //         });
+            //     }
+            // });
 
-                            reader.readAsDataURL(file);
-                        }
+        });
+    </script>
+    <script>
+        let dt = new DataTransfer();
+
+        $('#images').on('change', function () {
+
+            let input = this;
+            let files = input.files;
+            let previewContainer = $('#imagePreview');
+
+            $.each(files, function (i, file) {
+
+                if (!file.type.startsWith('image/')) return;
+
+                dt.items.add(file);
+
+                let reader = new FileReader();
+
+                reader.onload = function (e) {
+
+                    let html = `
+                    <div class="col-2 mb-2 image-box position-relative">
+                        <img src="${e.target.result}" class="img-fluid img-thumbnail border w-100"/>
+                        <button type="button" class="btn btn-sm btn-danger remove-image" style="position:absolute;top:2px;right:2px;">Delete</button>
+                        <small class="text-muted text-truncate d-block">${file.name}</small>
+                    </div>`;
+
+                    let $el = $(html);
+
+                    $el.find('.remove-image').on('click', function () {
+
+                        let index = previewContainer.find('.image-box').index($el);
+
+                        dt.items.remove(index);
+                        input.files = dt.files;
+
+                        $el.remove();
                     });
-                }
+
+                    previewContainer.append($el);
+                };
+
+                reader.readAsDataURL(file);
             });
 
+            // important
+            input.files = dt.files;
         });
     </script>
 @endsection

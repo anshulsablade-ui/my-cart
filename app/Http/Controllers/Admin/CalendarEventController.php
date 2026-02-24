@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CalendarEvent;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\DataTables;
@@ -17,31 +18,33 @@ class CalendarEventController extends Controller
 
     public function events(Request $request)
     {
-        $start = $request->start;
-        $end = $request->end;
+        $request->validate([
+            'start' => 'required|date',
+            'end' => 'required|date|after_or_equal:start',
+        ]);
 
-        $events = CalendarEvent::where(function ($q) use ($start, $end) {
-            $q->whereBetween('start_date', [$start, $end])->orWhereBetween('end_date', [$start, $end]);
-            })
-            ->get()
-            ->map(function ($event) {
+        // Use Carbon for safety & timezone handling
+        $start = Carbon::parse($request->start)->startOfDay();
+        $end = Carbon::parse($request->end)->endOfDay();
 
-                $colors = [
-                    '#fad9d9',
-                    '#d9f0fa',
-                    '#d9f9d9',
-                    '#f9f0d9',
-                    '#f0d9fa',
-                ];
+        $events = CalendarEvent::where('end_date', '>=', $start)
+            ->where('start_date', '<=', $end)
+            ->orderBy('start_date')
+            ->get();
 
-                return [
-                    'id' => $event->id,
-                    'title' => $event->title,
-                    'start' => $event->start_date,
-                    'end' => $event->end_date,
-                    'color' => $colors[array_rand($colors)],
-                ];
-            });
+        $colors = ['#fad9d9', '#d9f0fa', '#d9f9d9', '#f9f0d9', '#f0d9fa', '#e6d9fa', '#fad9e6', '#d9fad9',];
+        $events = $events->map(function ($event) use ($colors) {
+            $color = $colors[abs(crc32($event->id)) % count($colors)];
+
+            return [
+                'id' => $event->id,
+                'title' => $event->title,
+                'start' => $event->start_date,
+                'end' => $event->end_date,
+                'description' => $event->description,
+                'color' => $color
+            ];
+        });
 
         return response()->json($events);
     }
