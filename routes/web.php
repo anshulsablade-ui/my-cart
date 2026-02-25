@@ -9,7 +9,11 @@ use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
-use App\Http\Controllers\AIChatController;
+use App\Http\Controllers\Admin\VendorController;
+use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController;
+use App\Http\Controllers\Vendor\ProductController as VendorProductController;
+use App\Http\Controllers\Vendor\OrderController as VendorOrderController;
+use App\Http\Controllers\Mycart\AIChatController;
 use App\Http\Controllers\Mycart\AddressController;
 use App\Http\Controllers\Mycart\Auth\AuthController as MycartAuthController;
 use App\Http\Controllers\Mycart\Auth\ForgotPasswordController;
@@ -42,7 +46,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 
-    Route::middleware('adminLogin')->group(function () {
+    Route::middleware(['authCheck', 'role:admin'])->group(function () {
 
         // Dashboard Search Routes
         Route::post('/dashboard/search', [DashboardController::class, 'search'])->name('dashboard.search');
@@ -100,6 +104,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/events/update/{id}', [CalendarEventController::class, 'update'])->name('events.update');
         Route::delete('/events/delete/{id}', [CalendarEventController::class, 'destroy'])->name('events.delete');
 
+        // Vendor Routes
+        Route::get('/vendors', [VendorController::class, 'index'])->name('vendors.index');
+        Route::get('/vendors/create', [VendorController::class, 'create'])->name('vendors.create');
+        Route::post('/vendors', [VendorController::class, 'store'])->name('vendors.store');
+        // Route::get('/vendors/edit/{id}', [VendorController::class, 'edit'])->name('vendors.edit');
+        // Route::put('/vendors/{id}', [VendorController::class, 'update'])->name('vendors.update');
+        Route::delete('/vendors/{id}', [VendorController::class, 'destroy'])->name('vendors.destroy');
     });
 
     Route::fallback(function () {
@@ -107,7 +118,30 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 });
 
+// Vendor Routes
+Route::prefix('vendor')->name('vendor.')->middleware('authCheck')->group(function () {
 
+    // Logout
+    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Dashboard
+    Route::get('/dashboard', [VendorDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/sales-chart', [VendorDashboardController::class, 'salesChart'])->name('dashboard.salesChart');
+    Route::get('/dashboard/order-status-chart', [VendorDashboardController::class, 'orderStatusChart'])->name('dashboard.orderStatusChart');
+
+    // Products (only vendor own products)
+    Route::get('/products', [VendorProductController::class, 'index'])->name('products.index');
+    Route::get('/products/create', [VendorProductController::class, 'create'])->name('products.create');
+    Route::post('/products', [VendorProductController::class, 'store'])->name('products.store');
+    Route::get('/products/edit/{id}', [VendorProductController::class, 'edit'])->name('products.edit');
+    Route::put('/products/{id}', [VendorProductController::class, 'update'])->name('products.update');
+    Route::delete('/products/{id}', [VendorProductController::class, 'destroy'])->name('products.destroy');
+
+    // Orders (only vendor related orders)
+    Route::get('/orders', [VendorOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{id}', [VendorOrderController::class, 'show'])->name('orders.show');
+
+});
 
 // Location Routes
 Route::get('/getCountries', [LocationController::class, 'getCountries'])->name('getCountries');

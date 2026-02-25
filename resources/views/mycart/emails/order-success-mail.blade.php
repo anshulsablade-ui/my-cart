@@ -56,6 +56,9 @@
     </style>
 </head>
 <body>
+    <div style="text-align: center; margin-bottom: 24px;">
+        <img src="{{ $message->embed(public_path('assets/img/favicons/mycart.png')) }}" alt="{{ config('app.name') }} Logo" width="120">
+    </div>
 
     <h2>Thank you for your order! 🎉</h2>
 
@@ -100,7 +103,12 @@
         <tbody>
             @foreach ($order->orderItems as $item)
                 <tr>
-                    <td>{{ $item->product->name }}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="{{ $message->embed(public_path('images/products/thumb/' . ($item->product->primaryImage->image ?? 'no-image.png'))) }}" width="60" alt="{{ $item->product->name }}">
+                            {{ $item->product->name }}
+                        </div>
+                    </td>
                     <td>₹{{ number_format($item->product->base_price, 2) }}</td>
                     <td>{{ $item->product->discount_percentage ? $item->product->discount_percentage . '%' : '-' }}</td>
                     <td>{{ $item->quantity }}</td>

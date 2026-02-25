@@ -40,19 +40,32 @@
             </div>
             <div class="modal-body p-x1">
             <div class="mb-3">
-              <label class="fs-9" for="eventTitle">Title</label>
+              <label class="fs-9" for="title">Title</label>
               <input class="form-control" id="title" type="text" name="title" />
             </div>
             <div class="mb-3">
-              <label class="fs-9" for="eventStartDate">Start Date</label>
+              <label class="fs-9" for="event_type">Event Type</label>
+              <select class="form-control" id="event_type" name="event_type">
+                <option value="">Select Event Type</option>
+                <option value="meeting">Meeting</option>
+                <option value="holiday">Holiday</option>
+                <option value="deadline">Deadline</option>
+                <option value="reminder">Reminder</option>
+                <option value="personal">Personal</option>
+                <option value="birthday">Birthday</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="fs-9" for="startDate">Start Date</label>
               <input class="form-control datetimepicker" id="startDate" type="text" name="startDate" placeholder="yyyy/mm/dd hh:mm" data-options='{"static":"true","enableTime":"true","dateFormat":"Y-m-d H:i"}' />
             </div>
             <div class="mb-3">
-              <label class="fs-9" for="eventEndDate">End Date</label>
+              <label class="fs-9" for="endDate">End Date</label>
               <input class="form-control datetimepicker" id="endDate" type="text" name="endDate" placeholder="yyyy/mm/dd hh:mm" data-options='{"static":"true","enableTime":"true","dateFormat":"Y-m-d H:i"}' />
             </div>
             <div class="mb-3">
-              <label class="fs-9" for="eventDescription">Description</label>
+              <label class="fs-9" for="description">Description</label>
               <textarea class="form-control" rows="3" name="description" id="description"></textarea>
             </div>
             <div class="modal-footer d-flex justify-content-end align-items-center bg-body-tertiary border-0 p-0">
@@ -86,6 +99,13 @@
 
         select: function (info) {
 
+          // old date not create event
+          if (new Date(info.start) < new Date()) {
+            calendar.unselect();
+            messageAlert('Cannot create event in the past', 'error');
+            return;
+          }
+
           const fpStart = $("#addEventModal #startDate").flatpickr({
               enableTime: true,
               dateFormat: "Y-m-d H:i",
@@ -116,6 +136,13 @@
       });
 
       calendar.render();
+
+      // addEventModal close handler to reset form and remove validation errors
+      $('#addEventModal').on('hidden.bs.modal', function () {
+        $('#addEventForm')[0].reset();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+      });
 
       // Form submit handler
       $("#addEventForm").submit(function (e) {
@@ -160,7 +187,23 @@
              `<div class="d-flex mt-3">${getStackIcon('fas fa-align-left')}
                 <div class="flex-1">
                   <h6>Description</h6>
-                  <p class="mb-0">${event.extendedProps.description.split(' ').slice(0, 30).join(' ')}</p>
+                  <p class="mb-0">${event.extendedProps.description}</p>
+                </div>
+              </div>` : ''}
+
+          ${event.extendedProps.event_type ? 
+             `<div class="d-flex mt-3">${getStackIcon('fas fa-calendar-day')}
+                <div class="flex-1">
+                  <h6>Event Type</h6>
+                  <p class="mb-0">${event.extendedProps.event_type}</p>
+                </div>
+              </div>` : ''}
+
+              ${event.extendedProps.location ? 
+             `<div class="d-flex mt-3">${getStackIcon('fas fa-align-left')}
+                <div class="flex-1">
+                  <h6>Location</h6>
+                  <p class="mb-0">${event.extendedProps.location}</p>
                 </div>
               </div>` : ''}
 

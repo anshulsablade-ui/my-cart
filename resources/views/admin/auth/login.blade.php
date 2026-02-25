@@ -71,7 +71,7 @@
                 let formData = new FormData(this);
                 ajaxCall('{{ route('admin.login.post') }}', 'POST', formData, function (res) {
                     if (res.status == 'success') {
-                        window.location.href = '{{ route('admin.dashboard') }}';
+                        window.location.href = res.redirect;
                     }
                 },
                 function (response) {

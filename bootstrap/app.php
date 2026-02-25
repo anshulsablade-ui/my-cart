@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AdminLogin;
+use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\UsersLogin;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -14,8 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'adminLogin' => AdminLogin::class,
+            'authCheck' => AdminLogin::class,
             'userLogin' => UsersLogin::class,
+            'role' => RoleMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

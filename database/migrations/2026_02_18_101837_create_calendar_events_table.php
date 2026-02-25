@@ -13,6 +13,15 @@ return new class extends Migration {
         Schema::create('calendar_events', function (Blueprint $table) {
             $table->id();
             $table->string('title');
+            $table->enum('event_type', [
+                'meeting',
+                'holiday',
+                'deadline',
+                'reminder',
+                'personal',
+                'birthday',
+                'other'
+            ])->nullable();
             $table->text('description')->nullable();
             $table->dateTime('start_date');
             $table->dateTime('end_date')->nullable();

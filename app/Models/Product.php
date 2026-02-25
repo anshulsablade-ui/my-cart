@@ -12,6 +12,7 @@ class Product extends Model
     protected $fillable = [
         'category_id',
         'brand_id',
+        'vendor_id',
         'name',
         'slug',
         'description',
@@ -53,6 +54,11 @@ class Product extends Model
         return $this->hasOne(ProductImage::class)
             ->where('is_primary', 1)
             ->select('id', 'product_id', 'image', 'is_primary');
+    }
+
+    public function vendor()
+    {
+        return $this->belongsTo(User::class, 'vendor_id');
     }
 
 }

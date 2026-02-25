@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductRequest;
@@ -20,7 +20,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $products = Product::all();
+        $products = Product::where('vendor_id', auth()->id())->get();
         if ($request->ajax()) {
             return DataTables::of($products)
                 ->addIndexColumn()
@@ -35,22 +35,22 @@ class ProductController extends Controller
                     return compact('imageUrl');
                 })
                 ->addColumn('actions', function ($product) {
-                    $editUrl = route('admin.products.edit', $product->id);
-                    $deleteUrl = route('admin.products.destroy', $product->id);
+                    $editUrl = route('vendor.products.edit', $product->id);
+                    $deleteUrl = route('vendor.products.destroy', $product->id);
                     return compact('editUrl', 'deleteUrl');
                 })
                 ->rawColumns(['category', 'brand', 'image', 'actions'])
                 ->make(true);
         }
 
-        return view('admin.products.index');
+        return view('vendor.products.index');
     }
 
     public function create()
     {
         $categories = Category::all();
         $brands = Brand::all();
-        return view('admin.products.create', compact('categories', 'brands'));
+        return view('vendor.products.create', compact('categories', 'brands'));
     }
 
     public function store(ProductRequest $request)
@@ -60,6 +60,7 @@ class ProductController extends Controller
         $product = Product::create([
             'category_id' => $request->category,
             'brand_id' => $request->brand,
+            'vendor_id' => auth()->id(),
             'name' => $request->name,
             'base_price' => $request->base_price,
             'discount_percentage' => $request->discount_percentage,
@@ -115,7 +116,7 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
         $categories = Category::all();
         $brands = Brand::all();
-        return view('admin.products.edit', compact('product', 'categories', 'brands'));
+        return view('vendor.products.edit', compact('product', 'categories', 'brands'));
     }
 
     public function update(ProductRequest $request, $id)
@@ -138,7 +139,7 @@ class ProductController extends Controller
         ]);
 
         if ($request->hasFile('images')) {
-            $product = Product::with('images')->find($request->id);
+            $product = Product::with('images')->where('vendor_id', auth()->id())->find($request->id);
 
             // delete old images
             if ($product->images) {
@@ -193,7 +194,7 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
-        $product = Product::with('images')->find($id);
+        $product = Product::with('images')->where('vendor_id', auth()->id())->find($id);
 
         if (!$product) {
             return response()->json(['status' => 'error', 'message' => 'Product not found.'], 404);
@@ -231,51 +232,4 @@ class ProductController extends Controller
         return response()->json(['status' => 'success', 'message' => 'Product deleted successfully'], 200);
     }
 
-    public function scrapeindex()
-    {
-        return view('admin.scraper');
-    }
-
-    public function scrape(Request $request)
-    {
-        $client = new Client([
-            'headers' => [
-                'User-Agent' => 'Mozilla/5.0'
-            ],
-            'timeout' => 10
-        ]);
-
-        $url = $request->url;
-        // $url = 'https://webscraper.io/test-sites/e-commerce/allinone/computers/laptops';
-
-        $response = $client->get($url);
-
-        $html = (string) $response->getBody();
-
-        $crawler = new Crawler($html);
-
-        $products = [];
-
-        $crawler->filter('.thumbnail')->each(function (Crawler $node) use (&$products) {
-
-            $products[] = [
-                'image' => $node->filter('img')->count()
-                    ? 'https://webscraper.io' . $node->filter('img')->attr('src')
-                    : null,
-                'title' => $node->filter('.title')->count()
-                    ? trim($node->filter('.title')->attr('title'))
-                    : null,
-
-                'price' => $node->filter('.price')->count()
-                    ? trim($node->filter('.price')->text())
-                    : null,
-
-                'description' => $node->filter('.description')->count()
-                    ? trim($node->filter('.description')->text())
-                    : null,
-            ];
-        });
-
-        return response()->json($products);
-    }
 }

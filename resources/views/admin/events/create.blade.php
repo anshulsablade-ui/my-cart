@@ -21,21 +21,34 @@
         </div>
         <div class="card-body">
             <form class="row" id="eventForm">
-                <div class="col-12 mb-3">
-                    <label class="fs-9" for="eventTitle">Title</label>
+                <div class="col-6 mb-3">
+                    <label class="fs-9" for="title">Title</label>
                     <input class="form-control" id="title" type="text" name="title" />
                 </div>
                 <div class="col-6 mb-3">
-                    <label class="fs-9" for="eventStartDate">Start Date</label>
+                    <label class="fs-9" for="event_type">Event Type</label>
+                    <select class="form-control" id="event_type" name="event_type">
+                        <option value="">Select Event Type</option>
+                        <option value="meeting">Meeting</option>
+                        <option value="holiday">Holiday</option>
+                        <option value="deadline">Deadline</option>
+                        <option value="reminder">Reminder</option>
+                        <option value="personal">Personal</option>
+                        <option value="birthday">Birthday</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="col-6 mb-3">
+                    <label class="fs-9" for="startDate">Start Date</label>
                     <input class="form-control datetimepicker" id="startDate" type="text" name="startDate" placeholder="yyyy/mm/dd hh:mm" data-options='{"static":"true","enableTime":"true","dateFormat":"Y-m-d H:i"}' />
                 </div>
                 <div class="col-6 mb-3">
-                    <label class="fs-9" for="eventEndDate">End Date</label>
+                    <label class="fs-9" for="endDate">End Date</label>
                     <input class="form-control datetimepicker" id="endDate" type="text" name="endDate" placeholder="yyyy/mm/dd hh:mm" data-options='{"static":"true","enableTime":"true","dateFormat":"Y-m-d H:i"}' />
                 </div>
                 <div class="col-12 mb-3">
-                    <label class="fs-9" for="eventDescription">Description</label>
-                    <textarea class="form-control" rows="3" name="description" id="eventDescription"></textarea>
+                    <label class="fs-9" for="description">Description</label>
+                    <textarea class="form-control" rows="3" name="description" id="description"></textarea>
                 </div>
                 <div class="col-12">
                     <button class="btn btn-primary" type="submit">Submit</button>

@@ -22,20 +22,33 @@
         <div class="card-body">
             <form class="row" id="eventForm">
                 @method('put')
-                <div class="col-12 mb-3">
-                    <label class="fs-9" for="eventTitle">Title</label>
+                <div class="col-6 mb-3">
+                    <label class="fs-9" for="title">Title</label>
                     <input class="form-control" id="title" type="text" name="title" value="{{ $event->title }}" />
                 </div>
                 <div class="col-6 mb-3">
-                    <label class="fs-9" for="eventStartDate">Start Date</label>
+                    <label class="fs-9" for="event_type">Event Type</label>
+                    <select class="form-control" id="event_type" name="event_type">
+                        <option value="">Select Event Type</option>
+                        <option value="meeting" {{ $event->event_type == 'meeting' ? 'selected' : '' }}>Meeting</option>
+                        <option value="holiday" {{ $event->event_type == 'holiday' ? 'selected' : '' }}>Holiday</option>
+                        <option value="deadline" {{ $event->event_type == 'deadline' ? 'selected' : '' }}>Deadline</option>
+                        <option value="reminder" {{ $event->event_type == 'reminder' ? 'selected' : '' }}>Reminder</option>
+                        <option value="personal" {{ $event->event_type == 'personal' ? 'selected' : '' }}>Personal</option>
+                        <option value="birthday" {{ $event->event_type == 'birthday' ? 'selected' : '' }}>Birthday</option>
+                        <option value="other" {{ $event->event_type == 'other' ? 'selected' : '' }}>Other</option>
+                    </select>
+                </div>
+                <div class="col-6 mb-3">
+                    <label class="fs-9" for="startDate">Start Date</label>
                     <input class="form-control datetimepicker" id="startDate" type="text" name="startDate" value="{{ $event->start_date }}" placeholder="yyyy/mm/dd hh:mm" data-options='{"static":"true","enableTime":"true","dateFormat":"Y-m-d H:i"}' />
                 </div>
                 <div class="col-6 mb-3">
-                    <label class="fs-9" for="eventEndDate">End Date</label>
+                    <label class="fs-9" for="endDate">End Date</label>
                     <input class="form-control datetimepicker" id="endDate" type="text" name="endDate" value="{{ $event->end_date }}" placeholder="yyyy/mm/dd hh:mm" data-options='{"static":"true","enableTime":"true","dateFormat":"Y-m-d H:i"}' />
                 </div>
                 <div class="col-12 mb-3">
-                    <label class="fs-9" for="eventDescription">Description</label>
+                    <label class="fs-9" for="description">Description</label>
                     <textarea class="form-control" rows="3" name="description" id="description">{{ $event->description }}</textarea>
                 </div>
                 <div class="col-12">

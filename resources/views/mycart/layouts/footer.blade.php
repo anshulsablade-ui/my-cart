@@ -16,7 +16,14 @@
 
             <div class="col-md-8">
               <div class="row row-cols-1 row-cols-sm-3 gx-3 gx-md-4">
-                <a class="p-0" href="{{ route('map') }}">Map</a>
+                <ul class="nav flex-column gap-2 pt-sm-3 pb-3 mt-n1 mb-1">
+                  <li class="d-flex w-100 pt-1">
+                    <a class="nav-link animate-underline animate-target d-inline fw-normal text-truncate p-0" href="{{ route('map') }}">Map</a>
+                  </li>
+                  {{-- <li class="d-flex w-100 pt-1">
+                    <a class="nav-link animate-underline animate-target d-inline fw-normal text-truncate p-0" href="{{ route('vendors.create') }}">Create an vender account</a>
+                  </li> --}}
+                </ul>
               </div>
             </div>
           </div>

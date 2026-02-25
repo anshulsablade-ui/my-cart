@@ -86,7 +86,12 @@ class CartController extends Controller
                 } else {
                     $q->where('session_id', $this->getSessionId());
                 }
-            })->count();
+            })
+            ->whereHas('product', function ($q) {
+                $q->where('status', 'active')->where('stock', '>', 0);
+            })
+            ->count();
+
             session()->put('cart_count', $cart_count);
         }
 
@@ -197,7 +202,11 @@ class CartController extends Controller
             } else {
                 $q->where('session_id', $this->getSessionId());
             }
-        })->count();
+        })
+        ->whereHas('product', function ($q) {
+            $q->where('status', 'active')->where('stock', '>', 0);
+        })
+        ->count();
         session()->put('cart_count', $cart_count);
         return response()->json([
             'status' => 'success',

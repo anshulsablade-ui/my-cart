@@ -26,19 +26,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $validator->errors()
-            ], 422);
-        }
-
-        // chack role
-        $user = User::where('email', $request->email)->first();
-        if ($user->role != 'admin') {
-            return response()->json([
-                'status' => 'error',
-                'message' => ['email' => ['You are not admin.']]
-            ], 422);
+            return response()->json([ 'status' => 'error', 'message' => $validator->errors() ], 422);
         }
 
         if (Auth::attempt($request->only('email', 'password'))) {
@@ -46,24 +34,21 @@ class AuthController extends Controller
             Auth::login($user);
 
             session()->flash('success', 'Login successful.');
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Login successful.'
-            ]);
-        }else{
-            return response()->json([
-                'status' => 'error',
-                'message' => ['password' => ['Wrong password.']]
-            ], 422);
+            return response()->json([ 
+                'status' => 'success', 
+                'message' => 'Login successful.', 
+                'redirect' => $user->role === 'admin' ? route('admin.dashboard') : route('vendor.dashboard')
+            ], 200);
+        } else {
+            return response()->json([ 'status' => 'error', 'message' => ['password' => ['Wrong password.']] ], 422);
         }
     }
 
     public function logout()
     {
-        if (Auth::check() && Auth::user()->role == 'admin') {
-            Auth::logout();
-            return redirect()->route('admin.login');
-        }
+        Auth::logout();
+        return redirect()->route('admin.login');
+
     }
 
     public function showRegisterForm()
