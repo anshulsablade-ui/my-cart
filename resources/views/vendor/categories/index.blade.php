@@ -1,4 +1,4 @@
-@extends('admin.layouts.app')
+@extends('vendor.layouts.app')
 @section('title', 'Category List')
 
 @section('style')
@@ -93,7 +93,7 @@
         window.table = $('#categoriesTable').DataTable({
             processing: true,
             serverSide: true,
-            ajax: "{{ route('admin.categories.index') }}",
+            ajax: "{{ route('vendor.categories.index') }}",
             dom: "<'row mx-0'<'col-md-6'l><'col-md-6'f>>" + "<'table-responsive scrollbar'tr>" + "<'row g-0 align-items-center justify-content-center justify-content-sm-between'<'col-auto mb-2 mb-sm-0 px-3'i><'col-auto px-3'p>>",
             "createdRow": function (row, data, dataIndex) {
               $(row).addClass('btn-reveal-trigger');
@@ -145,7 +145,7 @@
             $('.is-invalid').removeClass('is-invalid');
             $('.invalid-feedback').remove();
             let categoryId = $('#category_id').val();
-            let url = categoryId ? `/admin/categories/${categoryId}` : "{{ route('admin.categories.store') }}";
+            let url = categoryId ? `/vendor/categories/${categoryId}` : "{{ route('vendor.categories.store') }}";
             // let method = categoryId ? 'PUT' : 'POST';
 
             let formData = new FormData(this);
@@ -153,8 +153,6 @@
                 formData.append('_method', 'PUT'); 
             }
 
-
-            console.log(formData);
             ajaxCall(url, 'POST', formData, function (res) {
                 if (res.status == 'success') {
                     $('#offcanvasRight').offcanvas('hide');

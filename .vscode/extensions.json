@@ -1,0 +1,22 @@
+{
+    "recommendations": [
+        "devsense.composer-php-vscode",
+        "github.codespaces",
+        "donjayamanne.jquerysnippets",
+        "ryannaddy.laravel-artisan",
+        "codeium.codeium",
+        "akhail.save-typing",
+        "devsense.profiler-php-vscode",
+        "devsense.phptools-vscode",
+        "pkief.material-icon-theme",
+        "yzhang.markdown-all-in-one",
+        "pgl.laravel-jump-controller",
+        "naoray.laravel-goto-components",
+        "onecentlin.laravel5-snippets",
+        "codingyu.laravel-goto-view",
+        "austenc.laravel-blade-spacer",
+        "onecentlin.laravel-blade",
+        "shufo.vscode-blade-formatter",
+        "github.copilot-chat"
+    ]
+}

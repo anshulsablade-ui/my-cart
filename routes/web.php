@@ -13,6 +13,9 @@ use App\Http\Controllers\Admin\VendorController;
 use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController;
 use App\Http\Controllers\Vendor\ProductController as VendorProductController;
 use App\Http\Controllers\Vendor\OrderController as VendorOrderController;
+use App\Http\Controllers\Vendor\CategoryController as VendorCategoryController;
+use App\Http\Controllers\Vendor\BrandController as VendorBrandController;
+use App\Http\Controllers\Vendor\CalendarEventController as VendorCalendarEventController;
 use App\Http\Controllers\Mycart\AIChatController;
 use App\Http\Controllers\Mycart\AddressController;
 use App\Http\Controllers\Mycart\Auth\AuthController as MycartAuthController;
@@ -119,7 +122,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 // Vendor Routes
-Route::prefix('vendor')->name('vendor.')->middleware('authCheck')->group(function () {
+Route::prefix('vendor')->name('vendor.')->middleware(['authCheck', 'role:vendor'])->group(function () {
 
     // Logout
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -128,6 +131,31 @@ Route::prefix('vendor')->name('vendor.')->middleware('authCheck')->group(functio
     Route::get('/dashboard', [VendorDashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/sales-chart', [VendorDashboardController::class, 'salesChart'])->name('dashboard.salesChart');
     Route::get('/dashboard/order-status-chart', [VendorDashboardController::class, 'orderStatusChart'])->name('dashboard.orderStatusChart');
+
+    // Category Routes
+    Route::get('/categories', [VendorCategoryController::class, 'index'])->name('categories.index');
+    Route::post('/categories', [VendorCategoryController::class, 'store'])->name('categories.store');
+    Route::get('/categories/edit/{id}', [VendorCategoryController::class, 'edit'])->name('categories.edit');
+    Route::put('/categories/{id}', [VendorCategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{id}', [VendorCategoryController::class, 'destroy'])->name('categories.destroy');
+
+    // Brand Routes
+    Route::get('/brands', [VendorBrandController::class, 'index'])->name('brands.index');
+    Route::post('/brands', [VendorBrandController::class, 'store'])->name('brands.store');
+    Route::get('/brands/edit/{id}', [VendorBrandController::class, 'edit'])->name('brands.edit');
+    Route::put('/brands/{id}', [VendorBrandController::class, 'update'])->name('brands.update');
+    Route::delete('/brands/{id}', [VendorBrandController::class, 'destroy'])->name('brands.destroy');
+
+    // Calendar Route
+    Route::get('/calendar', [VendorCalendarEventController::class, 'calendar'])->name('calendar');
+    Route::get('/calendar/events', [VendorCalendarEventController::class, 'events'])->name('calendar.events');
+
+    Route::get('/events', [VendorCalendarEventController::class, 'index'])->name('events.index');
+    Route::get('/events/create', [VendorCalendarEventController::class, 'create'])->name('events.create');
+    Route::post('/events', [VendorCalendarEventController::class, 'store'])->name('events.store');
+    Route::get('/events/{id}', [VendorCalendarEventController::class, 'edit'])->name('events.edit');
+    Route::put('/events/update/{id}', [VendorCalendarEventController::class, 'update'])->name('events.update');
+    Route::delete('/events/delete/{id}', [VendorCalendarEventController::class, 'destroy'])->name('events.delete');
 
     // Products (only vendor own products)
     Route::get('/products', [VendorProductController::class, 'index'])->name('products.index');
@@ -141,6 +169,9 @@ Route::prefix('vendor')->name('vendor.')->middleware('authCheck')->group(functio
     Route::get('/orders', [VendorOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{id}', [VendorOrderController::class, 'show'])->name('orders.show');
 
+    Route::fallback(function () {
+        return response()->view('vendor.error.404', [], 404);
+    });
 });
 
 // Location Routes

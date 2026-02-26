@@ -243,6 +243,7 @@ class CheckoutController extends Controller
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $item->product_id,
+                    'vendor_id' => $item->product->vendor_id,
                     'price' => $item->product->final_price,
                     'quantity' => $item->quantity,
                     'total' => $item->product->final_price * $item->quantity,

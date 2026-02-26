@@ -6,23 +6,26 @@
 @endsection
 @section('content')
     <div class="card mb-3">
-      <div class="bg-holder d-none d-lg-block bg-card" style="background-image:url(../../../assets/img/icons/spot-illustrations/corner-4.png);opacity: 0.7;"></div><!--/.bg-holder-->
+      <div class="bg-holder d-none d-lg-block bg-card" style="background-image:url({{ asset('assets/img/icons/spot-illustrations/corner-4.png') }});opacity: 0.7;"></div>
       <div class="card-body position-relative">
         <h5>Order Details: #{{ $order->order_no }}</h5>
         <p class="fs-10">{{ $order->created_at->format('M d, Y, h:i A') }}</p>
         <div><strong class="me-2">Status: </strong>
           @switch($order->order_status)
               @case('pending')
-                  <div class="badge rounded-pill badge-subtle-warning fs-11">{{ ucfirst($order->order_status) }}<span class="fas fa-stream ms-1" data-fa-transform="shrink-2"></span></div>
-                  @break
+                <div class="badge rounded-pill badge-subtle-warning fs-11">Pending<span class="fas fa-stream ms-1" data-fa-transform="shrink-2"></span></div>
+                @break
+
               @case('processing')
-                  <div class="badge rounded-pill badge-subtle-primary fs-11">{{ ucfirst($order->order_status) }}<span class="fas fa-redo ms-1" data-fa-transform="shrink-2"></span></div>
-                  @break
+                <div class="badge rounded-pill badge-subtle-primary fs-11">Processing<span class="fas fa-redo ms-1" data-fa-transform="shrink-2"></span></div>
+                @break
+
               @case('completed')
-                  <div class="badge rounded-pill badge-subtle-success fs-11">{{ ucfirst($order->order_status) }}<span class="fas fa-check ms-1" data-fa-transform="shrink-2"></span></div>
-                  @break
+                <div class="badge rounded-pill badge-subtle-success fs-11">Completed<span class="fas fa-check ms-1" data-fa-transform="shrink-2"></span></div>
+                @break
+
               @default
-                  <div class="badge rounded-pill badge-subtle-danger fs-11">{{ ucfirst($order->order_status) }}<span class="fas fa-ban ms-1" data-fa-transform="shrink-2"></span></div>
+                <div class="badge rounded-pill badge-subtle-danger fs-11">Cancelled<span class="fas fa-ban ms-1" data-fa-transform="shrink-2"></span></div>
           @endswitch 
         </div>
       </div>
@@ -41,8 +44,8 @@
             </div>
             <p class="mb-0 fs-10"> <strong>Name: </strong> {{ $order->user->name }}</p>
             <p class="mb-0 fs-10"> <strong>Email: </strong><a href="javascript:void(0);">{{ $order->user->email }}</a></p>
-            @if ($order->user->fhone)
-              <p class="mb-0 fs-10"> <strong>Phone: </strong><a href="javascript:void(0);">{{ $order->user->phone }}</a></p>
+            @if ($order->user->phone)
+              <p class="mb-0 fs-10"> <strong>Phone: </strong>{{ $order->user->phone }}</p>
             @endif
           </div>
           <div class="col-md-6 col-lg-4 mb-4 mb-lg-0">
@@ -97,10 +100,10 @@
                         </div>
                     </div>
                   </td>
-                  <td class="align-middle text-end">{{ Number::currency($item->product->final_price, 'INR') }}</td>
-                  <td class="align-middle text-end">{{ $item->product->discount_percentage . '%' }}</td>
+                  <td class="align-middle text-end">{{ Number::currency($item->product->base_price, 'INR') }}</td>
+                  <td class="align-middle text-end">{{ $item->product->discount_percentage ? $item->product->discount_percentage . '%' : '-' }}</td>
                   <td class="align-middle text-center">{{ $item->quantity }}</td>
-                  <td class="align-middle text-end">{{ Number::currency($item->product->final_price * $item->quantity, 'INR') }}</td>
+                  <td class="align-middle text-end">{{ Number::currency($item->product->base_price * $item->quantity, 'INR') }}</td>
                 </tr>
               @endforeach
             </tbody>
@@ -130,27 +133,7 @@
         </div>
       </div>
     </div>
-    {{-- <div class="card mb-3">
-      <div class="card-body">
-        <div class="row">
-          <div class="col-6 d-flex">
-            <div class="d-flex align-items-end g-3">
-              <select class="form-select me-2" name="order_status" id="order_status" aria-label="Default select example">
-                <option value="panding" {{ $order->order_status == 'panding' ? 'selected' : '' }} >Panding</option>
-                <option value="processing" {{ $order->order_status == 'processing' ? 'selected' : '' }}>Processing</option>
-                <option value="completed" {{ $order->order_status == 'completed' ? 'selected' : '' }}>Completed</option>
-                <option value="cancelled" {{ $order->order_status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-              </select>
-              <select class="form-select" name="paymant_status" id="paymant_status" aria-label="Default select example">
-                <option value="panding" {{ $order->payment_status == 'panding' ? 'selected' : '' }}>Panding</option>
-                <option value="paid" {{ $order->payment_status == 'paid' ? 'selected' : '' }}>Paid</option>
-                <option value="failed" {{ $order->payment_status == 'failed' ? 'selected' : '' }}>Failed</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div> --}}
+   
     <div class="card mb-3">
       <div class="card-header bg-light">
           <h6 class="mb-0">Update Order Status</h6>

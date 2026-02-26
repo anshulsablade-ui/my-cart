@@ -43,7 +43,7 @@ class DashboardController extends Controller
         for ($i = 11; $i >= 0; $i--) {
             $date = Carbon::now()->subMonths($i);
 
-            $months[] = $date->format('M');
+            $months[] = $date->format('M Y');
 
             $sales[] = Order::where('order_status', 'completed')
                 ->whereMonth('created_at', $date->month)

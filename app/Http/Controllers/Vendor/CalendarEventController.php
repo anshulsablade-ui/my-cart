@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Models\CalendarEvent;
@@ -13,7 +13,7 @@ class CalendarEventController extends Controller
 {
     public function calendar()
     {
-        return view('admin.calendar.index');
+        return view('vendor.calendar.index');
     }
 
     public function events(Request $request)
@@ -64,40 +64,6 @@ class CalendarEventController extends Controller
         return response()->json($events);
     }
 
-    // public function events(Request $request)
-    // {
-    //     $request->validate([
-    //         'start' => 'required|date',
-    //         'end' => 'required|date|after_or_equal:start',
-    //     ]);
-
-    //     // Use Carbon for safety & timezone handling
-    //     $start = Carbon::parse($request->start)->startOfDay();
-    //     $end = Carbon::parse($request->end)->endOfDay();
-
-    //     $events = CalendarEvent::where('end_date', '>=', $start)
-    //         ->where('start_date', '<=', $end)
-    //         ->orderBy('start_date')
-    //         ->get();
-
-    //     $colors = ['#fad9d9', '#d9f0fa', '#d9f9d9', '#f9f0d9', '#f0d9fa', '#e6d9fa', '#fad9e6', '#d9fad9',];
-    //     $events = $events->map(function ($event) use ($colors) {
-    //         $color = $colors[abs(crc32($event->id)) % count($colors)];
-
-    //         return [
-    //             'id' => $event->id,
-    //             'title' => $event->title,
-    //             'event_type' => $event->event_type,
-    //             'start' => $event->start_date,
-    //             'end' => $event->end_date,
-    //             'description' => $event->description,
-    //             'color' => $color
-    //         ];
-    //     });
-
-    //     return response()->json($events);
-    // }
-
     public function index()
     {
         $events = CalendarEvent::where('vendor_id', auth()->id())->orderBy('id', 'desc')->get();
@@ -116,19 +82,19 @@ class CalendarEventController extends Controller
                     return date('Y-m-d H:i A', strtotime($event->end_date));
                 })
                 ->addColumn('actions', function ($event) {
-                    $editUrl = route('admin.events.edit', $event->id);
-                    $deleteUrl = route('admin.events.delete', $event->id);
+                    $editUrl = route('vendor.events.edit', $event->id);
+                    $deleteUrl = route('vendor.events.delete', $event->id);
                     return compact('editUrl', 'deleteUrl');
                 })
                 ->rawColumns(['event_type', 'start_date', 'end_date', 'actions'])
                 ->make(true);
         }
-        return view('admin.events.index');
+        return view('vendor.events.index');
     }
 
     public function create()
     {
-        return view('admin.events.create');
+        return view('vendor.events.create');
     }
 
     public function store(Request $request)
@@ -164,7 +130,7 @@ class CalendarEventController extends Controller
         if (!$event) {
             return response()->json(['status' => 'error', 'message' => 'Event not found'], 404);
         }
-        return view('admin.events.edit', compact('event'));
+        return view('vendor.events.edit', compact('event'));
     }
 
     public function update(Request $request, $id)

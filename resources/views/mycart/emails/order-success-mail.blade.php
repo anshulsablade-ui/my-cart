@@ -53,6 +53,26 @@
             font-size: 0.95em;
             color: #666;
         }
+
+        /* Mobile improvements */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 0 -20px;
+        }
+        .product-name {
+            word-break: break-word;
+            hyphens: auto;
+        }
+
+        @media only screen and (max-width: 480px) {
+            body { padding: 12px; }
+            .table-wrapper { margin: 0 -12px; }
+            th, td { padding: 8px 6px; font-size: 14px; }
+            img.product-thumb { max-width: 50px !important; height: auto !important; }
+            .label { min-width: auto; display: block; margin-bottom: 4px; }
+        }
     </style>
 </head>
 <body>
@@ -90,62 +110,68 @@
 
     <h4>Items Ordered</h4>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Product</th>
-                <th>Price</th>
-                <th>Discount</th>
-                <th>Qty</th>
-                <th>Subtotal</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($order->orderItems as $item)
+    <div class="table-wrapper">
+        <table style="min-width: 520px;">
+            <thead>
                 <tr>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <img src="{{ $message->embed(public_path('images/products/thumb/' . ($item->product->primaryImage->image ?? 'no-image.png'))) }}" width="60" alt="{{ $item->product->name }}">
-                            {{ $item->product->name }}
-                        </div>
-                    </td>
-                    <td>₹{{ number_format($item->product->base_price, 2) }}</td>
-                    <td>{{ $item->product->discount_percentage ? $item->product->discount_percentage . '%' : '-' }}</td>
-                    <td>{{ $item->quantity }}</td>
-                    <td>₹{{ number_format($item->product->base_price * $item->quantity, 2) }}</td>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Discount</th>
+                    <th>Qty</th>
+                    <th>Subtotal</th>
                 </tr>
-            @endforeach
+            </thead>
+            <tbody>
+                @foreach ($order->orderItems as $item)
+                    <tr>
+                        <td class="product-name">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <img class="product-thumb" 
+                                     src="{{ $message->embed(public_path('images/products/thumb/' . ($item->product->primaryImage->image ?? 'no-image.png'))) }}" 
+                                     width="60" 
+                                     alt="{{ $item->product->name }}" 
+                                     style="display: block;">
+                                {{ $item->product->name }}
+                            </div>
+                        </td>
+                        <td>₹{{ number_format($item->product->base_price, 2) }}</td>
+                        <td>{{ $item->product->discount_percentage ? $item->product->discount_percentage . '%' : '-' }}</td>
+                        <td>{{ $item->quantity }}</td>
+                        <td>₹{{ number_format($item->product->base_price * $item->quantity, 2) }}</td>
+                    </tr>
+                @endforeach
 
-            <tr>
-                <td colspan="4" style="text-align:right">Subtotal</td>
-                <td>₹{{ number_format($order->subtotal, 2) }}</td>
-            </tr>
+                <tr>
+                    <td colspan="4" style="text-align:right">Subtotal</td>
+                    <td>₹{{ number_format($order->subtotal, 2) }}</td>
+                </tr>
 
-            <tr>
-                <td colspan="4" style="text-align:right">Discount :</td>
-                <td>₹{{ number_format($order->discounted_price, 2) }}</td>
-            </tr>
-            
-            <tr>
-                <td colspan="4" style="text-align:right">GST Amount :</td>
-                <td>₹{{ number_format($order->tax_amount, 2) }}</td>
-            </tr>
+                <tr>
+                    <td colspan="4" style="text-align:right">Discount :</td>
+                    <td>₹{{ number_format($order->discounted_price, 2) }}</td>
+                </tr>
+                
+                <tr>
+                    <td colspan="4" style="text-align:right">GST Amount :</td>
+                    <td>₹{{ number_format($order->tax_amount, 2) }}</td>
+                </tr>
 
-            <tr>
-                <td colspan="4" style="text-align:right">Shipping Charges :</td>
-                <td>₹{{ number_format($order->shipping_amount, 2) }}</td>
-            </tr>
+                <tr>
+                    <td colspan="4" style="text-align:right">Shipping Charges :</td>
+                    <td>₹{{ number_format($order->shipping_amount, 2) }}</td>
+                </tr>
 
-            <tr class="total-row">
-                <td colspan="4" style="text-align:right">Grand Total :</td>
-                <td>₹{{ number_format($order->grand_total, 2) }}</td>
-            </tr>
-        </tbody>
-    </table>
+                <tr class="total-row">
+                    <td colspan="4" style="text-align:right">Grand Total :</td>
+                    <td>₹{{ number_format($order->grand_total, 2) }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
     @if ($order->payment_method === 'cod')
-        <p style="color: #e67e22; font-weight: 500;">
-            Please keep ₹{{ number_format($order->grand_total, 2) }} ready in cash when our delivery.
+        <p style="color: #e67e22; font-weight: 500; margin-top: 16px;">
+            Please keep ₹{{ number_format($order->grand_total, 2) }} ready in cash for delivery.
         </p>
     @endif
 

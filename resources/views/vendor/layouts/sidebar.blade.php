@@ -26,31 +26,31 @@
               <span class="nav-link-text ps-1">Product list</span>
             </div>
           </a>
-          <a class="nav-link @if (request()->routeIs('admin.categories.index')) active @endif" href="{{ route('admin.categories.index') }}">
+          <a class="nav-link @if (request()->routeIs('vendor.categories.index')) active @endif" href="{{ route('vendor.categories.index') }}">
             <div class="d-flex align-items-center">
               <span class="nav-link-icon"><span class="fab fa-trello"></span></span>
               <span class="nav-link-text ps-1">Category list</span>
             </div>
           </a>
-          <a class="nav-link @if (request()->routeIs('admin.brands.index')) active @endif" href="{{ route('admin.brands.index') }}">
+          <a class="nav-link @if (request()->routeIs('vendor.brands.index')) active @endif" href="{{ route('vendor.brands.index') }}">
             <div class="d-flex align-items-center">
               <span class="nav-link-icon"><span class="fas fa-tags"></span></span>
               <span class="nav-link-text ps-1">Brand list</span>
             </div>
           </a> 
-          <a class="nav-link @if (request()->routeIs('admin.orders.index')) active @endif" href="{{ route('admin.orders.index') }}">
+          <a class="nav-link @if (request()->routeIs('vendor.orders.index')) active @endif" href="{{ route('vendor.orders.index') }}">
             <div class="d-flex align-items-center">
               <span class="nav-link-icon"><span class="fas fa-box-open"></span></span>
               <span class="nav-link-text ps-1">Order list</span>
             </div>
           </a>                                                   
-          <a class="nav-link @if (request()->routeIs('admin.calendar')) active @endif" href="{{ route('admin.calendar') }}">
+          <a class="nav-link @if (request()->routeIs('vendor.calendar')) active @endif" href="{{ route('vendor.calendar') }}">
             <div class="d-flex align-items-center">
               <span class="nav-link-icon"><span class="fas fa-calendar-alt"></span></span>
               <span class="nav-link-text ps-1">Calendar</span>
             </div>
           </a>                                                   
-          <a class="nav-link @if (request()->routeIs('admin.events.index')) active @endif" href="{{ route('admin.events.index') }}">
+          <a class="nav-link @if (request()->routeIs('vendor.events.index')) active @endif" href="{{ route('vendor.events.index') }}">
             <div class="d-flex align-items-center">
               <span class="nav-link-icon"><span class="fas fa-calendar-day"></span></span>
               <span class="nav-link-text ps-1">Events</span>
