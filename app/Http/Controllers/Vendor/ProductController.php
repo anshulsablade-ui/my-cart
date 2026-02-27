@@ -10,6 +10,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Wishlist;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Str;
 use Yajra\DataTables\DataTables;
@@ -114,6 +115,7 @@ class ProductController extends Controller
     public function edit($id)
     {
         $product = Product::findOrFail($id);
+        Gate::authorize('view', $product);
         $categories = Category::all();
         $brands = Brand::all();
         return view('vendor.products.edit', compact('product', 'categories', 'brands'));
@@ -122,7 +124,7 @@ class ProductController extends Controller
     public function update(ProductRequest $request, $id)
     {
         $product = Product::where('id', $id)->first();
-
+        Gate::authorize('update', $product);
         $request->validated();
 
         $product->update([
@@ -195,7 +197,7 @@ class ProductController extends Controller
     public function destroy($id)
     {
         $product = Product::with('images')->where('vendor_id', auth()->id())->find($id);
-
+        Gate::authorize('delete', $product);
         if (!$product) {
             return response()->json(['status' => 'error', 'message' => 'Product not found.'], 404);
         }

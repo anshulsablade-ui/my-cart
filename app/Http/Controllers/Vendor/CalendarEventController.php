@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CalendarEvent;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\DataTables;
 
@@ -126,7 +127,8 @@ class CalendarEventController extends Controller
 
     public function edit($id)
     {
-        $event = CalendarEvent::where('vendor_id', auth()->id())->where('id', $id)->first();
+        $event = CalendarEvent::where('id', $id)->first();
+        Gate::authorize('view', $event);
         if (!$event) {
             return response()->json(['status' => 'error', 'message' => 'Event not found'], 404);
         }
@@ -135,6 +137,12 @@ class CalendarEventController extends Controller
 
     public function update(Request $request, $id)
     {
+        $event = CalendarEvent::where('id', $id)->first();
+        Gate::authorize('update', $event);
+        if (!$event) {
+            return response()->json(['status' => 'error', 'message' => 'Event not found'], 404);
+        }
+
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'event_type' => 'nullable|in:meeting,holiday,deadline,reminder,personal,birthday,other',
@@ -145,11 +153,6 @@ class CalendarEventController extends Controller
 
         if ($validator->fails()) {
             return response()->json(['status' => 'error', 'errors' => $validator->errors()], 422);
-        }
-
-        $event = CalendarEvent::where('vendor_id', auth()->id())->where('id', $id)->first();
-        if (!$event) {
-            return response()->json(['status' => 'error', 'message' => 'Event not found'], 404);
         }
 
         $event->update([
@@ -166,7 +169,8 @@ class CalendarEventController extends Controller
 
     public function destroy($id)
     {
-        $event = CalendarEvent::where('vendor_id', auth()->id())->where('id', $id)->first();
+        $event = CalendarEvent::where('id', $id)->first();
+        Gate::authorize('delete', $event);
         if (!$event) {
             return response()->json(['status' => 'error', 'message' => 'Event not found'], 404);
         }
