@@ -38,7 +38,17 @@ class AuthController extends Controller
 
             Session::put('user', $user);
             $this->gaustCartMerge();
-            Session::put('cart_count', Cart::where('user_id', $user->id)->count());
+
+            Session::put(
+                'cart_count',
+                Cart::with('product')
+                    ->whereHas('product', function ($q) {
+                        $q->where('status', 'active')->where('stock', '>', 0);
+                    })
+                    ->where('user_id', $user->id)
+                    ->count()
+            );
+            
             session()->flash('success', 'Login successful.');
             return response()->json([
                 'status' => 'success',
@@ -94,7 +104,15 @@ class AuthController extends Controller
 
         Session::put('user', $user);
         $this->gaustCartMerge();
-        Session::put('cart_count', Cart::where('user_id', $user->id)->count());
+        Session::put(
+            'cart_count',
+            Cart::with('product')
+                ->whereHas('product', function ($q) {
+                    $q->where('status', 'active')->where('stock', '>', 0);
+                })
+                ->where('user_id', $user->id)
+                ->count()
+        );
         session()->flash('success', 'Registration successful.');
         return response()->json([
             'status' => 'success',
@@ -123,7 +141,7 @@ class AuthController extends Controller
                     'user_id' => session()->get('user.id'),
                     'session_id' => null,
                 ]);
-            }else {
+            } else {
                 Cart::where('id', $guestCart->id)->delete();
             }
         }

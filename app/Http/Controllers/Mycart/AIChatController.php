@@ -35,7 +35,8 @@ class AIChatController extends Controller
 
         $result = $bot->ask($request->message, $context, json_encode($userDetails));
 
-        $content = $result['choices'][0]['message']['content'] ?? $result['error']['message'] ?? null;
+        // return response()->json($result);
+        $content = $result['choices'][0]['message']['content'] ?? $result['error']['metadata']['raw'] ?? null;
 
         if (!$content) {
             return response()->json('AI response error', 500);

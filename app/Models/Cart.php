@@ -17,4 +17,13 @@ class Cart extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function cartCount()
+    {
+        return Cart::where('user_id', session()->get('user.id'))
+            ->whereHas('product', function ($q) {
+                $q->where('status', 'active')->where('stock', '>', 0);
+            })
+            ->count();
+    }
 }

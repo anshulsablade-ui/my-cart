@@ -6,7 +6,7 @@
     <!-- Viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>MyCart | Account - Sign In</title>
+    <title>MyCart | Account - Reset Password</title>
 
     <link rel="icon" type="image/png" href="{{ asset('/assets/img/favicons/mycart_icon.png') }}" sizes="32x32">
     <!-- Preloaded local web font (Inter) -->

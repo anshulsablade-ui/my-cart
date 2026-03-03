@@ -1,5 +1,5 @@
 @extends('mycart.layouts.app')
-@section('title', 'My Wishlist')
+@section('title', 'My Orders')
 @section('style')
     
 @endsection

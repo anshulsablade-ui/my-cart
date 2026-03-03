@@ -29,7 +29,17 @@ class SocialAuthController extends Controller
         if ($user) {
             session()->put('user', $user);
             $this->gaustCartMerge();
-            Session::put('cart_count', Cart::where('user_id', $user->id)->count());
+
+            Session::put(
+                'cart_count',
+                Cart::with('product')
+                    ->whereHas('product', function ($q) {
+                        $q->where('status', 'active')->where('stock', '>', 0);
+                    })
+                    ->where('user_id', $user->id)
+                    ->count()
+            );
+
             session()->flash('success', 'Login successful!');
             return redirect()->route('home');
         }
@@ -55,7 +65,17 @@ class SocialAuthController extends Controller
 
         session()->put('user', $user);
         $this->gaustCartMerge();
-        Session::put('cart_count', Cart::where('user_id', $user->id)->count());
+
+        Session::put(
+            'cart_count',
+            Cart::with('product')
+                ->whereHas('product', function ($q) {
+                    $q->where('status', 'active')->where('stock', '>', 0);
+                })
+                ->where('user_id', $user->id)
+                ->count()
+        );
+
         session()->flash('success', 'Login successful!');
         return redirect()->route('home');
     }
